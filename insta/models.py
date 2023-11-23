@@ -25,19 +25,19 @@ class TimeStampModel(models.Model):
     class Meta:
         abstract = True
         
-class TodayOpenAVDManager(models.Manager):
-    def get_queryset(self):
-        now = timezone.now()
-        return super().get_queryset().filter(created_at__date=now.date())
+# class TodayOpenAVDManager(models.Manager):
+#     def get_queryset(self):
+#         now = timezone.now()
+#         return super().get_queryset().filter(created_at__date=now.date())
 
-class TodayOpenAVD(models.Model):
-    name = models.CharField(max_length=150)
-    created_at = models.DateTimeField(auto_now_add=True)
+# class TodayOpenAVD(models.Model):
+#     name = models.CharField(max_length=150)
+#     created_at = models.DateTimeField(auto_now_add=True)
 
-    objects = TodayOpenAVDManager()
+#     objects = TodayOpenAVDManager()
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
 
 class UserAvd(TimeStampModel):
@@ -49,12 +49,12 @@ class UserAvd(TimeStampModel):
     )
 
     COUNTRIES = tuple((i,) * 2 for i in CyberGhostVpn.get_server_list())
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="avd_user")
     name = models.CharField(max_length=100, unique=True)
     port = models.IntegerField(unique=True)
-    proxy_type = models.CharField(max_length=50, choices=prox_type, blank=True, null=True)
+    proxy_type = models.CharField(max_length=50, choices=prox_type, default="CYBERGHOST", blank=True, null=True)
     country = models.CharField(max_length=40, choices=COUNTRIES, null=True, blank=True)
     timezone = models.CharField(max_length=50, blank=True, null=True)
+    pcname = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
         return f"{self.name}:{self.port}"
@@ -112,16 +112,16 @@ class User_details(models.Model):
     def __str__(self):
         return self.username
 
-class postdetails(models.Model):
-    details = models.CharField(max_length=10000)
-    like = models.IntegerField()
-    target_comment = models.IntegerField(default=0)
-    target_like = models.IntegerField(default=0)
-    comment = models.IntegerField(default=0)
-    commented_users = models.ManyToManyField(User_details, related_name='commented_posts')
-    shared_users = models.ManyToManyField(User_details, related_name='shared_posts')
-    saved_users = models.ManyToManyField(User_details, related_name='save_posts')
-    date = models.DateField(auto_now_add=True)
+# class postdetails(models.Model):
+#     details = models.CharField(max_length=10000)
+#     like = models.IntegerField()
+#     target_comment = models.IntegerField(default=0)
+#     target_like = models.IntegerField(default=0)
+#     comment = models.IntegerField(default=0)
+#     commented_users = models.ManyToManyField(User_details, related_name='commented_posts')
+#     shared_users = models.ManyToManyField(User_details, related_name='shared_posts')
+#     saved_users = models.ManyToManyField(User_details, related_name='save_posts')
+#     date = models.DateField(auto_now_add=True)
 
 
 def create_avd(sender, instance, **kwargs):
@@ -159,8 +159,8 @@ def create_avd(sender, instance, **kwargs):
 
 def create_better_avd(sender, instance, **kwargs):
     from insta.bot import InstaBot
+    
     created = kwargs.get('created')
-
     if created:
         LOGGER.info('Start to create AVD')
         try:
@@ -193,6 +193,6 @@ def delete_avd(sender, instance, **kwargs):
 
 
 #  post_save.connect(create_avd, sender=UserAvd)
-post_save.connect(create_better_avd, sender=UserAvd)
-pre_delete.connect(delete_avd, sender=UserAvd)
+# post_save.connect(create_better_avd, sender=UserAvd)
+# pre_delete.connect(delete_avd, sender=UserAvd)
 

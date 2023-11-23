@@ -1,3 +1,6 @@
+#Extra
+etc
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -5,6 +8,7 @@ __pycache__/
 
 # C extensions
 *.so
+apk
 
 # Distribution / packaging
 .Python
@@ -123,6 +127,7 @@ celerybeat.pid
 .env
 .venv
 env/
+2env
 venv/
 ENV/
 env.bak/
