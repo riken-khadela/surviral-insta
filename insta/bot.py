@@ -1,5 +1,5 @@
 from conf import *
-import pandas as pd, parallel, numpy as np, random, subprocess, time, os, traceback, difflib
+import  parallel, numpy as np, random, subprocess, time, os, traceback, difflib, requests
 from dotenv import load_dotenv
 from main import LOGGER
 from insta.models import UserAvd, User_details
@@ -17,6 +17,7 @@ from exceptions import CannotStartDriverException
 from appium import webdriver
 from insta.utils import log_activity
 from insta.cyberghostvpn import CyberGhostVpn
+from .utils import get_sms,get_number,ban_number, NEW_INSTA_ACC_BIO
 
 timeout = 10
 class InstaBot:
@@ -175,9 +176,7 @@ class InstaBot:
             #  LOGGER.debug('Start appium driver')
             LOGGER.debug(f'Driver capabilities: {opts}')
             LOGGER.debug(f"Driver url: http://{APPIUM_SERVER_HOST}:{self.appium_server_port}/wd/hub")
-
-            self.app_driver = webdriver.Remote( f"http://{APPIUM_SERVER_HOST}:{self.appium_server_port}/wd/hub",desired_capabilities=opts,options={'timeout': timeout})
-            self.app_driver = webdriver.Remote(command_executor=command_executor,desired_capabilities=opts,options={'timeout': timeout})
+            self.app_driver = webdriver.Remote( f"http://{APPIUM_SERVER_HOST}:{self.appium_server_port}/wd/hub",desired_capabilities=opts)
             self.start_driver_retires = 0
             log_activity(
                 self.user_avd.id,
@@ -186,12 +185,10 @@ class InstaBot:
                 error=None,
             )
         except Exception as e:
-            LOGGER.warning(type(e))
             LOGGER.warning(e)
             # if 'driver' in globals():
             #     self.app_driver.close()
-            if not parallel.get_avd_pid(name=self.emulator_name,
-                                        port=self.adb_console_port):
+            if not parallel.get_avd_pid(name=self.emulator_name, port=self.adb_console_port):
                 self.adb_console_port = str(
                     parallel.get_one_available_adb_console_port())
                 adb_console_port = self.adb_console_port
@@ -348,7 +345,6 @@ class InstaBot:
         if not self.driver().is_app_installed("com.instagram.android"):
             LOGGER.debug('instagram is not installed, now install it')
             self.driver().install_app('apk/instagram.apk')
-            self.install_apk(self.adb_console_port, "instagram")
             log_activity(
                 self.user_avd.id,
                 action_type="Installinstagram",
@@ -394,24 +390,181 @@ class InstaBot:
         except :
             return False
         
+    def back_until_number(self,number):
+        try:
+            for i in range(number):
+                time.sleep(0.3)
+                self.driver().back()
+        except Exception as e :
+            self.logger.info(f'Got an error in Go back to the number : {e}')
+
+    def phone_number_proccess(self):
+
+        phone_number = get_number()
+        phone_number_digit = str(phone_number).isdigit()
+        if phone_number_digit:
+            for i in range(2):
+
+                print(phone_number)
+                self.input_text(phone_number,'phone number input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[1]/android.widget.EditText')
+                self.click_element('next btn','//android.widget.Button[@content-desc="Next"]')
+                confirmation_code = self.find_element('Confirmation code input','//android.view.View[@content-desc="Enter the confirmation code"]')
+                if not confirmation_code :
+                    something_wrong_error = self.find_element('something went wrong','//android.view.View[@content-desc="Something went wrong. Please try again later."]')
+                    if something_wrong_error:
+                        return False
+
+                time.sleep(5)
+                otp = get_sms(phone_number)
+                count = 0
+                time.sleep(13)
+                while not otp:
+                    otp = get_sms(phone_number)
+                    time.sleep(10)
+                    count+=1
+                    if count == 5:
+                        ban_number(phone_number)
+                        self.back_until_number(2)
+                        LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
+                        # self.user_avd.delete()
+                        return False
+                    
+                if otp:
+                    print(otp)
+                    self.input_text(str(otp),'input otp','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
+                    next_btn = self.driver().find_element(By.XPATH,'//android.widget.Button[@content-desc="Next"]')
+                    next_btn.click()
+                    break
+            return phone_number
+    def next_btn(self):    
+        next_btn = self.driver().find_element(By.XPATH,'//android.widget.Button[@content-desc="Next"]').click()
+
+    def swip_until_match(self,comperison_xpath,comperison_text):
+        rect_ele = self.driver().find_element_by_xpath(comperison_xpath).rect
+        start_x = rect_ele['x'] + rect_ele['width'] / 2
+        start_y = rect_ele['y'] + rect_ele['height'] / 2
+        end_x = start_x
+        end_y = start_y + rect_ele['height']
+        LOGGER.debug(f'start_x: {start_x}, start_y: {start_y}, end_x: {end_x}, end_y: {end_y}')
+        while True:
+            self.driver().swipe(start_x=start_x,start_y=start_y,end_x=end_x,end_y=end_y,duration=random.randrange(200, 250))
+            time.sleep(0.20)
+            comperison_xpath_text = self.driver().find_element_by_xpath(comperison_xpath).text
+            if comperison_xpath_text == comperison_text:
+                break
+
+    def set_birth_date(self):
+        set_date = self.find_element('Set date scroller','android:id/alertTitle',By.ID,timeout=4)
+        if set_date :
+            if set_date.text == 'Set date' : ...
+            else : return 
+        else : return
+
+        self.click_element('birthday input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[2]/android.widget.EditText',timeout=5)
+        middle_month_picker_relative_xpath = '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.DatePicker/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.NumberPicker[1]/android.widget.EditText'
+        middle_day_picker_relative_xpath = '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.DatePicker/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.NumberPicker[2]/android.widget.EditText'
+        middle_year_picker_relative_xpath = '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.DatePicker/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.NumberPicker[3]/android.widget.EditText'
+        
+        LOGGER.debug(f'set_year: {self.birth_year}')
+        year = str(int(self.birth_year)+1)
+        self.swip_until_match(middle_year_picker_relative_xpath,year)
+        
+        LOGGER.debug(f'set_month: {self.birth_month}')
+        self.swip_until_match(middle_month_picker_relative_xpath,self.birth_month)
+        
+        LOGGER.debug(f'set_date: {self.birth_date}')
+        self.swip_until_match(middle_day_picker_relative_xpath,self.birth_date)
+        
+        self.click_element('Set btn','android:id/button1',By.ID)
+        self.next_btn()
+    
+    def profile_img_download(self):
+        '''
+        downloading the file and saving it in download folder
+        '''
+        url = "https://source.unsplash.com/random"
+        file_name = "prof_img/profile_pic.jpg"
+        profile_pic_path = os.path.join(os.getcwd(), file_name)
+        # file_name = '/media/rk/0B29CA554279F37D/Workspace/New_Insta/AVD_setup-main/prof_img/profile_pic.jpg'
+        LOGGER.info(f"profile image path : {profile_pic_path}")
+        with open(profile_pic_path, "wb") as file:
+            response = requests.get(url)
+            file.write(response.content)
+        time.sleep(3)
+
+        run_cmd(f'adb -s emulator-{self.adb_console_port} push {profile_pic_path} /sdcard/Download')
+
+    def add_profile_pic(self):
+        self.click_element('click on add_rofile','//android.widget.Button[@content-desc="Add picture"]')
+        self.profile_img_download()
+        time.sleep(3)
+        self.click_element('choose from gallery','//android.view.View[@content-desc="Choose from Gallery"]')
+        time.sleep(3)
+        menu_btn = self.driver().find_element_by_accessibility_id('Show roots').click()
+        self.click_element('download','/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.support.v4.widget.DrawerLayout/android.widget.LinearLayout[2]/android.widget.FrameLayout/android.widget.ListView/android.widget.LinearLayout[2]/android.widget.LinearLayout')
+        self.click_element('choose pic','com.android.documentsui:id/icon_thumb',By.ID)
+        self.click_element('also share post','//android.widget.Switch[@content-desc="Also share this picture as a post"]/android.view.ViewGroup/android.widget.FrameLayout/android.widget.Switch')
+        self.click_element('Done','//android.widget.Button[@content-desc="Done"]')
+        time.sleep(10)
+        skip_profile_pic_id = 'com.instagram.android:id/skip_button'
+        self.click_element('skip add profile pic btn',skip_profile_pic_id,By.ID)  
+        self.click_element('Skip2','com.instagram.android:id/negative_button',By.ID)
+        self.click_element('follow instagram','//android.widget.Button[@content-desc="Follow Instagram"]')
+        self.click_element('next arrow','//android.widget.Button[@content-desc="Next"]/android.widget.ImageView')
+        return True
+    
+    def add_bio(self):
+        self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
+        for i in range(4):
+            self.swip_display(4)
+        # com.instagram.android:id/find_people_card_button
+        self.click_element('Add Bio btn','com.instagram.android:id/find_people_card_button',By.ID)
+        self.bio = NEW_INSTA_ACC_BIO
+        self.input_text(self.bio,"User's Bio", 'com.instagram.android:id/caption_edit_text',By.ID)
+        check = self.click_element('tick btn','//android.widget.Button[@content-desc="Done"]/android.widget.ImageView')
+        if check:
+            return True
+        
     def create_account(self):
-        # try:
+            number_bool = False
+            allow_contacts_bool = False
+            name_bool = False
+            birthdate_bool = False
             breakpoint()
-            
+        # try:
+            LOGGER.debug('Check if instagram is installed')        
+            if not self.driver().is_app_installed("com.instagram.android"):
+                LOGGER.debug('instagram is not installed, now install it')
+                self.driver().install_app('/home/dell/Music/insta2.apk')
+                self.driver().install_app('apk/instagram1.apk')
+            random_sleep()
             self.driver().activate_app('com.instagram.android')
             
-            time.sleep(10)
-            create_btn = self.find_element('create account btn','//android.widget.Button[@content-desc="Create new account"]')
+            create_btn = self.find_element('create account btn','//android.widget.Button[@content-desc="Create new account"]',timeout=20)
 
             if create_btn:
                 self.click_element('create account btn','//android.widget.Button[@content-desc="Create new account"]')
             else:
                 LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
                 return False
-                
-            phone_number = self.phone_number_proccess()
-            if not phone_number:
-                return False
+            
+            self.set_birth_date()
+
+            allow_contacts = self.find_element('allow contacts','com.android.permissioncontroller:id/permission_message',By.ID,timeout=4)
+            if allow_contacts :
+                if allow_contacts.text == "Allow Instagram to access your contacts?":
+                    self.click_element('Allow contacts','com.android.permissioncontroller:id/permission_allow_button',By.ID)
+            
+            mobile_number_ele = self.find_element('mobile number input','//android.view.View[@content-desc="Mobile number"]',timeout=5)
+            if mobile_number_ele :
+                if mobile_number_ele.text == 'Mobile number':
+
+                    phone_number = self.phone_number_proccess()
+                    if not phone_number:
+                        return False
+
+
+
             try:
                 print(self.full_name)
                 self.input_text(self.full_name,'first name input','//*[@class="android.widget.EditText"]')
@@ -421,11 +574,11 @@ class InstaBot:
                 self.input_text(self.password,'password input','//*[@class="android.widget.EditText"]')
                 self.next_btn()
                 self.click_element('save info','//android.widget.Button[@content-desc="Save"]')
-                #  ----------------
             except Exception as e:
                 print(e)
 
             self.set_birth_date()
+            self.next_btn()
             time.sleep(10)
             green_tick = self.find_element('Green Tick','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[2]/android.widget.ImageView')
             if green_tick:

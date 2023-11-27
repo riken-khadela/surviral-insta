@@ -96,7 +96,7 @@ PACKAGES_DIR_NAME = 'apk'
 PACKAGES_DIR = PRJ_PATH / PACKAGES_DIR_NAME
 PACKAGES_DIR.mkdir(parents=True, exist_ok=True)  # create it if it doesn't exist
 # cyberghostvpn
-CYBERGHOSTVPN_APK = PACKAGES_DIR / 'cyberghostvpn_8.6.4.396.apk'
+CYBERGHOSTVPN_APK = PACKAGES_DIR / 'cyberghost.apk'
 CYBERGHOSTVPN_SERVERS = {
     'Albania': [],
     'Algeria': [],
@@ -224,7 +224,7 @@ PARALLEL_NUMER = 1
 WEB_HOOK_URL = "https://hooks.slack.com/services/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"
 
 # MAX ACTIVE ACCOUNTS
-MAX_ACTIVE_ACCOUNTS = 250
+MAX_ACTIVE_ACCOUNTS = 25000
 
 # Required percentage of active accounts
 MIN_ACTIVE_ACCOUNTS_PERCENTAGE = 0.7  # 70%

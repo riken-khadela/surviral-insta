@@ -98,7 +98,7 @@ def GetInstaComments(PostDetails):
 
 def get_number():
     while True:
-        url = f"http://api.getsmscode.com/vndo.php?action=getmobile&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&cocode={GETSMSCODE_COUNTRY}"
+        url = f"http://api.getsmscode.com/do.php?action=getmobile&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}"
         payload={}
         headers = {}
         response = requests.request("POST", url, headers=headers, data=payload)
@@ -108,10 +108,11 @@ def get_number():
     return response.text
 
 def get_sms(phone_number):
-    url = f"http://api.getsmscode.com/vndo.php?action=getsms&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net&cocode={GETSMSCODE_COUNTRY}"
+    url = f"http://api.getsmscode.com/do.php?action=getsms&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net"
     response = requests.post(url=url)
     if response.status_code == 200:
         response_text = response.text
+        print(response_text,"response_text----------------------------")
         if 'insta' in (response_text).lower():
             if '|' in (response_text).lower():
                 match = response_text.split('|')

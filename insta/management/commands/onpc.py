@@ -119,9 +119,10 @@ class Command(BaseCommand):
                 accounts_created_bool = tb.create_account()
                 if accounts_created_bool == True:
                     accounts_created += 1
+                else :
+                    self.delete_avds(user_avd)
 
             except GetSmsCodeNotEnoughBalance as e:
-                self.delete_avds(user_avd)
                 LOGGER.debug('Not enough balance in GetSMSCode')
                 tb.kill_bot_process(True, True)
                 sys.exit(1)

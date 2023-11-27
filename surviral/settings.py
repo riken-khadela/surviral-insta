@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'insta'
+    'insta',
+    'twbot'
 ]
 
 MIDDLEWARE = [
@@ -86,6 +87,18 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+
+MONITOR_TASKS = True
+if MONITOR_TASKS:
+    MONITOR_DB = {'monitor': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'Instagram',
+        'USER': 'surviraluser',
+        'PASSWORD': 'Surviral#786',
+        'HOST': 'surviral-project.c4jxfxmbuuss.ap-southeast-1.rds.amazonaws.com',
+        'PORT': '5432'
+    }}
+    DATABASES = {**DATABASES, **MONITOR_DB}
 
 
 # Password validation
