@@ -17,7 +17,16 @@ from exceptions import CannotStartDriverException
 from appium import webdriver
 from insta.utils import log_activity
 from insta.cyberghostvpn import CyberGhostVpn
-from .utils import get_sms,get_number,ban_number, NEW_INSTA_ACC_BIO
+from .utils import get_sms,get_number,ban_number, NEW_INSTA_ACC_BIO,random_insta_bio
+from appium.webdriver.common.touch_action import TouchAction
+
+def GetInstaComments(PostDetails):
+    url = 'http://15.152.13.112:8088/get_comments/'
+    params = {'text': PostDetails}
+    headers = {'accept': 'application/json'}
+    response = requests.get(url, params=params, headers=headers)
+    CommentList = response.json()['Comments']
+    return random.choice(CommentList)
 
 timeout = 10
 class InstaBot:
@@ -32,7 +41,6 @@ class InstaBot:
             self.user_avd = UserAvd.objects.filter(name=emulator_name).first()
         # if not self.user_avd:
         #     UserAvd.objects.filter(name=emulator_name).first()
-        # breakpoint()
         self.logger = LOGGER
         #  self.kill_bot_process(appium=True, emulators=True)
         self.app_driver = None
@@ -140,7 +148,6 @@ class InstaBot:
             time.sleep(1)
             p.communicate(input=b"\n")
             p.wait()
-            # breakpoint()
             updated_config = os.path.join(settings.BASE_DIR, 'twbot/avd_config/config.ini')
             new_config_file = f"{settings.AVD_DIR_PATH}/{avd_name}.avd/config.ini"
             LOGGER.debug(f'updated_config: {updated_config}')
@@ -338,36 +345,7 @@ class InstaBot:
         if vpn.is_app_installed():
             vpn.terminate_app()
 
-        LOGGER.debug('Check if cyberghost is installed')
-        self.driver().install_app('apk/cyberghost.apk')
-            
-        LOGGER.debug('Check if instagram is installed')        
-        if not self.driver().is_app_installed("com.instagram.android"):
-            LOGGER.debug('instagram is not installed, now install it')
-            self.driver().install_app('apk/instagram.apk')
-            log_activity(
-                self.user_avd.id,
-                action_type="Installinstagram",
-                msg=f"instagram app installed successfully.",
-                error=None,
-            )
-        else:
-            LOGGER.debug('Check instagram version')
-            apk_version = self.get_apk_version('com.instagram.android')
-            random_sleep()
-            if apk_version != '273.1.0.16.72':
-                LOGGER.debug('Install instagram new version')
-                self.Install_new_insta()
-                self.driver().install_app('apk/instagram.apk')
-
-            else:
-                self.driver().terminate_app('com.instagram.android')
         
-        try:
-            command = f"adb -s emulator-{self.adb_console_port} shell rm -r /sdcard/Download/*"
-            subprocess.run(command, shell=True, check=True)
-        except Exception as e:
-            print(e)
 
     def connect_to_vpn(self, fail_tried=0, vpn_type='cyberghostvpn',
                        country='', city=""):
@@ -485,7 +463,6 @@ class InstaBot:
         
         LOGGER.debug(f'set_date: {self.birth_date}')
         self.swip_until_match(middle_day_picker_relative_xpath,self.birth_date)
-        breakpoint()
         self.click_element('Set btn','android:id/button1',By.ID)
         return self.next_btn()
     
@@ -625,7 +602,6 @@ class InstaBot:
             else:
                 LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
                 return False
-            breakpoint()
             
             for i in range(4):
                 for key,vallue in all_steps.items() :
@@ -650,7 +626,8 @@ class InstaBot:
             all_steps_bool_li = []
             for key,vallue in all_steps.items() :
                 all_steps_bool_li.append(vallue)
-
+            User_details.objects.create(avdsname=self.emulator_name,username=self.i_username,number=phone_number,password=self.password,birth_date=self.birth_date,birth_month=self.birth_month,birth_year=self.birth_year,status='ACTIVE',avd_pc = 'local-rk')
+                                # avd_pc = os.getenv('PC')
             if False in all_steps_bool_li :
                 return False
             else : return True
@@ -710,3 +687,375 @@ class InstaBot:
                     return user
                 else:
                     return False
+    def swip_display(self,scroll_height):
+        try:
+            window_size = self.driver().get_window_size()
+            width = window_size["width"]
+            height = window_size["height"]
+            x1 = width*0.7
+            y1 = height*(scroll_height/10)
+            y2 = height*0.2
+            self.driver().swipe(start_x = x1,start_y = y1,end_x = x1,end_y = y2, duration=random.randrange(1050, 1250),)
+        except Exception as e : print(e)
+
+    def swipe_left(self):
+        try:
+            window_size = self.driver().get_window_size()
+            width = window_size["width"]
+            height = window_size["height"]
+            x1 = width * 0.7
+            y1 = height * 0.5
+            x2 = width * 0.2
+            self.driver().swipe(start_x=x1, start_y=y1, end_x=x2, end_y=y1, duration=random.randrange(1050, 1250))
+        except Exception as e:
+            print(e)
+
+    def swipe_right(self):
+        try:
+            window_size = self.driver().get_window_size()
+            width = window_size["width"]
+            height = window_size["height"]
+            x1 = width * 0.2
+            y1 = height * 0.5
+            x2 = width * 0.7
+            self.driver().swipe(start_x=x1, start_y=y1, end_x=x2, end_y=y1, duration=random.randrange(1050, 1250))
+        except Exception as e:
+            print(e)
+
+    def swipe_down(self):
+        try:
+            size = self.driver().get_window_size()
+            x, y = size['width'], size['height']
+            x1, y1, y2 = x * 0.5, y * 0.4, y * 0.7  # start from the middle of the screen and swipe down to the bottom
+            t = 200
+            self.driver().swipe(x1, y1, x1, y2, t)
+        except Exception as e:
+            print(e)
+
+    def swipe_up(self):
+        try:
+            size = self.app_driver.get_window_size()
+            x, y = size['width'], size['height']
+            x1, y1, y2 = x * 0.5, y * 0.7, y * 0.4 # start from the middle of the screen and swipe up to the top
+            t = 200
+            self.app_driver.swipe(x1, y1, x1, y2, t)
+            # size = self.driver().get_window_size()
+            # x, y = size['width'], size['height']
+            # x1 = x * 0.5
+            # y1, y2 = y * 0.75, y * 0.25  # move 1/4 up from the bottom and 3/4 down from the top
+            # t = 200
+            # self.app_driver.swipe(x1, y1, x1, y2, t)
+        except Exception as e: print(e)
+
+    def tap_left(self):
+        from appium.webdriver.common.touch_action import TouchAction
+        try:
+            x = 1286
+            y = 1126
+            action = TouchAction(self.driver())
+            action.tap(x=x, y=y).perform()
+        except Exception as e:
+            print(e)
+
+    def search_user(self,Username):
+        self.click_element('Search btn','com.instagram.android:id/search_tab',By.ID)
+        self.click_element('Search input','com.instagram.android:id/action_bar_search_edit_text',By.ID)
+        if not self.find_element('Search input','com.instagram.android:id/action_bar_search_edit_text',By.ID):
+            for i in range(2):
+                self.click_element('Back','com.instagram.android:id/action_bar_button_back',By.ID,timeout=5)
+        self.input_text(Username,'Search input','com.instagram.android:id/action_bar_search_edit_text',By.ID)
+        time.sleep(3)
+        search_results = WebDriverWait(self.driver(), 10).until(EC.presence_of_all_elements_located((By.XPATH, "//*[@resource-id='com.instagram.android:id/row_search_user_username']")))
+        if search_results:
+            for i in search_results:
+                if str(i.text).lower() == str(Username).lower():
+                    i.click()
+                    break
+        elif self.click_element('see all result','//android.widget.Button[@text="See all results"]'):
+            time.sleep(2)
+            self.click_element('account','//android.widget.TabWidget[@content-desc="Accounts"]')
+            search_results = WebDriverWait(self.driver(), 10).until(EC.presence_of_all_elements_located((By.XPATH,f"//*[@resource-id='com.instagram.android:id/row_search_user_username' and @text='{Username}']")))
+            if search_results:
+                for i in search_results:
+                    if str(i.text).lower() == str(Username).lower():
+                        i.click()
+                        break
+                    
+        SearchedUsername = self.find_element('Searched Username','com.instagram.android:id/action_bar_title',By.ID)
+        # check searched user
+        if SearchedUsername:
+            if str(SearchedUsername.text).lower() == str(Username).lower():
+                return True
+        else: return False 
+        
+    def check_profile_updated(self):
+        self.is_bio_text = False
+        self.is_profile_photo = False
+        self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
+        self.click_element('Edit profile btn','//android.widget.Button[@text="Edit profile"]')
+        containers = self.find_element('dialoag','com.instagram.android:id/dialog_container',By.ID,timeout=5)
+        if containers:
+            self.click_element('Not now btn','//android.widget.Button[@text="Not now"]')
+        bio = self.find_element('bio','com.instagram.android:id/bio',By.ID)
+        if bio:
+            text = bio.find_element(By.CLASS_NAME,'android.widget.EditText')
+            if text.text:
+               self.user.bio = text.text
+               self.user.is_bio_updated = True
+               self.user.save()
+               self.is_bio_text = True
+        if self.click_element('Edit profile btn', '//android.widget.Button[@text="Change profile photo"]', timeout=3) or self.click_element('Edit profile btn', '//android.widget.Button[@text="Edit picture or avatar"]', timeout=3):
+            if self.find_element('remove profile btn', '//android.widget.Button[@text="Remove profile photo"]',timeout=3) or self.find_element('remove profile btn', '//android.view.ViewGroup[@content-desc="Remove current picture"]',timeout=3):
+                self.user.updated = True
+                self.user.save()
+                self.is_profile_photo = True
+        self.driver().back()
+        self.click_element('done','//android.widget.ImageView[@content-desc="Back"]')
+        random_sleep(2,3)
+        if self.is_bio_text and self.is_profile_photo:
+            return True
+        else:
+            return False
+    def Follow(self):
+        FollowBtn = self.find_element('Follow btn','com.instagram.android:id/profile_header_follow_button',By.ID)
+        if FollowBtn.text != 'Following': FollowBtn.click()
+
+    def check_story_permission(self):
+        self.click_element('Allow camera','com.android.packageinstaller:id/permission_message',timeout=3)
+        ...
+
+    def stories_avds_permissions(self):
+        for _ in range(3) : self.click_element('allow','com.android.packageinstaller:id/permission_allow_button',By.ID,timeout=1)
+        ...
+
+    def ActionOnPost(self,swipe_number=4,Comment = False, Share = False, Save = True):
+        self.click_element('play button','com.instagram.android:id/view_play_button',By.ID,timeout=2)
+        time.sleep(2)
+        for _ in range(7):
+            self.swip_display(swipe_number)
+            more = self.click_element('more','//android.widget.Button[@content-desc="more"]',timeout=3)
+            time.sleep(1)
+            PostDetails = self.find_element('Post Details','com.instagram.android:id/row_feed_comment_textview_layout',By.ID,timeout=3)
+            self.click_element('more','//*[@text="… more"]')
+            if PostDetails :break
+
+        self.click_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2)
+                
+        if Share:
+            if self.click_element('Share btn','//android.widget.ImageView[@content-desc="Send post"]'):
+                self.click_element('Add reel to your story','//android.widget.Button[@content-desc="Add reel to your story"]',timesleep=2)
+                while not self.driver().current_activity == 'com.instagram.modal.TransparentModalActivity':
+                    random_sleep(1,1,reason='Wait untill story opens')
+                random_sleep(2,3,reason='share to story')
+                self.stories_avds_permissions()
+                self.click_element('introducing longer stories','/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.Button',timeout=3)
+                self.click_element('Ok btn2','//android.widget.Button[@content-desc="Continue watching stories"]',By.XPATH,timeout=2)
+                self.click_element('Ok btn','com.instagram.android:id/primary_button',By.ID,timeout=2)
+                self.click_element('Share to','//android.widget.FrameLayout[@content-desc="Share to"]',timeout=2)
+                self.click_element('Share btn','com.instagram.android:id/share_story_button',By.ID,timeout=2)
+                self.click_element('share done btn','//android.widget.Button[@content-desc="Done"]')
+                random_sleep(5,10,reason='Let story uploads')
+            
+            user_sheet_drag = self.find_element('User sheet drag','com.instagram.android:id/bottom_sheet_drag_handle',By.ID,timeout=3)
+            if user_sheet_drag:
+                try:
+                    self.driver().back()
+                except:
+                    self.driver().back()
+                    # self.swipe_up()
+            elif self.click_element('cancel','//android.widget.Button[@content-desc="Discard video"]',timeout= 3):
+                try:
+                    self.driver().back()
+                except:
+                    pass
+            
+        # save post
+        if Save :
+            self.click_element('Save post btn','//android.widget.ImageView[@content-desc="Add to Saved"]',page="user's post",timeout=2)      
+        
+        post = self.find_element('posts','com.instagram.android:id/action_bar_title',By.ID,timeout=3)
+        if post:
+            try:
+                self.click_element('Back','//android.widget.ImageView[@content-desc="Back"]')
+            except:
+                self.driver().back()
+        else:
+            self.driver().back()
+            
+    def follow_rio(self,like=True):
+        self.search_user('xana_rio')
+        self.Follow()
+        if like:
+            ele = self.find_element('Grid View','//android.widget.ImageView[@content-desc="Grid view"]')
+            while not ele:
+                self.swip_display(4)
+                ele = self.find_element('Grid View','//android.widget.ImageView[@content-desc="Grid view"]')
+                if ele: 
+                    break
+            location = ele.location
+            x = location['x']
+            y = location['y']
+            try:
+                action = TouchAction(self.driver())
+                action.long_press(x=x, y=y).move_to(x=x, y=0).release().perform()
+            except Exception as e:
+                print(e)
+            for indexx in range(4):
+                parent_element = self.find_element('list','android:id/list',By.ID)
+                buttons = parent_element.find_elements_by_class_name('android.widget.Button')
+                buttons[indexx].click()
+                self.ActionOnPost(like_count_list=[250,350],Share=False,Save=False)
+        try:
+            self.click_element('Home page','com.instagram.android:id/feed_tab',By.ID)
+            for i in range(2):
+                self.click_element('Search btn','com.instagram.android:id/search_tab',By.ID)
+        except Exception as e:
+            print(e)
+    def EngagementOnUser(self):
+        self.click_element('Follow btn','com.instagram.android:id/row_right_aligned_follow_button_stub',By.ID,timeout=3)
+        ele = self.find_element('Grid View','//android.widget.ImageView[@content-desc="Grid view"]')
+        while not ele:
+            self.swip_display(4)
+            ele = self.find_element('Grid View','//android.widget.ImageView[@content-desc="Grid view"]')
+            if ele: 
+                break
+        location = ele.location
+        x = location['x']
+        y = location['y']
+        try:
+            action = TouchAction(self.driver())
+            action.long_press(x=x, y=y).move_to(x=x, y=0).release().perform()
+        except Exception as e:
+            print(e)
+        PostCount =1
+        for indexx in range(4):
+            parent_element = self.find_element('list','android:id/list',By.ID)
+            buttons = parent_element.find_elements_by_class_name('android.widget.Button')
+            try :
+                buttons[indexx].click()
+                Share = True if PostCount <= 4  else False
+                self.ActionOnPost(Share=Share)
+                time.sleep(1)
+                post = self.find_element('posts','com.instagram.android:id/action_bar_title',By.ID,timeout=2).text
+                if post == 'Posts':
+                    self.click_element('Back','//android.widget.ImageView[@content-desc="Back"]')
+                    PostCount+=1 
+            except : ...
+    def ReelsView(self,reels_watch_time=9):
+        self.swip_display(4)
+        self.click_element('Reels','//android.widget.ImageView[@content-desc="Reels"]')
+        for i in range(3):
+            self.click_element('First reel','(//android.widget.ImageView[@content-desc="Reel by xanametaverse. Double tap to play or pause."])[1]')
+            for _ in range(int(reels_watch_time)):
+                self.ChangeReels()
+            self.driver().back()
+
+    def set_profile_pic(self):
+        gender = self.get_gender()
+        if gender == 'female':
+            profile_path = "prof_img/female"
+        else:
+            profile_path =  "prof_img/male"
+        folder = os.path.join(os.getcwd(), profile_path)
+        os.makedirs(folder, exist_ok=True)
+        file_name = os.listdir(profile_path)
+        if len(file_name) == 0:
+            print('add more profile pic in directory')
+            file_name = os.listdir(profile_path)
+
+        profile_pic_path = os.path.join(os.getcwd(), f'{profile_path}/{random.choice(file_name)}')
+        run_cmd(f'adb -s emulator-{self.adb_console_port} push {profile_pic_path} /sdcard/Download')
+        new_file_name = f"{self.user.username}.jpg"
+        new_profile_pic_path = os.path.join(os.getcwd(), f'{profile_path}/{new_file_name}')
+        os.rename(profile_pic_path, new_profile_pic_path)
+        used_pic_path = os.path.join(os.getcwd(), 'prof_img/used_pic')
+        os.makedirs(used_pic_path, exist_ok=True)
+        os.replace(new_profile_pic_path, os.path.join(used_pic_path, new_file_name))
+
+    def update_profile(self):
+        self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
+        self.click_element('Edit profile btn','//android.widget.Button[@text="Edit profile"]')
+        containers = self.find_element('dialoag','com.instagram.android:id/dialog_container',By.ID)
+        if containers:
+            self.click_element('Not now btn','//android.widget.Button[@text="Not now"]')
+        bio = self.find_element('bio','com.instagram.android:id/bio',By.ID)
+        if bio:
+            text = bio.find_element(By.CLASS_NAME,'android.widget.EditText')
+            if not text.text:
+                text.click()
+                bio_text = random_insta_bio()
+                self.input_text(bio_text,'add bio','//android.widget.EditText')
+                self.click_element('Done','//android.widget.Button[@content-desc="Done"]')
+                random_sleep(4,5,reason='upload bio')
+                self.click_element('done','//android.widget.Button[@content-desc="Done"]')
+            else:
+                self.click_element('done','//android.widget.Button[@content-desc="Done"]')
+        time.sleep(3)
+        self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
+        self.click_element('Edit profile btn','//android.widget.Button[@text="Edit profile"]')
+        if False and self.click_element('Change profile photo','//android.widget.Button[@text="Change profile photo"]',timeout=5):
+            if not self.find_element('remove profile btn','//android.widget.Button[@text="Remove profile photo"]'):
+                self.set_profile_pic()
+                self.click_element('New profile photo','//android.widget.Button[@text="New profile photo"]')
+                self.click_element('gallery','//android.widget.TextView[@text="GALLERY"]')
+                self.click_element('select gallery','com.instagram.android:id/gallery_folder_menu',By.ID)
+                self.click_element('Edit profile btn','//android.widget.Button[@text="Other…"]')
+                time.sleep(3)
+                menu_btn = self.driver().find_element_by_accessibility_id('Show roots').click()
+                self.click_element('download','//android.widget.TextView[@text="Downloads"]')
+                self.click_element('choose pic','com.android.documentsui:id/icon_thumb',By.ID)
+                self.click_element('next','//android.widget.ImageView[@content-desc="Next"]')
+                time.sleep(3)
+                self.click_element('next','//android.widget.ImageView[@content-desc="Next"]')
+                random_sleep(14,15,reason='upload photo')
+                self.click_element('next','//android.widget.ImageView[@content-desc="Next"]')
+        if False and self.click_element('Edit profile btn','//android.widget.Button[@text="Edit picture or avatar"]',timeout=5):
+            if not self.find_element('remove profile btn', '//android.view.ViewGroup[@content-desc="Remove current picture"]',timeout=3):
+                self.set_profile_pic()
+                self.click_element('New profile btn','//android.view.ViewGroup[@content-desc="New profile picture"]')
+                self.click_element('gallery','//android.widget.TextView[@text="GALLERY"]')
+                self.click_element('select gallery','com.instagram.android:id/gallery_folder_menu',By.ID)
+                self.click_element('other','//android.widget.Button[@text="Other…"]')
+                time.sleep(3)
+                menu_btn = self.driver().find_element_by_accessibility_id('Show roots').click()
+                self.click_element('download','//android.widget.TextView[@text="Downloads"]')
+                self.click_element('choose pic','com.android.documentsui:id/icon_thumb',By.ID)
+                self.click_element('next','//android.widget.ImageView[@content-desc="Next"]')
+                random_sleep(14,15,reason='upload photo')
+                self.click_element('next','//android.widget.ImageView[@content-desc="Next"]')
+                random_sleep(10,12,reason='upload photo')
+            else:
+                self.driver().back()
+                self.click_element('done','//android.widget.Button[@content-desc="Done"]')
+        # self.upload_post()
+        try:
+            command = f"adb -s emulator-{self.adb_console_port} shell rm -r /sdcard/Download/*"
+            subprocess.run(command, shell=True, check=True)
+        except Exception as e: ...
+
+    def Engagement_main(self,user,Username='xanametaverse',comment=False):
+        LOGGER.debug('Check if instagram is installed')        
+        if not self.driver().is_app_installed("com.instagram.android"):
+            LOGGER.debug('instagram is not installed, now install it')
+            self.driver().install_app('apk/instagram1.apk')
+        random_sleep()
+        self.driver().activate_app('com.instagram.android')
+        self.user = User_details.objects.filter(id=user).first()
+        # is_updated = self.check_profile_updated()
+        # if not is_updated:
+            # self.update_profile()
+        # self.follow_rio()
+        # self.search_user(Username)
+        # self.Follow()
+        # self.EngagementOnUser()
+        # self.ReelsView()
+        multiple_users = ["imanijohnson132","niamwangi63","lucamoretti6445","malikrobinson726","tylerevans2913","1aaliyahbrown","4nanyashah","haileymitchell161","tianaharris554","deandrewashington652"]
+        for Username_multiple in multiple_users :
+
+            try :
+                self.search_user(Username_multiple)
+                self.Follow()
+                self.EngagementOnUser()
+            except : ...
+        if not self.user.avd_pc:
+            self.user.avd_pc = os.getenv('PC')

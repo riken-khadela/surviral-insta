@@ -97,7 +97,6 @@ class User_details(models.Model):
     birth_year = models.CharField(max_length=255,blank=True, null=True)
     updated = models.BooleanField(default=False,blank=True, null=True)
     random_action = models.IntegerField(default=0,blank=True, null=True)
-    # rio = models.BooleanField(default=False)
     engagement = models.IntegerField(default=0,blank=True, null=True)
     status = models.CharField(max_length=255,choices=STATUS,default='ACTIVE',blank=True, null=True)
     following = models.IntegerField(default=0)
@@ -111,17 +110,16 @@ class User_details(models.Model):
     is_bio_updated = models.BooleanField(default=False)
     def __str__(self):
         return self.username
+class postdetails(models.Model):
+    details = models.CharField(max_length=10000)
+    like = models.IntegerField()
+    target_comment = models.IntegerField(default=0)
+    target_like = models.IntegerField(default=0)
+    comment = models.IntegerField(default=0)
+    commented_users = models.ManyToManyField(User_details, related_name='commented_posts')
+    shared_users = models.ManyToManyField(User_details, related_name='shared_posts')
+    date = models.DateField(auto_now_add=True)
 
-# class postdetails(models.Model):
-#     details = models.CharField(max_length=10000)
-#     like = models.IntegerField()
-#     target_comment = models.IntegerField(default=0)
-#     target_like = models.IntegerField(default=0)
-#     comment = models.IntegerField(default=0)
-#     commented_users = models.ManyToManyField(User_details, related_name='commented_posts')
-#     shared_users = models.ManyToManyField(User_details, related_name='shared_posts')
-#     saved_users = models.ManyToManyField(User_details, related_name='save_posts')
-#     date = models.DateField(auto_now_add=True)
 
 
 def create_avd(sender, instance, **kwargs):
