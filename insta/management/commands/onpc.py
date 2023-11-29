@@ -3,9 +3,10 @@
 import random
 import shutil
 import sys
-import time
+import time, os
 from concurrent import futures
-
+from dotenv import load_dotenv
+load_dotenv()
 import numpy as np
 from django.core.management.base import BaseCommand
 
@@ -99,6 +100,7 @@ class Command(BaseCommand):
                     port=port,
                     proxy_type="CYBERGHOST",
                     country=country,
+                    pcname = os.getenv('PC')
                 )
                 creat_avd_bool = create_avd(avd_name)
                 if not creat_avd_bool :
