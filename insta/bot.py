@@ -904,14 +904,14 @@ class InstaBot:
                 parent_element = self.find_element('list','android:id/list',By.ID)
                 buttons = parent_element.find_elements_by_class_name('android.widget.Button')
                 buttons[indexx].click()
-                self.ActionOnPost(like_count_list=[250,350],Share=False,Save=False)
+                self.ActionOnPost(Share=False,Save=False)
         try:
             self.click_element('Home page','com.instagram.android:id/feed_tab',By.ID)
             for i in range(2):
                 self.click_element('Search btn','com.instagram.android:id/search_tab',By.ID)
         except Exception as e:
             print(e)
-    def EngagementOnUser(self):
+    def EngagementOnUser(self,share=True):
         self.click_element('Follow btn','com.instagram.android:id/row_right_aligned_follow_button_stub',By.ID,timeout=3)
         ele = self.find_element('Grid View','//android.widget.ImageView[@content-desc="Grid view"]')
         while not ele:
@@ -933,14 +933,19 @@ class InstaBot:
             buttons = parent_element.find_elements_by_class_name('android.widget.Button')
             try :
                 buttons[indexx].click()
-                Share = True if PostCount <= 4  else False
-                self.ActionOnPost(Share=Share)
+                # Share = True if PostCount <= 4  else False
+                self.ActionOnPost(Share=share)
                 time.sleep(1)
                 post = self.find_element('posts','com.instagram.android:id/action_bar_title',By.ID,timeout=2).text
                 if post == 'Posts':
                     self.click_element('Back','//android.widget.ImageView[@content-desc="Back"]')
                     PostCount+=1 
             except : ...
+
+    def ChangeReels(self): 
+        random_sleep(8,10) 
+        self.swip_display(9)
+
     def ReelsView(self,reels_watch_time=9):
         self.swip_display(4)
         self.click_element('Reels','//android.widget.ImageView[@content-desc="Reels"]')
@@ -1041,21 +1046,21 @@ class InstaBot:
         random_sleep()
         self.driver().activate_app('com.instagram.android')
         self.user = User_details.objects.filter(id=user).first()
+        breakpoint()
         # is_updated = self.check_profile_updated()
         # if not is_updated:
-            # self.update_profile()
-        # self.follow_rio()
-        # self.search_user(Username)
-        # self.Follow()
-        # self.EngagementOnUser()
-        # self.ReelsView()
-        multiple_users = ["imanijohnson132","niamwangi63","lucamoretti6445","malikrobinson726","tylerevans2913","1aaliyahbrown","4nanyashah","haileymitchell161","tianaharris554","deandrewashington652"]
+        #     self.update_profile()
+        self.follow_rio()
+        self.search_user(Username)
+        self.Follow()
+        self.EngagementOnUser()
+        self.ReelsView()
+        multiple_users = ["imanijohnson132","niamwangi63","lucamoretti6445","malikrobinson726","tylerevans2913","1aaliyahbrown","4nanyashah","haileymitchell161","tianaharris554","deandrewashington652","minjipark11","haraoutp","rayaanhakim"]
         for Username_multiple in multiple_users :
-
             try :
                 self.search_user(Username_multiple)
                 self.Follow()
-                self.EngagementOnUser()
+                self.EngagementOnUser(share=False)
             except : ...
         if not self.user.avd_pc:
             self.user.avd_pc = os.getenv('PC')
