@@ -399,11 +399,22 @@ class InstaBot:
             self.logger.info(f'Got an error in Go back to the number : {e}')
 
     def phone_number_proccess(self):
+        allow_contacts = self.find_element('allow contacts','com.android.permissioncontroller:id/permission_message',By.ID,timeout=4)
+        if allow_contacts :
+            if allow_contacts.text == "Allow Instagram to access your contacts?":
+                self.click_element('Allow contacts','com.android.permissioncontroller:id/permission_allow_button',By.ID)
 
+        mobile_number_ele = self.find_element('mobile number input','//android.view.View[@content-desc="Mobile number"]',timeout=5)
+        if mobile_number_ele :
+            if mobile_number_ele.text != 'Mobile number':
+                return False
+            
+        else:return False
+            
         phone_number = get_number()
         phone_number_digit = str(phone_number).isdigit()
         if phone_number_digit:
-            for i in range(2):
+            for i in range(4):
 
                 print(phone_number)
                 self.input_text(phone_number,'phone number input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[1]/android.widget.EditText')
@@ -413,7 +424,7 @@ class InstaBot:
                     something_wrong_error = self.find_element('something went wrong','//android.view.View[@content-desc="Something went wrong. Please try again later."]')
                     if something_wrong_error:
                         return False
-
+                
                 time.sleep(5)
                 otp = get_sms(phone_number)
                 count = 0
@@ -474,9 +485,9 @@ class InstaBot:
         
         LOGGER.debug(f'set_date: {self.birth_date}')
         self.swip_until_match(middle_day_picker_relative_xpath,self.birth_date)
-        
+        breakpoint()
         self.click_element('Set btn','android:id/button1',By.ID)
-        self.next_btn()
+        return self.next_btn()
     
     def profile_img_download(self):
         '''
@@ -524,18 +535,85 @@ class InstaBot:
         check = self.click_element('tick btn','//android.widget.Button[@content-desc="Done"]/android.widget.ImageView')
         if check:
             return True
-        
+    
+    def add_name_in_new_user(self):
+        try:
+            print(self.full_name)
+            self.input_text(self.full_name,'first name input','//*[@class="android.widget.EditText"]')
+            self.next_btn()
+            print(self.password)
+            time.sleep(5)
+            self.input_text(self.password,'password input','//*[@class="android.widget.EditText"]')
+            self.next_btn()
+            return self.click_element('save info','//android.widget.Button[@content-desc="Save"]')
+        except Exception as e:
+            print(e)
+            return False
+    
+    def create_set_username(self):
+        create_username_title = self.find_element('username title','//android.view.View[@content-desc="Create a username"]')
+        if create_username_title :
+            if create_username_title.text == "Create a username" :
+                username_input = self.find_element('username input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
+                if username_input.text :
+                    self.user_username = username_input.text
+                    self.next_btn()
+                    return self.user_username
+                else :
+                    self.user_username = str(self.full_name)+str(random.randint(10000,99999))
+                    self.input_text(self.user_username,'username input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
+                    username_input = self.find_element('username input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
+                    if username_input.text :
+                        self.user_username = username_input.text
+                        self.next_btn()
+                        return self.user_username
+
+        ...
+    def agree_btn(self) :
+        self.click_element('Agree policy','//android.widget.Button[@content-desc="I agree"]/android.view.ViewGroup',timeout=2)
+        self.click_element('Agree policy','//android.widget.Button[@content-desc="I agree"]/android.view.ViewGroup',timeout=2)
+    
+    def other_stuff_create_account(self):
+        proc_pic_title = self.find_element('Add a profile pic title','//android.view.View[@content-desc="Add a profile picture"]',timeout=4)
+        if proc_pic_title:
+            if proc_pic_title.text == "Add a profile picture":
+                self.click_element('Skip btn for profile pic','//android.widget.Button[@content-desc="Skip"]/android.view.ViewGroup')
+
+        follow_fb_fri = self.find_element('Follow fb friends title','com.instagram.android:id/igds_headline_headline',By.ID,timeout=4)
+        if follow_fb_fri :
+            if follow_fb_fri.text == "Find Facebook friends to follow":
+                a2 = self.click_element('Skip btn for profile pic','com.instagram.android:id/skip_button',By.ID)
+
+        Follow_friends = self.find_element('Find friends','com.instagram.android:id/primary_button',By.ID,timeout=4)
+        if Follow_friends : 
+            if Follow_friends.text == "Follow friends":
+                self.click_element('skip button','com.instagram.android:id/negative_button',By.ID)
+
+        Invite_friends_to_follow = self.find_element('Invite_friends_to_follow','com.instagram.android:id/igds_headline_headline',By.ID,timeout=4)
+        if Invite_friends_to_follow :
+            if Invite_friends_to_follow.text == "Invite friends to follow you":
+                self.click_element("skip button","com.instagram.android:id/skip_button",By.ID)
+
+        discover_ppl = self.find_element('Discover people','com.instagram.android:id/action_bar_large_title',By.ID,timeout=4)
+        if discover_ppl : 
+            if discover_ppl.text == "Discover people":
+                self.click_element("Next arrow",'//android.widget.Button[@content-desc="Next"]/android.widget.ImageView')
+
+
+
     def create_account(self):
-            number_bool = False
-            allow_contacts_bool = False
-            name_bool = False
-            birthdate_bool = False
-            breakpoint()
+            all_steps = {
+                "number_bool" : False,
+                "name_bool" : False,
+                "birthdate_bool" : False,
+                "username": False
+
+            }
+
         # try:
             LOGGER.debug('Check if instagram is installed')        
             if not self.driver().is_app_installed("com.instagram.android"):
                 LOGGER.debug('instagram is not installed, now install it')
-                self.driver().install_app('/home/dell/Music/insta2.apk')
                 self.driver().install_app('apk/instagram1.apk')
             random_sleep()
             self.driver().activate_app('com.instagram.android')
@@ -547,35 +625,40 @@ class InstaBot:
             else:
                 LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
                 return False
+            breakpoint()
             
-            self.set_birth_date()
+            for i in range(4):
+                for key,vallue in all_steps.items() :
+                    if key == 'birthdate_bool' :
+                        if self.set_birth_date() :
+                            all_steps[key] = True
+                    if key == 'number_bool' :
+                        phone_number = self.phone_number_proccess()
+                        if phone_number:
+                            all_steps[key] = True
+                    if key == 'username' :
+                        if self.create_set_username() :
+                            all_steps[key] = True
+                    if key == 'name_bool' :
+                        if self.add_name_in_new_user() :
+                            all_steps[key] = True
+                    if key == 'username' :
+                        if self.add_name_in_new_user() :
+                            all_steps[key] = True
+                self.agree_btn()
+            self.other_stuff_create_account()
+            all_steps_bool_li = []
+            for key,vallue in all_steps.items() :
+                all_steps_bool_li.append(vallue)
 
-            allow_contacts = self.find_element('allow contacts','com.android.permissioncontroller:id/permission_message',By.ID,timeout=4)
-            if allow_contacts :
-                if allow_contacts.text == "Allow Instagram to access your contacts?":
-                    self.click_element('Allow contacts','com.android.permissioncontroller:id/permission_allow_button',By.ID)
+            if False in all_steps_bool_li :
+                return False
+            else : return True
+
+
+
+
             
-            mobile_number_ele = self.find_element('mobile number input','//android.view.View[@content-desc="Mobile number"]',timeout=5)
-            if mobile_number_ele :
-                if mobile_number_ele.text == 'Mobile number':
-
-                    phone_number = self.phone_number_proccess()
-                    if not phone_number:
-                        return False
-
-
-
-            try:
-                print(self.full_name)
-                self.input_text(self.full_name,'first name input','//*[@class="android.widget.EditText"]')
-                self.next_btn()
-                print(self.password)
-                time.sleep(5)
-                self.input_text(self.password,'password input','//*[@class="android.widget.EditText"]')
-                self.next_btn()
-                self.click_element('save info','//android.widget.Button[@content-desc="Save"]')
-            except Exception as e:
-                print(e)
 
             self.set_birth_date()
             self.next_btn()

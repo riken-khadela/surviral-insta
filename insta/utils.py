@@ -127,7 +127,7 @@ def get_sms(phone_number):
 
 
 def ban_number(phone_number):
-    url = f"http://api.getsmscode.com/vndo.php?action=addblack&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net&cocode={GETSMSCODE_COUNTRY}"
+    url = f"http://api.getsmscode.com/do.php?action=addblack&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net"
     response = requests.post(url=url)
     print(response.text)
     return response
