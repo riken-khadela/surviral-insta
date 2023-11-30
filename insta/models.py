@@ -88,6 +88,11 @@ class User_details(models.Model):
         ("LOGIN_ISSUE","LOGIN_ISSUE"),
         ("SUSPENSION","SUSPENSION")
     )
+    GENDER = (
+        ("MALE", "MALE"),
+        ("FEMALE","FEMALE"),
+        ("NONE","NONE")
+    )
     avdsname = models.CharField(max_length=255)
     username = models.CharField(max_length=255,blank=True, null=True)
     number = models.BigIntegerField(null=False)
@@ -99,6 +104,7 @@ class User_details(models.Model):
     random_action = models.IntegerField(default=0,blank=True, null=True)
     engagement = models.IntegerField(default=0,blank=True, null=True)
     status = models.CharField(max_length=255,choices=STATUS,default='ACTIVE',blank=True, null=True)
+    gender = models.CharField(max_length=255,choices=GENDER,default='NONE',blank=True, null=True)
     following = models.IntegerField(default=0)
     followers = models.IntegerField(default=0)
     can_search = models.BooleanField(default=True)

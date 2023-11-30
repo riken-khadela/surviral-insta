@@ -52,7 +52,7 @@ class Command(BaseCommand):
 
     def delete_avds(self,user_avd):
         user_avd.delete()
-        delete_avd(user_avd.avdsname)
+        delete_avd(user_avd.name)
 
     def run_tasks(self, required_accounts):
         """

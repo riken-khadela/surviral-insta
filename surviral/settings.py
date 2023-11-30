@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'insta',
-    'twbot'
 ]
 
 MIDDLEWARE = [
@@ -85,6 +84,7 @@ DATABASES = {
         'PASSWORD': 'Surviral#786',
         'HOST': 'surviral-project.c4jxfxmbuuss.ap-southeast-1.rds.amazonaws.com',
         'PORT': '5432',
+        'CONN_MAX_AGE': 60000
     }
 }
 

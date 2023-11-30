@@ -16,4 +16,5 @@ class Command(BaseCommand):
                                port = row['port'],
                                proxy_type = row['proxy_type'],
                                country = "Hong Kong",
+                               timezone = ""
                                )
