@@ -13,11 +13,7 @@ LOG_LEVEL = logging.DEBUG
 LOG_IN_ONE_FILE = True
 
 # AVD
-AVD_DEVICES = ["Nexus 10", "Nexus 4", "Nexus 5", "Nexus 5X", "Nexus 6",
-               "Nexus 6P", "Nexus 7 2013", "Nexus 7", "Nexus 9",
-               "pixel", "pixel_2", "pixel_2_xl", "pixel_3", "pixel_3_xl",
-               "pixel_3a", "pixel_3a_xl", "pixel_4", "pixel_4_xl", "pixel_4a",
-               "pixel_5", "pixel_xl", "pixel_c"]
+AVD_DEVICES = ["Nexus 5"]
 
 AVD_PACKAGES = [
                 "system-images;android-28;default;x86_64",
