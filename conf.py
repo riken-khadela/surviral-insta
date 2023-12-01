@@ -19,7 +19,7 @@ AVD_DEVICES = ["Nexus 10", "Nexus 4", "Nexus 5", "Nexus 5X", "Nexus 6",
                "pixel_3a", "pixel_3a_xl", "pixel_4", "pixel_4_xl", "pixel_4a",
                "pixel_5", "pixel_xl", "pixel_c"]
 
-AVD_PACKAGES = ["system-images;android-28;default;x86",
+AVD_PACKAGES = [
                 "system-images;android-28;default;x86_64",
                 "system-images;android-29;default;x86",
                 "system-images;android-29;default;x86_64",

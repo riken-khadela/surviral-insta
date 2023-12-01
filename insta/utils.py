@@ -68,7 +68,7 @@ def add_profile_img():
 
 
 def create_avd(avd_name, package=None, device=None):
-        default_package = "system-images;android-28;default;x86"
+        default_package = "system-images;android-28;default;x86_64"
         package = random.choice(AVD_PACKAGES)
         device = random.choice(AVD_DEVICES)
         try:
