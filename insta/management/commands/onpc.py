@@ -114,7 +114,8 @@ class Command(BaseCommand):
                 # Connect vpn
                 if not self.no_vpn:
                     if not tb.connect_to_vpn(country=country):
-                        raise Exception("Couldn't able to connect Nord VPN")
+                        tb.check_apk_installation()
+                        # raise Exception("Couldn't able to connect Nord VPN")
                 else:
                     tb.check_apk_installation()
 
