@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import numpy as np
 from django.core.management.base import BaseCommand
+from django.db import connection
 
 import parallel
 from conf import US_TIMEZONE, PARALLEL_NUMER, MIN_HARD_DISK_FREE_SPACE, MAX_ACTIVE_ACCOUNTS
@@ -51,6 +52,8 @@ class Command(BaseCommand):
         )
 
     def delete_avds(self,user_avd):
+
+        connection.connect()
         user_avd.delete()
         delete_avd(user_avd.name)
 

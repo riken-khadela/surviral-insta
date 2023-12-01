@@ -16,9 +16,7 @@ LOG_IN_ONE_FILE = True
 AVD_DEVICES = ["pixel_4"]
 
 AVD_PACKAGES = [
-                "system-images;android-28;default;x86_64",
                 "system-images;android-29;default;x86",
-                "system-images;android-29;default;x86_64",
                 ]
 
 US_TIMEZONE = ['US/Alaska', 'US/Aleutian', 'US/Arizona', 'US/Central',

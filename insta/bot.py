@@ -379,11 +379,7 @@ class InstaBot:
             self.logger.info(f'Got an error in Go back to the number : {e}')
 
     def phone_number_proccess(self):
-        allow_contacts = self.find_element('allow contacts','com.android.permissioncontroller:id/permission_message',By.ID,timeout=4)
-        if allow_contacts :
-            if allow_contacts.text == "Allow Instagram to access your contacts?":
-                self.click_element('Allow contacts','com.android.permissioncontroller:id/permission_allow_button',By.ID)
-
+        
         mobile_number_ele = self.find_element('mobile number input','//android.view.View[@content-desc="Mobile number"]',timeout=5)
         if mobile_number_ele :
             if mobile_number_ele.text != 'Mobile number':
@@ -402,6 +398,10 @@ class InstaBot:
                 self.click_element('next btn','//android.widget.Button[@content-desc="Next"]')
 
                 trying_to_error = self.find_element('trying to find element','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[1]/android.view.ViewGroup[2]/android.widget.ImageView',timeout=2)
+                if trying_to_error :
+                    ban_number(phone_number)
+                    return "delete_avd"
+                trying_to_error = self.find_element('trying to find element','//android.view.View[@content-desc="Please wait a few minutes before you try again."]',timeout=2)
                 if trying_to_error :
                     ban_number(phone_number)
                     return "delete_avd"
@@ -425,16 +425,16 @@ class InstaBot:
                         ban_number(phone_number)
                         self.back_until_number(2)
                         LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
+                        break
                     
                 if otp:
                     print(otp)
                     self.input_text(str(otp),'input otp','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
                     next_btn = self.driver().find_element(By.XPATH,'//android.widget.Button[@content-desc="Next"]')
                     next_btn.click()
-                    break
-            return phone_number
+                    return phone_number
     def next_btn(self):    
-        self.find_element('Next btn','//android.widget.Button[@content-desc="Next"]')
+        self.click_element('Next btn','//android.widget.Button[@content-desc="Next"]')
 
     def swip_until_match(self,comperison_xpath,comperison_text):
         rect_ele = self.driver().find_element_by_xpath(comperison_xpath).rect
@@ -667,8 +667,12 @@ class InstaBot:
                 if self.set_birth_date():
                     process_acc_creation.remove("set_birth_date")
             if "phone_number_proccess" in process_acc_creation :
-                if self.phone_number_proccess():
+                numberr = self.phone_number_proccess()
+                if numberr:
+                    if numberr == "delete_avd" :
+                        return False
                     process_acc_creation.remove("phone_number_proccess")
+                
             if "create_set_username" in process_acc_creation :
                 if self.create_set_username():
                     process_acc_creation.remove("create_set_username")
