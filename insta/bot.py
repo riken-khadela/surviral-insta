@@ -434,7 +434,7 @@ class InstaBot:
                     break
             return phone_number
     def next_btn(self):    
-        next_btn = self.driver().find_element(By.XPATH,'//android.widget.Button[@content-desc="Next"]').click()
+        self.find_element('Next btn','//android.widget.Button[@content-desc="Next"]')
 
     def swip_until_match(self,comperison_xpath,comperison_text):
         rect_ele = self.driver().find_element_by_xpath(comperison_xpath).rect
@@ -491,7 +491,7 @@ class InstaBot:
 
     def add_profile_pic(self):
         self.click_element('profile button','//android.widget.FrameLayout[@content-desc="Profile"]/android.view.ViewGroup')
-        self.click_element('Edit profile','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout[1]/android.widget.FrameLayout[1]/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.Button[1]/android.widget.FrameLayout/android.widget.Button')
+        self.click_element('Edit profile','(//android.widget.FrameLayout[@resource-id="com.instagram.android:id/button_container"])[1]')
         self.click_element('Create avatar cancle','com.instagram.android:id/negative_button',By.ID)
         self.click_element('Change avatar button','com.instagram.android:id/change_avatar_button',By.ID)
         self.click_element('click on add_rofile','//android.view.ViewGroup[@content-desc="New profile picture"]')
@@ -633,79 +633,75 @@ class InstaBot:
 
     def create_account(self):
              
+        LOGGER.debug('Check if instagram is installed')        
+        if not self.driver().is_app_installed("com.instagram.android"):
+            LOGGER.debug('instagram is not installed, now install it')
+            self.Install_new_insta()
+        random_sleep()
+        self.driver().activate_app('com.instagram.android')
+        
+        create_btn = self.find_element('create account btn','//android.widget.Button[@content-desc="Create new account"]',timeout=30)
 
-        # try:
-            LOGGER.debug('Check if instagram is installed')        
-            if not self.driver().is_app_installed("com.instagram.android"):
-                LOGGER.debug('instagram is not installed, now install it')
+        if create_btn:
+            self.click_element('create account btn','//android.widget.Button[@content-desc="Create new account"]')
+        else:
+            LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
+            return False
+        
+        process_acc_creation = ['enter_password'
+                                ,"save_info"
+                                ,"set_birth_date"
+                                ,"phone_number_proccess"
+                                ,"create_set_username"
+                                ,"add_name_in_new_user"
+                                    ]
+        for i in range(9):
+            breakpoint()
+            if "enter_password" in process_acc_creation :
+                if self.enter_password() :
+                    process_acc_creation.remove("enter_password")
+            if "save_info" in process_acc_creation :
+                if self.save_info():
+                    process_acc_creation.remove("save_info")
+            if "set_birth_date" in process_acc_creation :
+                if self.set_birth_date():
+                    process_acc_creation.remove("set_birth_date")
+            if "phone_number_proccess" in process_acc_creation :
+                if self.phone_number_proccess():
+                    process_acc_creation.remove("phone_number_proccess")
+            if "create_set_username" in process_acc_creation :
+                if self.create_set_username():
+                    process_acc_creation.remove("create_set_username")
+            if "add_name_in_new_user" in process_acc_creation :
+                if self.add_name_in_new_user():
+                    process_acc_creation.remove("add_name_in_new_user")
                 
-                self.Install_new_insta()
-                # self.driver().install_app('apk/instagram1.apk')
-            random_sleep()
-            self.driver().activate_app('com.instagram.android')
-            
-            create_btn = self.find_element('create account btn','//android.widget.Button[@content-desc="Create new account"]',timeout=30)
 
-            if create_btn:
-                self.click_element('create account btn','//android.widget.Button[@content-desc="Create new account"]')
-            else:
-                LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
-                return False
-            
-            process_acc_creation = ['enter_password'
-                                    ,"save_info"
-                                    ,"set_birth_date"
-                                    ,"phone_number_proccess"
-                                    ,"create_set_username"
-                                    ,"add_name_in_new_user"
-                                        ]
-            for i in range(9):
-                if "enter_password" in process_acc_creation :
-                    if self.enter_password() :
-                        process_acc_creation.remove("enter_password")
-                if "save_info" in process_acc_creation :
-                    if self.save_info():
-                        process_acc_creation.remove("save_info")
-                if "set_birth_date" in process_acc_creation :
-                    if self.set_birth_date():
-                        process_acc_creation.remove("set_birth_date")
-                if "phone_number_proccess" in process_acc_creation :
-                    if self.phone_number_proccess():
-                        process_acc_creation.remove("phone_number_proccess")
-                if "create_set_username" in process_acc_creation :
-                    if self.create_set_username():
-                        process_acc_creation.remove("create_set_username")
-                if "add_name_in_new_user" in process_acc_creation :
-                    if self.add_name_in_new_user():
-                        process_acc_creation.remove("add_name_in_new_user")
-                 
-
-                if self.agree_btn() : break
-            else :return False
-            
-            self.other_stuff_create_account()
-            random_sleep(10,15)
-            add_profile = self.click_element('profile button','//android.widget.FrameLayout[@content-desc="Profile"]/android.view.ViewGroup',timeout=15)
+            if self.agree_btn() : break
+        else :return False
+        
+        self.other_stuff_create_account()
+        random_sleep(10,15)
+        add_profile = self.click_element('profile button','//android.widget.FrameLayout[@content-desc="Profile"]/android.view.ViewGroup',timeout=15)
+        connection.connect()
+        if add_profile:
+            self.user_gender = random.choice(['MALE','FEMALE'])
+            self.user = User_details.objects.create(avdsname=self.emulator_name,username=self.user_username,number=self.phone_number,password=self.password,birth_date=self.birth_date,birth_month=self.birth_month,birth_year=self.birth_year,status='ACTIVE',avd_pc = 'local-rk',gender=self.user_gender)
+            self.add_profile_pic()
+            check_add_bio = self.add_bio()
+            time.sleep(5)
+            self.upload_post()
+            time.sleep(5)
+            try:
+                self.user.bio = self.bio
+                self.user.is_bio_updated=check_add_bio
+            except AttributeError  as a:print(a)
+            except Exception as ee:print(ee)
+            self.user.updated=True
             connection.connect()
-            if add_profile:
-                self.user_gender = random.choice(['MALE','FEMALE'])
-                self.user = User_details.objects.create(avdsname=self.emulator_name,username=self.user_username,number=self.phone_number,password=self.password,birth_date=self.birth_date,birth_month=self.birth_month,birth_year=self.birth_year,status='ACTIVE',avd_pc = 'local-rk',gender=self.user_gender)
-                self.add_profile_pic()
-                check_add_bio = self.add_bio()
-                time.sleep(5)
-                self.upload_post()
-                time.sleep(5)
-                try:
-                    self.user.bio = self.bio
-                    self.user.is_bio_updated=check_add_bio
-                except AttributeError  as a:print(a)
-                except Exception as ee:print(ee)
-                self.user.updated=True
-                connection.connect()
-                self.user.save()
-                return self.user
-            else:
-                return False
+            self.user.save()
+            return self.user
+        return False
     def swip_display(self,scroll_height):
         try:
             window_size = self.driver().get_window_size()
@@ -962,7 +958,7 @@ class InstaBot:
             except : ...
 
     def ChangeReels(self): 
-        random_sleep(8,10) 
+        random_sleep(7,10) 
         self.swip_display(9)
 
     def ReelsView(self,reels_watch_time=9):

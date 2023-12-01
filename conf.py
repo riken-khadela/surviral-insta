@@ -13,7 +13,7 @@ LOG_LEVEL = logging.DEBUG
 LOG_IN_ONE_FILE = True
 
 # AVD
-AVD_DEVICES = ["Nexus 5"]
+AVD_DEVICES = ["pixel_4"]
 
 AVD_PACKAGES = [
                 "system-images;android-28;default;x86_64",
