@@ -70,8 +70,9 @@ class Command(BaseCommand):
                             raise Exception("Couldn't able to connect Nord VPN")
                     else:
                         tb.check_apk_installation()
-
-                # tb.Engagement_main(user.id)
+                    
+                    tb.Engagement_main(user.id)
+                    self.clean_bot(tb, False)
 
                 except GetSmsCodeNotEnoughBalance as e:
                     LOGGER.debug('Not enough balance in GetSMSCode')
@@ -140,7 +141,7 @@ class Command(BaseCommand):
         """
         LOGGER.debug('Quit app driver and kill bot processes')
         try :
-            tb.app_driver.quit()
+            # tb.app_driver.quit()
             tb.kill_bot_process(appium=False, emulators=True)
             if is_sleep:
                 random_sleep(60, 80)

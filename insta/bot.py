@@ -490,6 +490,7 @@ class InstaBot:
             self.logger.error(f"The file '{profile_pic_path}' does not exist.")
 
     def add_profile_pic(self):
+        breakpoint()
         self.click_element('profile button','//android.widget.FrameLayout[@content-desc="Profile"]/android.view.ViewGroup')
         self.click_element('Edit profile','(//android.widget.FrameLayout[@resource-id="com.instagram.android:id/button_container"])[1]')
         self.click_element('Create avatar cancle','com.instagram.android:id/negative_button',By.ID)
