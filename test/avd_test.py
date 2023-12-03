@@ -296,7 +296,7 @@ class bot():
         self.click_element('Other ...','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.widget.Button[2]')
         self.profile_img_download()
         self.click_element('Show roots','//android.widget.ImageButton[@content-desc="Show roots"]',timeout=15)
-        self.click_element('download','/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.support.v4.widget.DrawerLayout/android.widget.LinearLayout[2]/android.widget.FrameLayout/android.widget.ListView/android.widget.LinearLayout[2]/android.widget.LinearLayout')
+        self.click_element('download','//android.widget.TextView[@resource-id="android:id/title" and @text="Downloads"]')
         self.click_element('choose pic','com.android.documentsui:id/icon_thumb',By.ID)
         self.click_element('next btn','com.instagram.android:id/save',By.ID,timeout=30)
         self.click_element('next_button_imageview','com.instagram.android:id/next_button_imageview',By.ID)

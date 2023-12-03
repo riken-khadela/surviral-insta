@@ -71,7 +71,7 @@ class Command(BaseCommand):
                     else:
                         tb.check_apk_installation()
 
-                    tb.Engagement_main(user.id)
+                # tb.Engagement_main(user.id)
 
                 except GetSmsCodeNotEnoughBalance as e:
                     LOGGER.debug('Not enough balance in GetSMSCode')
@@ -139,7 +139,9 @@ class Command(BaseCommand):
 
         """
         LOGGER.debug('Quit app driver and kill bot processes')
-        #  tb.app_driver.quit()
-        tb.kill_bot_process(appium=False, emulators=True)
-        if is_sleep:
-            random_sleep(60, 80)
+        try :
+            tb.app_driver.quit()
+            tb.kill_bot_process(appium=False, emulators=True)
+            if is_sleep:
+                random_sleep(60, 80)
+        except : ...

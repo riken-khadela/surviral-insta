@@ -65,7 +65,8 @@ class Command(BaseCommand):
         """
         count = 0
         accounts_created = 0
-        while accounts_created < required_accounts:
+        while True:
+            
             # Check PC Restart request
             total, used, free = shutil.disk_usage(self.disk_path)
             free_in_gb = free // (2 ** 30)
@@ -103,7 +104,8 @@ class Command(BaseCommand):
                     port=port,
                     proxy_type="CYBERGHOST",
                     country=country,
-                    pcname = os.getenv('PC')
+                    pcname = os.getenv('PC'),
+                    timezone=random.choice(US_TIMEZONE)
                 )
                 creat_avd_bool = create_avd(avd_name)
                 if not creat_avd_bool :
@@ -123,7 +125,8 @@ class Command(BaseCommand):
                     tb.check_apk_installation()
 
                 accounts_created_bool = tb.create_account()
-                if accounts_created_bool == True:
+                self.clean_bot(tb, False)
+                if accounts_created_bool :
                     accounts_created += 1
                 else :
                     self.delete_avds(user_avd)
@@ -189,3 +192,20 @@ class Command(BaseCommand):
             for i in range(self.parallel_number):
                 executor.submit(self.run_tasks, requied_account_list[i])
         print(f" All created UserAvd and TwitterAccount ****\n")
+
+    @staticmethod
+    def clean_bot(tb, is_sleep=True):
+        """
+
+        :param tb: 
+        :param is_sleep:  (Default value = True)
+
+        """
+        try :
+            LOGGER.debug('Quit app driver and kill bot processes')
+            #  tb.app_driver.quit()
+            tb.kill_bot_process()
+            if is_sleep:
+                random_sleep(10, 15,reason='let system freash')
+        except Exception as e: 
+            LOGGER.error(e)
