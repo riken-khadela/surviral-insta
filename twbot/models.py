@@ -10,6 +10,9 @@ class TimeStampModel(models.Model):
     class Meta:
         abstract = True
 
+
+
+
 class User_details(models.Model):
     STATUS = (
         ("ACTIVE", "ACTIVE"),
