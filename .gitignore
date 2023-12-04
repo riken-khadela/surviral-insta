@@ -1,7 +1,6 @@
 #Extra
 etc
-profile_pic/male/*
-profile_pic/female/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
