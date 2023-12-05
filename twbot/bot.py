@@ -2113,7 +2113,7 @@ class InstaBot:
                 parent_element = self.find_element('list','android:id/list',By.ID)
                 buttons = parent_element.find_elements_by_class_name('android.widget.Button')
                 buttons[indexx].click()
-                self.ActionOnPost(like_count_list=[290,320],Share=False)
+                self.ActionOnPost(Share=False)
         try:
             self.click_element('Home page','com.instagram.android:id/feed_tab',By.ID)
             for i in range(2):
