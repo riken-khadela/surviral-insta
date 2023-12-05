@@ -13,10 +13,13 @@ LOG_LEVEL = logging.DEBUG
 LOG_IN_ONE_FILE = True
 
 # AVD
-AVD_DEVICES = ["pixel_4"]
+AVD_DEVICES = ["Nexus 6"]
 
-AVD_PACKAGES = [
+AVD_PACKAGES = ["system-images;android-28;default;x86",
+                "system-images;android-28;default;x86_64",
                 "system-images;android-29;default;x86",
+                "system-images;android-29;default;x86_64",
+                "system-images;android-30;default;x86_64",
                 ]
 
 US_TIMEZONE = ['US/Alaska', 'US/Aleutian', 'US/Arizona', 'US/Central',
@@ -90,7 +93,7 @@ PACKAGES_DIR_NAME = 'apk'
 PACKAGES_DIR = PRJ_PATH / PACKAGES_DIR_NAME
 PACKAGES_DIR.mkdir(parents=True, exist_ok=True)  # create it if it doesn't exist
 # cyberghostvpn
-CYBERGHOSTVPN_APK = PACKAGES_DIR / 'cyberghost.apk'
+CYBERGHOSTVPN_APK = PACKAGES_DIR / 'cyberghostvpn_8.6.4.396.apk'
 CYBERGHOSTVPN_SERVERS = {
     'Albania': [],
     'Algeria': [],
@@ -218,9 +221,8 @@ PARALLEL_NUMER = 1
 WEB_HOOK_URL = "https://hooks.slack.com/services/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"
 
 # MAX ACTIVE ACCOUNTS
-MAX_ACTIVE_ACCOUNTS = 25000
+MAX_ACTIVE_ACCOUNTS = 250
 
 # Required percentage of active accounts
 MIN_ACTIVE_ACCOUNTS_PERCENTAGE = 0.7  # 70%
 MAX_ACCOUNTS_CREATION_PER_DAY = 20
-MIN_HARD_DISK_FREE_SPACE = 10

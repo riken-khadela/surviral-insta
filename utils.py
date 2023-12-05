@@ -25,12 +25,9 @@ LOGGER = Log(log_name=_log_name, log_level=LOG_LEVEL,
              log_file=_log_file).logger
 
 
-def random_sleep(min_sleep_time=1, max_sleep_time=5,reason=""):
+def random_sleep(min_sleep_time=1, max_sleep_time=5):
     sleep_time = random.randint(min_sleep_time, max_sleep_time)
-    if reason :
-        LOGGER.debug(f'Random sleep: {sleep_time} for {reason}')
-    else :
-        LOGGER.debug(f'Random sleep: {sleep_time}')
+    LOGGER.debug(f'Random sleep: {sleep_time}')
     time.sleep(sleep_time)
 
 

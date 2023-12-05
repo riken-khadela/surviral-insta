@@ -5,7 +5,6 @@ import subprocess
 import sys
 import time
 
-
 from appium.webdriver.appium_service import AppiumService
 
 from conf import ADB_SERVER_HOST, ADB_SERVER_PORT, ADB_CONSOLE_PORTS
