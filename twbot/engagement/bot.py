@@ -36,7 +36,7 @@ class InstaBot:
         self.kill_bot_process(appium=True, emulators=True)
         self.app_driver = None
         self.emulator_port = None
-        self.service = self.start_appium(port=4723) if start_appium else None
+        self.service = self.start_appium(port=4724) if start_appium else None
         self.adb = AdbClient() if start_adb else None
         self.device = None
         self.phone = (
@@ -180,7 +180,7 @@ class InstaBot:
             }
 
             self.app_driver = webdriver.Remote(
-                "http://localhost:4723/wd/hub",
+                "http://localhost:4724/wd/hub",
                 desired_capabilities=opts,
                 keep_alive=True,
             )
@@ -2019,7 +2019,7 @@ class InstaBot:
             #     )
             #     kill_process.wait()
             # 
-            #     kill_cmd = "fuser -k -n tcp 4723"
+            #     kill_cmd = "fuser -k -n tcp 4724"
             #     kill_process = subprocess.Popen(
             #         [kill_cmd],
             #         stdout=subprocess.PIPE,

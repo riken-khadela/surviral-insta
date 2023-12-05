@@ -31,7 +31,7 @@ class NordVpn:
         Starts appium driver
         """
         path = '/wd/hub'
-        port = 4723
+        port = 4724
         host = "http://localhost"
         opts = {
             "platformName": "Android",

@@ -1801,6 +1801,7 @@ class InstaBot:
             try :
                 buttons[indexx].click()
                 # Share = True if PostCount <= 4  else False
+                share = True if 2 == random.randint(1,4) else False
                 self.ActionOnPost(Share=share)
                 time.sleep(1)
                 post = self.find_element('posts','com.instagram.android:id/action_bar_title',By.ID,timeout=2).text

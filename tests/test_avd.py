@@ -100,7 +100,7 @@ class TestAvd(unittest.TestCase):
                 kill_cmd = "kill -9 $(pgrep -f appium)"
                 run_cmd(kill_cmd, verbose=run_verbose)
 
-                kill_cmd = "fuser -k -n tcp 4723"
+                kill_cmd = "fuser -k -n tcp 4724"
                 run_cmd(kill_cmd, verbose=run_verbose)
 
             # Kill All emulators
@@ -127,7 +127,7 @@ class TestAvd(unittest.TestCase):
         except Exception as e:
             print("Error in killing bot instances", e)
 
-    def get_driver(self, port=4723):
+    def get_driver(self, port=4724):
         try:
             opts = {
                 "platformName": "Android",
@@ -166,7 +166,7 @@ class TestAvd(unittest.TestCase):
     def test_select_birthday(self):
         avd_name = 'android_186'
         timezone = 'US/Pacific'
-        port = 4723
+        port = 4724
 
         #  self.stop_appium()
         self.start_appium(port=port)
@@ -277,7 +277,7 @@ class TestAvd(unittest.TestCase):
     def test_click_button_create_account(self):
         avd_name = 'android_233'
         timezone = 'US/Pacific'
-        port = 4723
+        port = 4724
 
         #  self.stop_appium()
         self.start_appium(port=port)
@@ -317,7 +317,7 @@ class TestAvd(unittest.TestCase):
     def test_phone_registered(self):
         avd_name = 'android_7'
         timezone = 'US/Pacific'
-        port = 4723
+        port = 4724
 
         #  self.stop_appium()
         self.start_appium(port=port)
@@ -348,7 +348,7 @@ class TestAvd(unittest.TestCase):
         #  timezone = 'US/Pacific'
         avd_name = 'android_208'
         timezone = 'US/Central'
-        port = 4723
+        port = 4724
 
         self.stop_appium()
         self.start_appium(port=port)
@@ -488,7 +488,7 @@ class TestAvd(unittest.TestCase):
         avd_name = 'android_366'
         avd_name = 'android_159'
         timezone = 'US/Hawaii'
-        port = 4723
+        port = 4724
 
         self.stop_appium()
         self.start_appium(port=port)
@@ -501,7 +501,7 @@ class TestAvd(unittest.TestCase):
     def test_recaptcha_1(self):
         avd_name = 'android_482'
         timezone = 'US/Aleutian'
-        port = 4723
+        port = 4724
 
         self.stop_appium()
         self.start_appium(port=port)
@@ -514,7 +514,7 @@ class TestAvd(unittest.TestCase):
     def test_recaptcha_save_effect_image(self):
         avd_name = 'android_482'
         timezone = 'US/Aleutian'
-        port = 4723
+        port = 4724
 
         self.stop_appium()
         self.start_appium(port=port)
@@ -528,7 +528,7 @@ class TestAvd(unittest.TestCase):
     def test_get_display_area(self):
         avd_name = 'android_482'
         timezone = 'US/Aleutian'
-        port = 4723
+        port = 4724
 
         #  self.stop_appium()
         self.start_appium(port=port)
@@ -543,7 +543,7 @@ class TestAvd(unittest.TestCase):
     def test_profile_exists(self):
         avd_name = 'android_482'
         timezone = 'US/Aleutian'
-        port = 4723
+        port = 4724
 
         #  self.stop_appium()
         self.start_appium(port=port)
@@ -560,7 +560,7 @@ class TestAvd(unittest.TestCase):
     def test_swipe_to_top(self):
         avd_name = 'android_482'
         timezone = 'US/Aleutian'
-        port = 4723
+        port = 4724
 
         #  self.stop_appium()
         self.start_appium(port=port)
@@ -578,7 +578,7 @@ class TestAvd(unittest.TestCase):
     def test_check_pinned_tweet(self):
         avd_name = 'android_482'
         timezone = 'US/Aleutian'
-        port = 4723
+        port = 4724
 
         #  self.stop_appium()
         self.start_appium(port=port)
@@ -606,7 +606,7 @@ class TestAvd(unittest.TestCase):
     def test_item_list(self):
         avd_name = 'android_83'
         timezone = 'US/Mountain'
-        port = 4723
+        port = 4724
 
         #  self.kill_bot_process(appium=True, emulators=True)
         self.stop_appium()
@@ -624,7 +624,7 @@ class TestAvd(unittest.TestCase):
     def test_item_list(self):
         avd_name = 'android_83'
         timezone = 'US/Mountain'
-        port = 4723
+        port = 4724
 
         #  self.kill_bot_process(appium=True, emulators=True)
         self.stop_appium()
@@ -642,7 +642,7 @@ class TestAvd(unittest.TestCase):
     def test_swipe_profile_header(self):
         avd_name = 'android_83'
         timezone = 'US/Mountain'
-        port = 4723
+        port = 4724
 
         #  self.kill_bot_process(appium=True, emulators=True)
         self.stop_appium()
@@ -656,7 +656,7 @@ class TestAvd(unittest.TestCase):
     def test_get_latest_tweet(self):
         avd_name = 'android_83'
         timezone = 'US/Mountain'
-        port = 4723
+        port = 4724
 
         #  self.kill_bot_process(appium=True, emulators=True)
         self.stop_appium()
@@ -670,7 +670,7 @@ class TestAvd(unittest.TestCase):
     def test_tweet_child(self):
         avd_name = 'android_455'
         timezone = 'US/Mountain'
-        port = 4723
+        port = 4724
 
         #  self.kill_bot_process(appium=True, emulators=True)
         self.stop_appium()
@@ -692,7 +692,7 @@ class TestAvd(unittest.TestCase):
     def test_tweet_display(self):
         avd_name = 'android_455'
         timezone = 'US/Mountain'
-        port = 4723
+        port = 4724
 
         #  self.kill_bot_process(appium=True, emulators=True)
         self.stop_appium()
@@ -714,7 +714,7 @@ class TestAvd(unittest.TestCase):
     def test_get_activity(self):
         avd_name = 'android_483'
         timezone = 'US/Hawaii'
-        port = 4723
+        port = 4724
 
         #  self.kill_bot_process(appium=True, emulators=True)
         self.stop_appium()
@@ -730,7 +730,7 @@ class TestAvd(unittest.TestCase):
     def test_vpn(self):
         avd_name = 'android_483'
         timezone = 'US/Hawaii'
-        port = 4723
+        port = 4724
 
         #  self.kill_bot_process(appium=True, emulators=True)
         self.stop_appium()
