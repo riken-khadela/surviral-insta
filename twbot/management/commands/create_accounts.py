@@ -71,6 +71,7 @@ class Command(BaseCommand):
                 continue
             if UserAvd.objects.filter(name = avd_name).exists():
                 continue
+            print('-----')
             avd_list = subprocess.check_output(['emulator', '-list-avds'])
             avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
             if avd_name  in avd_list:
