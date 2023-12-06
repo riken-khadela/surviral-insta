@@ -1091,7 +1091,6 @@ class InstaBot:
             self.driver().remove_app('com.instagram.android')
             self.Install_new_insta()
             self.create_account()        
-            
         self.click_element('create account btn','//android.widget.Button[@content-desc="Create new account"]')
         if self.find_element('name page', '''//android.view.View[@text="What's your name?"]''',timeout=5):
             self.username_process()
@@ -1145,7 +1144,7 @@ class InstaBot:
                 self.driver().terminate_app('com.instagram.android')
                 self.driver().activate_app('com.instagram.android')
                 random_sleep(10,15,reason='open instagram')
-                self.follow_rio()
+                # self.follow_rio()
                 self.follow_gpt()
                 return user
             else:

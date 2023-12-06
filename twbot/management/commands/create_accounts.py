@@ -106,7 +106,6 @@ class Command(BaseCommand):
                 self.create_avd(user_avd.name)        
                 LOGGER.debug(f'AVD USER: {user_avd}')
 
-                breakpoint()
                 # tb = TwitterBot('android_368')
                 tb = InstaBot(user_avd.name)
                 tb.check_apk_installation()
