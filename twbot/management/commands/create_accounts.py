@@ -71,7 +71,6 @@ class Command(BaseCommand):
                 continue
             if UserAvd.objects.filter(name = avd_name).exists():
                 continue
-            print('-----')
             avd_list = subprocess.check_output(['emulator', '-list-avds'])
             avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
             if avd_name  in avd_list:
@@ -128,7 +127,7 @@ class Command(BaseCommand):
                 tb.kill_bot_process(True, True)
                 sys.exit(1)
             except Exception as e:
-                print(traceback.format_exc())
+                print(traceback.format_exc(e))
                 try:
                     tb.kill_bot_process(True, True)
                     user_avd.delete() if user_avd else None
