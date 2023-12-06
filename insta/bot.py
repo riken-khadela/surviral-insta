@@ -443,7 +443,7 @@ class InstaBot:
         end_x = start_x
         end_y = start_y + rect_ele['height']
         LOGGER.debug(f'start_x: {start_x}, start_y: {start_y}, end_x: {end_x}, end_y: {end_y}')
-        while True:
+        for _ in range(25):
             self.driver().swipe(start_x=start_x,start_y=start_y,end_x=end_x,end_y=end_y,duration=random.randrange(200, 250))
             # time.sleep(0.20)
             comperison_xpath_text = self.driver().find_element_by_xpath(comperison_xpath).text
