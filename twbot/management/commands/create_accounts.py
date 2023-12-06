@@ -105,6 +105,7 @@ class Command(BaseCommand):
                     )
                 self.create_avd(user_avd.name)        
                 LOGGER.debug(f'AVD USER: {user_avd}')
+                print('-----')
 
                 # tb = TwitterBot('android_368')
                 tb = InstaBot(user_avd.name)
@@ -127,7 +128,8 @@ class Command(BaseCommand):
                 tb.kill_bot_process(True, True)
                 sys.exit(1)
             except Exception as e:
-                print(traceback.format_exc(e))
+                print(e,'-------')
+                print(traceback.format_exc())
                 try:
                     tb.kill_bot_process(True, True)
                     user_avd.delete() if user_avd else None
