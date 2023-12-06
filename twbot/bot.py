@@ -1059,6 +1059,7 @@ class InstaBot:
         next_btn = self.find_element('Next Button','//android.widget.Button[@content-desc="Next"]').click()
         
     def create_account(self):
+        print(f'\n\n\n----The ps name is : {os.getenv("PC")}----\n\n\n')
         gender_detector = detector.Detector()
         fake = Faker()
         self.gender = random.choice(["male", "female"])

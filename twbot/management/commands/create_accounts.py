@@ -84,6 +84,7 @@ class Command(BaseCommand):
                 # create an avd user, at the same time, creat the relative AVD
                 # before deleting this avd user, first deleting the relative AVD
                 LOGGER.debug('Start to creating AVD user')
+                print('-----')
 
                 # if the country is USA, then create timezone for AVD
                 if 'united states' in country.lower():
