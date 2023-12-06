@@ -49,9 +49,9 @@ class Command(BaseCommand):
         count = 0
         accounts_created = 0
         used_ports = set(UserAvd.objects.values_list('port', flat=True))
-        self.ports = [3000 + x for x in range(1, 4000) if (3000 + x) not in used_ports]
+        self.ports = [30000 + x for x in range(1, 4000) if (3000 + x) not in used_ports]
         used_name = set(User_details.objects.values_list('avdsname', flat=True))
-        self.devices = [f"instagram_{x}" for x in range(1,7000) if f"instagram_{x}" not in used_name]
+        self.devices = [f"instagram_{x}" for x in range(1,9000) if f"instagram_{x}" not in used_name]
         # for avd_name  in self.devices:
         while accounts_created < required_accounts :
             # else:break
