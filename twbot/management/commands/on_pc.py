@@ -144,10 +144,10 @@ class Command(BaseCommand):
                     tb = InstaBot(userr.avdsname)
                     tb.check_apk_installation()
                     # Connect vpn
-                    if not self.no_vpn:
-                        time.sleep(10)
-                        if not tb.connect_to_vpn(country=country):
-                            raise Exception("Couldn't able to connect Cyberghost VPN")
+                    # if not self.no_vpn:
+                    #     time.sleep(10)
+                    #     if not tb.connect_to_vpn(country=country):
+                    #         raise Exception("Couldn't able to connect Cyberghost VPN")
                         
                     
                     if tb.login(userr.username,userr.password) :
