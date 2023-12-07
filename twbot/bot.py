@@ -1146,7 +1146,7 @@ class InstaBot:
                 self.driver().activate_app('com.instagram.android')
                 random_sleep(10,15,reason='open instagram')
                 # self.follow_rio()
-                self.follow_gpt()
+                # self.follow_gpt()
                 return user
             else:
                 return False
