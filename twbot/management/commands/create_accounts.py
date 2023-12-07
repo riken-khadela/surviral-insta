@@ -37,6 +37,10 @@ class Command(BaseCommand):
         )
     def create_avd(self,avdname):
         # breakpoint()
+        avd_list = subprocess.check_output(['emulator', '-list-avds'])
+        avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
+        if avdname in avd_list :
+            return True
         LOGGER.debug('Start to creating AVD user')
         twbot = InstaBot(emulator_name=avdname, start_appium=False, start_adb=False)
         device = random.choice(AVD_DEVICES)  # get a random device

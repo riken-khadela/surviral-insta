@@ -166,5 +166,5 @@ def delete_avd(sender, instance, **kwargs):
 
 
 #  post_save.connect(create_avd, sender=UserAvd)
-# post_save.connect(create_better_avd, sender=UserAvd)
-# pre_delete.connect(delete_avd, sender=UserAvd)
+post_save.connect(create_better_avd, sender=UserAvd)
+pre_delete.connect(delete_avd, sender=UserAvd)
