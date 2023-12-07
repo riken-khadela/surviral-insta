@@ -37,10 +37,6 @@ class Command(BaseCommand):
         )
     def create_avd(self,avdname):
         # breakpoint()
-        avd_list = subprocess.check_output(['emulator', '-list-avds'])
-        avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
-        if avdname in avd_list :
-            return True
         LOGGER.debug('Start to creating AVD user')
         twbot = InstaBot(emulator_name=avdname, start_appium=False, start_adb=False)
         device = random.choice(AVD_DEVICES)  # get a random device
@@ -108,12 +104,12 @@ class Command(BaseCommand):
                         proxy_type="CYBERGHOST",
                         country=country
                     )
-                # self.create_avd(user_avd.name)        
+                self.create_avd(user_avd.name)        
                 LOGGER.debug(f'AVD USER: {user_avd}')
                 print('-----')
 
                 # tb = TwitterBot('android_368')
-                tb = InstaBot(user_avd)
+                tb = InstaBot(user_avd.name)
                 tb.check_apk_installation()
                 # Connect vpn
                 if not self.no_vpn:
@@ -177,9 +173,7 @@ class Command(BaseCommand):
                 with futures.ThreadPoolExecutor(max_workers=self.parallel_number) as executor:
                     for i in range(self.parallel_number):
                         executor.submit(self.run_tasks, requied_account_list[i])
-            except Exception as e : 
-                print(e)
-                break
+            except Exception as e : print(e)
         print(f" All created UserAvd and TwitterAccount ****\n")
         
         random_sleep(10, 30)

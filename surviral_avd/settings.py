@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from pathlib import Path
-
+from dotenv import load_dotenv
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -97,18 +98,43 @@ WSGI_APPLICATION = 'surviral_avd.wsgi.application'
 #     }
 # }
 
+# old_pcs = ['pc3','pc8','pc11','pc20','pkpc16','pkpc17']
 
+# if os.getenv('PC') in old_pcs :
+#     NEW_PC = False
+# else : NEW_PC = True
+# if NEW_PC :
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'NAME': 'Instagram2',
+#             'USER': 'surviraluser',
+#             'PASSWORD': 'Surviral#786',
+#             'HOST': 'surviral-project.c4jxfxmbuuss.ap-southeast-1.rds.amazonaws.com',
+#             'PORT': '5432'
+#         }
+#     }
+# else :
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'NAME': 'Instagram',
+#             'USER': 'surviraluser',
+#             'PASSWORD': 'Surviral#786',
+#             'HOST': 'surviral-project.c4jxfxmbuuss.ap-southeast-1.rds.amazonaws.com',
+#             'PORT': '5432'
+#         }
+#     }
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Instagram',
-        'USER': 'surviraluser',
-        'PASSWORD': 'Surviral#786',
-        'HOST': 'surviral-project.c4jxfxmbuuss.ap-southeast-1.rds.amazonaws.com',
-        'PORT': '5432'
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'Instagram',
+            'USER': 'surviraluser',
+            'PASSWORD': 'Surviral#786',
+            'HOST': 'surviral-project.c4jxfxmbuuss.ap-southeast-1.rds.amazonaws.com',
+            'PORT': '5432'
+        }
     }
-}
-
 MONITOR_TASKS = True
 if MONITOR_TASKS:
     MONITOR_DB = {'monitor': {

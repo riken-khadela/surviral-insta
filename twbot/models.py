@@ -67,7 +67,7 @@ class User_details(models.Model):
         ("LOGIN_ISSUE","LOGIN_ISSUE"),
         ("SUSPENSION","SUSPENSION")
     )
-    avdobj = models.ForeignKey(UserAvd,on_delete=models.CASCADE,blank=True, null=True)
+    # avdobj = models.ForeignKey(UserAvd,on_delete=models.CASCADE,blank=True, null=True)
     avdsname = models.CharField(max_length=255)
     username = models.CharField(max_length=255,blank=True, null=True)
     number = models.BigIntegerField(null=False)

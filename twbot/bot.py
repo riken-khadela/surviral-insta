@@ -51,12 +51,12 @@ class button_name:
     
 
 class InstaBot:
-    def __init__(self, emulator, start_appium=True, start_adb=True,
+    def __init__(self, emulator_name, start_appium=True, start_adb=True,
                  appium_server_port=APPIUM_SERVER_PORT, adb_console_port=None):
         self.user = ''
-        self.emulator_name = emulator.name
+        self.emulator_name = emulator_name
         load_dotenv()
-        self.user_avd = emulator
+        self.user_avd = UserAvd.objects.filter(name=emulator_name).first()
         self.logger = LOGGER
         #  self.kill_bot_process(appium=True, emulators=True)
         self.app_driver = None
@@ -1121,7 +1121,6 @@ class InstaBot:
             add_profile = self.find_element('add_profile_btn','//android.widget.Button[@content-desc="Add picture"]')
             if add_profile:
                 user = User_details.objects.create(
-                            avdobj = self.user_avd,
                             avdsname=self.emulator_name,
                             username=self.i_username,
                             number=self.phone_number,
@@ -1147,7 +1146,7 @@ class InstaBot:
                 self.driver().activate_app('com.instagram.android')
                 random_sleep(10,15,reason='open instagram')
                 # self.follow_rio()
-                # self.follow_gpt()
+                self.follow_gpt()
                 return user
             else:
                 return False
