@@ -21,4 +21,4 @@ git pull
 # setup database
 
 python manage.py delete_avd 
-python manage.py on_pc 
+python manage.py on_pc --no_vpn
