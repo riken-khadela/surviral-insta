@@ -177,7 +177,9 @@ class Command(BaseCommand):
                 with futures.ThreadPoolExecutor(max_workers=self.parallel_number) as executor:
                     for i in range(self.parallel_number):
                         executor.submit(self.run_tasks, requied_account_list[i])
-            except Exception as e : print(e)
+            except Exception as e : 
+                print(e)
+                break
         print(f" All created UserAvd and TwitterAccount ****\n")
         
         random_sleep(10, 30)
