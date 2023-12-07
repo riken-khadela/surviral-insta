@@ -596,6 +596,7 @@ class CyberGhostVpn(BaseBot):
         """
         while retry_times > 0:
             try:
+                self.install()
                 if not self.is_app_installed():
                     reconnect = True
 
