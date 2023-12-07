@@ -108,7 +108,7 @@ class Command(BaseCommand):
                         proxy_type="CYBERGHOST",
                         country=country
                     )
-                self.create_avd(user_avd.name)        
+                # self.create_avd(user_avd.name)        
                 LOGGER.debug(f'AVD USER: {user_avd}')
                 print('-----')
 
