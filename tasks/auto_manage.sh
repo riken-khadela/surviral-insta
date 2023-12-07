@@ -4,7 +4,7 @@ export PRJ_DIR=`dirname $CURRENT_DIR`
 # go to project root directory
 cd $PRJ_DIR
 #. ./tasks/environment.sh
-. tasks/environment.sh
+# . tasks/environment.sh
 
 # Kill python and AVD process
 killall -9 python qemu-system-x86_64
@@ -14,8 +14,11 @@ killall -9 python qemu-system-x86_64
 . env/bin/activate
 
 # update code
-git checkout old-insta-rk
+# git checkout old-insta-rk
+git stash
 git pull old-insta-rk
 
 # setup database
-python manage.py auto_manage 
+
+python manage.py delete_avd
+python manage.py onpc 
