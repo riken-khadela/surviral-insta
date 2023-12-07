@@ -1690,7 +1690,8 @@ class InstaBot:
                 self.driver().back()
             
     def update_user_follow_info(self):
-        self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
+        profile_btn = ''
+        profile_btn = self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
         ProfileName = self.find_element('Profile name','com.instagram.android:id/action_bar_large_title_auto_size',By.ID)
         if ProfileName:
             if ProfileName.text == self.user.username: 
@@ -1706,7 +1707,7 @@ class InstaBot:
                 self.user.save()
                 LOGGER.info(f'User followers :{self.user.followers}\n User following :{self.user.following}')
                 self.click_element('Home page','com.instagram.android:id/feed_tab',By.ID)
-
+        return profile_btn
     def check_login(self,):
         for i in range(2):
             try:
@@ -2031,7 +2032,7 @@ class InstaBot:
             self.check_notification()
             self.seen_story()
             self.scroll_home_page()
-        self.update_user_follow_info()
+        if not self.update_user_follow_info()  : return
         if int(self.user.followers) < 20:
             is_updated = self.check_profile_updated()
             if not is_updated:
