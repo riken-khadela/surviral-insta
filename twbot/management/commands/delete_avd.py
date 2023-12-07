@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 import subprocess
 import pandas as pd
-from twbot.models import User_details
+from twbot.models import User_details, UserAvd
 
 class Command(BaseCommand):
     # def add_arguments(self, parser):

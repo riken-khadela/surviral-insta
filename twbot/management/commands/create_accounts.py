@@ -113,7 +113,7 @@ class Command(BaseCommand):
                 print('-----')
 
                 # tb = TwitterBot('android_368')
-                tb = InstaBot(user_avd.name)
+                tb = InstaBot(user_avd)
                 tb.check_apk_installation()
                 # Connect vpn
                 if not self.no_vpn:
