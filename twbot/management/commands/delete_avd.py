@@ -12,6 +12,7 @@ class Command(BaseCommand):
         avd_list = subprocess.check_output(['emulator', '-list-avds'])
         avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
         list(User_details.objects.exclude(status='ACTIVE').order_by('?'))
+        
         for in_user in inactive_user :
             avd = in_user.avdsname
             if avd in avd_list:
@@ -22,6 +23,8 @@ class Command(BaseCommand):
                     all_inactive_avds.to_csv('delete_avd.csv',index=False)
                 except Exception as e:
                     print(e)
+                    
+                    
         print(len(all_inactive_avds))
         avd_list = subprocess.check_output(['emulator', '-list-avds'])
         avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
