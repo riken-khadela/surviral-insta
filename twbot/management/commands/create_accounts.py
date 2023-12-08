@@ -60,7 +60,7 @@ class Command(BaseCommand):
             # psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "twbot_useravd_port_key"
             # DETAIL:  Key (port)=(5794) already exists.
             start_time = time.time()
-            port = random.choice(self.ports)
+            port = random.choice(self.ports)*(random.randint(100,999))
             avd_name = random.choice(self.devices)
             print(avd_name)
             
