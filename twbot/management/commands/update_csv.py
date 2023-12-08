@@ -20,11 +20,11 @@ class Command(BaseCommand):
         avd_list = subprocess.check_output(['emulator', '-list-avds'])
         avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
         csv_path = os.path.join(os.getcwd(),'csv','this_pc_avd.csv')
-        if not os.path.exists(csv_path) :
-            headers = ['avd_id','user_id','Avdsname','username','created_at','eng_at']  # Add your column names here
-            df = pd.DataFrame(columns=headers)
-        else :
-            df = pd.read_csv(csv_path)
+        # if not os.path.exists(csv_path) :
+        headers = ['avd_id','user_id','Avdsname','username','created_at','eng_at']  # Add your column names here
+        df = pd.DataFrame(columns=headers)
+        # else :
+        #     df = pd.read_csv(csv_path)
         
         ThisPcUsername = []
         if not df.empty:
@@ -37,12 +37,13 @@ class Command(BaseCommand):
                 if not user.username in ThisPcUsername :
                     user_avd = UserAvd.objects.filter(name=user.avdsname).first()
                     df.loc[len(df.index)] = [user_avd.id,user.id,user_avd.name,user.username,user.created_at,user.created_at]
-                    
+                    if not user_avd :continue
                     if not user.avdsname in unique_avd_name :
                         unique_avd_name.append(user.avdsname)
                     else:
                         dub_avd_name.append(user.avdsname)
                     print(user.id)
-        if not dub_avd_name :
-            df.to_csv(csv_path,index=False)
+        df.to_csv(csv_path,index=False)
+        if  dub_avd_name :
+            print('there are dublicates avds name in user data')
         ...
