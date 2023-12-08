@@ -36,9 +36,9 @@ class Command(BaseCommand):
             if user.avdsname in avd_list :
                 if not user.username in ThisPcUsername :
                     user_avd = UserAvd.objects.filter(name=user.avdsname).first()
-                    df.loc[len(df.index)] = [user_avd.id,user.id,user_avd.name,user.username,user.created_at,user.created_at]
-                    
                     if not user_avd :continue
+                    
+                    df.loc[len(df.index)] = [user_avd.id,user.id,user_avd.name,user.username,user.created_at,user.created_at]
                     if not user.avdsname in unique_avd_name :
                         unique_avd_name.append(user.avdsname)
                     else:
