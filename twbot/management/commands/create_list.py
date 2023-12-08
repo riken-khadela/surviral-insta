@@ -25,8 +25,8 @@ class Command(BaseCommand):
         print(len(avd_list))
         inactive = []
         for userr in all_users:
-            # breakpoint()
-            # breakpoint()
+            # ...
+            # ...
             # if not UserAvd.objects.filter(name = userr.avdsname).exists():
             #     user_avd = self.create_avd_object(userr.avdsname)
             if delete_local_avd_list.objects.filter(avdsname= userr.avdsname).exists():
@@ -39,7 +39,7 @@ class Command(BaseCommand):
                 # print(avd_list)
             
                 if  userr.avdsname in avd_list:
-                    # breakpoint()
+                    # ...
                     avdname = userr.avdsname
                     if not UserAvd.objects.filter(name=userr.avdsname).first():
                         LOGGER.debug('Start to creating AVD user')

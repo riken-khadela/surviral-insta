@@ -45,4 +45,4 @@ class Command(BaseCommand):
                     print(user.id)
         if not dub_avd_name :
             df.to_csv(csv_path,index=False)
-        breakpoint()
+        ...

@@ -39,7 +39,7 @@ class Command(BaseCommand):
         )
 
     def create_avd(self,avdname):
-        # breakpoint()
+        # ...
         LOGGER.debug('Start to creating AVD user')
         twbot = InstaBot(avdname, start_appium=False, start_adb=False)
         device = random.choice(AVD_DEVICES)  # get a random device

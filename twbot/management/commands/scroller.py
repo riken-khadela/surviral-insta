@@ -40,7 +40,7 @@ class Command(BaseCommand):
         )
 
     def create_avd(self,avdname):
-        # breakpoint()
+        # ...
         LOGGER.debug('Start to creating AVD user')
         twbot = InstaBot(avdname, start_appium=False, start_adb=False)
         device = random.choice(AVD_DEVICES)  # get a random device
@@ -97,14 +97,14 @@ class Command(BaseCommand):
         while True:
             all_users = list(User_details.objects.filter(status='ACTIVE').order_by('-created_at'))
             # all_users = list(user_detail.objects.using('monitor').filter(status='ACTIVE').order_by('?'))
-            # breakpoint()
+            # ...
             print(len(all_users),'-----')
             for userr in all_users:
                 # userr.avdsname userr.avdsname
             # if not UserAvd.objects.filter(name = 'instagram_5607').exists():
             #     user_avd = self.create_avd_object(userr.avdsname)
             # else :
-                # breakpoint()
+                # ...
                 avd_list = subprocess.check_output(['emulator', '-list-avds'])
                 avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
                 if userr.avdsname not in avd_list: continue

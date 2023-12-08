@@ -39,7 +39,7 @@ class Command(BaseCommand):
         )
 
     def create_avd(self,avdname):
-        # breakpoint()
+        # ...
         LOGGER.debug('Start to creating AVD user')
         twbot = InstaBot(emulator_name=avdname, start_appium=False, start_adb=False)
         device = random.choice(AVD_DEVICES)  # get a random device
@@ -107,7 +107,7 @@ class Command(BaseCommand):
             if not all_users :
                 all_users = list(User_details.objects.filter(status='ACTIVE',avdsname='instagram_5073730').order_by('?'))
                 
-            breakpoint()
+            ...
             for userr in all_users:
                 if df.empty :
                     userr_avd = UserAvd.objects.filter(name=userr.avdsname).first()

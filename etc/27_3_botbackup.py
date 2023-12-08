@@ -1432,7 +1432,7 @@ class InstaBot:
             if self.search_user(Follow_user.username):
                 self.Follow()
                 self.update_follow_user_info()
-                breakpoint()
+                ...
             else:
                 self.Follow_user.can_search = False
                 self.Follow_user.save()        
@@ -1441,7 +1441,7 @@ class InstaBot:
         
         self.click_element('Search btn','com.instagram.android:id/search_tab',By.ID)
         random_index = random.sample(range(0, 9), k=random.randint(3,6))
-        breakpoint()
+        ...
         for indexx in random_index:
             self.choose_random_image(indexx)
             self.ActionOnPost(swipe_number=3,RandomPostFollow=True,RandomPostFollowRation=30)
@@ -1455,5 +1455,5 @@ class InstaBot:
                 print('yesss')
                 
                 
-        breakpoint()
+        ...
         ...

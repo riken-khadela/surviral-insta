@@ -193,7 +193,7 @@ class InstaBot:
 
     def check_apk_installation(self):
         
-        # breakpoint()
+        # ...
         LOGGER.debug('Check if cyberghost is installed')
         if not self.driver().is_app_installed('de.mobileconcepts.cyberghost'):
             LOGGER.debug('cyberghost is not installed, now install it')
@@ -222,7 +222,7 @@ class InstaBot:
             if apk_version != '273.1.0.16.72':
                 LOGGER.debug('Install instagram new version')
                 self.Install_new_insta()
-                # breakpoint()
+                # ...
             else:
                 self.driver().terminate_app('com.instagram.android')
             
@@ -929,7 +929,7 @@ class InstaBot:
     def login(self,username,password):
         self.user = User_details.objects.filter(username=username).first()
         # self.driver().activate_app('com.instagram.android')
-        # breakpoint()
+        # ...
         # self.start_app('login')
         try:
             self.driver().start_activity('com.instagram.android','com.instagram.mainactivity.MainActivity')
@@ -938,7 +938,7 @@ class InstaBot:
         time.sleep(12)
         LOGGER.info("inside login methods")
         
-        # breakpoint()
+        # ...
         self.click_element('Allow Cookies','//android.widget.Button[@content-desc="Allow all cookies"]')
         HomeBtn = self.find_element('Home page','com.instagram.android:id/feed_tab',By.ID)
         if HomeBtn : return True
@@ -959,7 +959,7 @@ class InstaBot:
             current_activity = self.driver().current_activity
             if current_activity != 'com.instagram.mainactivity.MainActivity':
                 self.login(username,password)
-            # breakpoint()
+            # ...
         else:
             if self.input_text(username,'username','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText'):pass
             else:
@@ -1131,7 +1131,7 @@ class InstaBot:
                 like_counts = int(re.search(r'\d+', like_count_text).group())
             except AttributeError:
                 like_counts = 0
-            # breakpoint()
+            # ...
             if like_counts >=200:pass
             else:
                 LikeRequire = random.choice(Percentage_list)
@@ -1152,7 +1152,7 @@ class InstaBot:
             CommentRequire = random.choice(Percentage_list)
             if Comment and CommentRequire < int(CommentRation):
                 print(Comment,CommentRequire)
-                # breakpoint()
+                # ...
                 CommentBtn = self.click_element('Comment btn','//android.widget.ImageView[@content-desc="Comment"]')
                 if not PostDetails : self.logger.info('Posts details didnt found')
                 if CommentBtn and PostDetails:
@@ -1327,7 +1327,7 @@ class InstaBot:
         # for column in range(1):
         for indexx in range(1,4):
                 for _ in range(5):
-                    # breakpoint()
+                    # ...
                     post_ele = self.click_element(f'post : {PostCount}', f'//android.widget.Button[@content-desc="Photo by Rio Noborderz at Row 1, Column {indexx}"]')
                     if post_ele:
                         #if you want random then random_=True

@@ -102,8 +102,8 @@ class Command(BaseCommand):
             random.shuffle(all_users)
             for userr in all_users:
                 LOGGER.info(f'{userr} -------11111')
-                # breakpoint()
-                # breakpoint()
+                # ...
+                # ...
                 # if not UserAvd.objects.filter(name = userr.avdsname).exists():
                 #     user_avd = self.create_avd_object(userr.avdsname)
                 df = pd.read_csv('delete_avd.csv')
@@ -119,7 +119,7 @@ class Command(BaseCommand):
                     # print(avd_list)
                 
                     if  userr.avdsname in avd_list and not TodayOpenAVD.objects.filter(name=userr.avdsname).exists():
-                        # breakpoint()
+                        # ...
                         if not UserAvd.objects.filter(name=userr.avdsname).first():
                             continue
                         else:

@@ -17,7 +17,7 @@ from datetime import datetime
 df = pd.DataFrame()
 csv_path = os.path.join(os.getcwd(),'csv','this_pc_avd.csv')
 df = pd.read_csv(csv_path)  
-breakpoint()
+...
 enged_date_times_li = [datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f%z') for dt in df['eng_at'].tolist()]
 sorted_user_li = sorted(enged_date_times_li)
 user_data_dict = df.to_dict(orient='records')

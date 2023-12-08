@@ -57,7 +57,7 @@
 #     file.write(response.content)
     
 # url = "https://source.unsplash.com/random"
-# breakpoint()
+# ...
 # birth_year = 1998
 
 # year = str(int(birth_year-1))

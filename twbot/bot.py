@@ -1213,7 +1213,7 @@ class InstaBot:
             self.click_element('ok','android:id/button1',By.ID)
         except Exception as e:
             print(e)
-            breakpoint()
+            ...
             
             
     def get_apk_version(self,package_name):
@@ -1390,7 +1390,7 @@ class InstaBot:
                 if self.search_user(Follow_user.username):
                     pass
                 else:
-                    breakpoint()
+                    ...
                     print('---->')
         except Exception as e :print(e)
 
@@ -1404,7 +1404,7 @@ class InstaBot:
                         text = text_element.text
                         if 'following you' in text:
                             follow = element.find_element(By.XPATH,".//android.widget.Button[@text='Follow']")
-                            # breakpoint()
+                            # ...
                             if follow:
                                 LOGGER.info('Follow back user')
                                 follow.click()
@@ -1723,7 +1723,7 @@ class InstaBot:
                 time.sleep(random.randint(3,7))
                 if self.driver().current_activity == 'com.instagram.mainactivity.MainActivity':
                     HomeBtn = self.find_element('Home page','com.instagram.android:id/feed_tab',By.ID)
-                    # breakpoint()
+                    # ...
                     if HomeBtn : 
                         self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
                         ProfileName = self.find_element('Profile name','com.instagram.android:id/action_bar_large_title_auto_size',By.ID)
@@ -1740,7 +1740,7 @@ class InstaBot:
                                     return True
                             except Exception as e:
                                 print(e)
-                                breakpoint()
+                                ...
                 prof_pic = self.find_element('profile photo','//android.widget.Button[@content-desc="Profile photo"]')
                 if prof_pic: 
                     username = self.find_element('username','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup[1]/android.view.View')
@@ -1750,7 +1750,7 @@ class InstaBot:
                         text_views = [view for view in self.driver().find_elements(By.XPATH,"//android.view.View[@text]") if view.is_displayed()]
                         text_list = [te.text for te in text_views]
                         username = [text for text in text_list if text and text !=  "Log in" and text !="Create New account"][0]
-                    # breakpoint()
+                    # ...
                     try:
                         username = username.text
                     except  AttributeError as a:
@@ -1766,7 +1766,7 @@ class InstaBot:
                             return True
                     except Exception as e:
                         print(e)
-                        breakpoint()
+                        ...
                     return True
                 
                 create_btn = self.find_element('create account btn','//android.widget.Button[@content-desc="Create new account"]')
@@ -1939,7 +1939,7 @@ class InstaBot:
         file_name = os.listdir(profile_path)
         if len(file_name) <= 1:
             print('add more profile pic in directory')
-            breakpoint()
+            ...
             file_name = os.listdir(profile_path)
         profile_pic_path = os.path.join(os.getcwd(), f'{profile_path}/{random.choice(file_name)}')
         run_cmd(f'adb -s emulator-{self.adb_console_port} push {profile_pic_path} /sdcard/Download')

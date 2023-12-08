@@ -39,7 +39,7 @@ class Command(BaseCommand):
         )
 
     def create_avd(self,avdname):
-        # breakpoint()
+        # ...
         LOGGER.debug('Start to creating AVD user')
         twbot = InstaBot(avdname, start_appium=False, start_adb=False)
         device = random.choice(AVD_DEVICES)  # get a random device
@@ -99,7 +99,7 @@ class Command(BaseCommand):
             print(len(all_users),'-----')
             for userr in all_users:
                 LOGGER.info(f'{userr} -------11111')
-                # breakpoint()
+                # ...
                 if not UserAvd.objects.filter(name = userr.avdsname).exists():
                     user_avd = self.create_avd_object(userr.avdsname)
                 else : 

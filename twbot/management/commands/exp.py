@@ -39,7 +39,7 @@ class Command(BaseCommand):
         )
 
     def create_avd(self,avdname):
-        # breakpoint()
+        # ...
         LOGGER.debug('Start to creating AVD user')
         twbot = InstaBot(emulator_name=avdname, start_appium=False, start_adb=False)
         device = random.choice(AVD_DEVICES)  # get a random device
@@ -93,7 +93,7 @@ class Command(BaseCommand):
             # all_users = list(user_detail.objects.using('monitor').filter(status='ACTIVE').order_by('?'))
             print(len(all_users),'-----')
             for userr in all_users:
-                breakpoint()
+                ...
                 df = pd.read_csv('today_avd.csv')
                 if userr.avdsname in df['avd'].values:continue
                 delete = pd.read_csv('delete_avd.csv')
@@ -124,7 +124,7 @@ class Command(BaseCommand):
                 # # print(avd_list)
                 #     continue
                 # else: continue
-                breakpoint()
+                ...
                 if not  user_avd:
                     user_avd = self.create_avd_object(userr.avdsname)
             
@@ -137,7 +137,7 @@ class Command(BaseCommand):
                         comment = False
                     
                     tb = InstaBot(userr.avdsname)
-                    # breakpoint()
+                    # ...
                     tb.check_apk_installation()
                     # Connect vpn
                     if not self.no_vpn:
