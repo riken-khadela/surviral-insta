@@ -2041,8 +2041,8 @@ class InstaBot:
             self.comment = True
         else:
             self.comment = False
-        if not self.bot_follow:
-            self.Follow_4_Follow()
+        # if not self.bot_follow:
+            # self.Follow_4_Follow()
         self.follow_rio()
         if self.search_user(Username):
             self.Follow()
