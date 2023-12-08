@@ -57,7 +57,7 @@ class UserAvd(TimeStampModel):
     proxy_type = models.CharField(max_length=50, choices=prox_type, blank=True, null=True)
     country = models.CharField(max_length=40, choices=COUNTRIES, null=True, blank=True)
     timezone = models.CharField(max_length=50, blank=True, null=True)
-    
+
     def __str__(self):
         return f"{self.name}:{self.port}" 
 
@@ -67,7 +67,6 @@ class User_details(models.Model):
         ("LOGIN_ISSUE","LOGIN_ISSUE"),
         ("SUSPENSION","SUSPENSION")
     )
-    # avdobj = models.ForeignKey(UserAvd,on_delete=models.CASCADE,blank=True, null=True)
     avdsname = models.CharField(max_length=255)
     username = models.CharField(max_length=255,blank=True, null=True)
     number = models.BigIntegerField(null=False)
@@ -92,7 +91,6 @@ class User_details(models.Model):
     def __str__(self):
         return self.username
 
-    
 class postdetails(models.Model):
     details = models.CharField(max_length=10000)
     like = models.IntegerField()
@@ -168,5 +166,5 @@ def delete_avd(sender, instance, **kwargs):
 
 
 #  post_save.connect(create_avd, sender=UserAvd)
-post_save.connect(create_better_avd, sender=UserAvd)
-pre_delete.connect(delete_avd, sender=UserAvd)
+# post_save.connect(create_better_avd, sender=UserAvd)
+# pre_delete.connect(delete_avd, sender=UserAvd)
