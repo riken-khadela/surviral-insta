@@ -118,6 +118,7 @@ class Command(BaseCommand):
                         raise Exception("Couldn't able to connect Cyberghost VPN")
             
                 accounts_created_bool= tb.create_account()
+                breakpoint()
                 # time.sleep(300)
 
                 if accounts_created_bool:

@@ -90,7 +90,8 @@ class Command(BaseCommand):
         while True:
             # all_users = list(user_detail.objects.using('monitor').filter(status='ACTIVE').order_by('-created_at'))
             # all_users = list(User_details.objects.filter(status='ACTIVE').order_by('-created_at'))
-            all_users = list(User_details.objects.filter(status='ACTIVE').order_by('?'))
+            all_users = list(User_details.objects.filter(status='ACTIVE',avdsname='instagram_5073730').order_by('?'))
+            breakpoint()
             # all_users = list(User_details.objects.get(avds_name='instagram_70'))
             # all_users = list(user_detail.objects.using('monitor').filter(status='ACTIVE').order_by('?'))
             # breakpoint()
