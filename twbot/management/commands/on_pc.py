@@ -90,33 +90,42 @@ class Command(BaseCommand):
         while True:
             # all_users = list(user_detail.objects.using('monitor').filter(status='ACTIVE').order_by('-created_at'))
             # all_users = list(User_details.objects.filter(status='ACTIVE').order_by('-created_at'))
-            all_users = list(User_details.objects.filter(status='ACTIVE',avdsname='instagram_5073730').order_by('?'))
+            csv_path = os.path.join(os.getcwd(),'csv','this_pc_avd.csv')
+            from datetime import datetime
+            all_users = []
+            df = pd.DataFrame()
+            
+            if os.path.exists(os.path.join(os.getcwd(),'csv','this_pc_avd.csv')) :
+                df = pd.read_csv(csv_path)  
+                enged_date_times_li = [datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f%z') for dt in df['eng_at'].tolist()]
+                enged_date_times_li = [datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f%z') for dt in df['eng_at'].tolist()]
+                sorted_user_li = sorted(enged_date_times_li)
+                user_data_dict = df.to_dict(orient='records')
+                all_users = [user_data_dict[enged_date_times_li.index(user)] for user in sorted_user_li]
+                
+                
+            if not all_users :
+                all_users = list(User_details.objects.filter(status='ACTIVE',avdsname='instagram_5073730').order_by('?'))
+                
             breakpoint()
-            # all_users = list(User_details.objects.get(avds_name='instagram_70'))
-            # all_users = list(user_detail.objects.using('monitor').filter(status='ACTIVE').order_by('?'))
-            # breakpoint()
-            print(len(all_users),'-----')
             for userr in all_users:
+                if df.empty :
+                    userr_avd = UserAvd.objects.filter(name=userr.avdsname).first()
+                else :
+                    userr_avd = UserAvd.objects.filter(id=userr['avd_id']).first()
+                    userr = User_details.objects.filter(username=userr['username']).first()
+                    
                 df = pd.read_csv('today_avd.csv')
                 if len(df['avd'].values) >= 60:
                     df = df.iloc[:0]
                     df.to_csv(f'today_avd.csv', index=False)
                     continue
                 if userr.avdsname in df['avd'].values:continue
-                            #    9825529411/.
-                # userr.avdsname userr.avdsname
                 
                 avd_list = subprocess.check_output(['emulator', '-list-avds'])
                 avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
                 if userr.avdsname not in avd_list: continue
-                # if userr.avd_pc and userr.avd_pc != os.getenv('PC'):
-                #     continue
                 
-                print(userr.avd_pc)
-                print(len(avd_list))
-                # if not UserAvd.objects.filter(name =userr.avdsname).exists():
-                #     self.create_avd_object(userr.avdsname)
-                #     self.no_vpn = False
                 try:
                     output = subprocess.check_output(['adb', 'devices']).decode().strip()
                     avd_names = [line.split('\t')[0] for line in output.split('\n')[1:] if line.endswith('\tdevice')]
@@ -125,24 +134,13 @@ class Command(BaseCommand):
                 except subprocess.CalledProcessError:
                     pass
 
-                # else:
-                #     user_avd = UserAvd.objects.filter(name=userr.avdsname).first()
-                # if not user_avd:continue
-                # # print(avd_list)
-                #     continue
-                # else: continue
-                #     UserAvd.objects.filter(name=userr.avdsname).first().delete()
-                #     user_avd = self.create_avd_object(userr.avdsname)
-            
-                #     print(user_avd.name,'======================================')
-                #     print(avd_list)
                 try:
                     if userr.is_bio_updated:
                         comment = True
                     else:
                         comment = False
                     
-                    tb = InstaBot(userr.avdsname)
+                    tb = InstaBot(userr.avdsname,user_avd_obj=userr_avd)
                     tb.check_apk_installation()
                     # Connect vpn
                     if not self.no_vpn:
@@ -152,14 +150,8 @@ class Command(BaseCommand):
                         
                     
                     if tb.login(userr.username,userr.password) :
-                        # tb.find_user()
                         tb.send_views(AGENT,comment=comment)
-                        # userr.avd_pc = os.getenv('PC')
                         
-
-                        # delete_avd_by_name(user_avd.name.replace('new_',''))
-                    # else:
-                    #     user_avd.delete()
 
                 except GetSmsCodeNotEnoughBalance as e:
                     LOGGER.debug('Not enough balance in GetSMSCode')

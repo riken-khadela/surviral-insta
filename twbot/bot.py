@@ -51,12 +51,15 @@ class button_name:
     
 
 class InstaBot:
-    def __init__(self, emulator_name, start_appium=True, start_adb=True,
+    def __init__(self, emulator_name,user_avd_obj='', start_appium=True, start_adb=True,
                  appium_server_port=APPIUM_SERVER_PORT, adb_console_port=None):
         self.user = ''
         self.emulator_name = emulator_name
         load_dotenv()
-        self.user_avd = UserAvd.objects.filter(name=emulator_name).first()
+        if user_avd_obj :
+            self.user_avd = user_avd_obj
+        else :
+            self.user_avd = UserAvd.objects.filter(name=emulator_name).first()
         self.logger = LOGGER
         #  self.kill_bot_process(appium=True, emulators=True)
         self.app_driver = None
