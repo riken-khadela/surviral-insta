@@ -4,7 +4,6 @@ import random
 from dotenv import load_dotenv
 from faker import Faker
 from pathlib import Path
-from datetime import date
 import faker
 import pandas as pd
 from surviral_avd import settings
@@ -20,10 +19,8 @@ from selenium.webdriver.common.keys import Keys
 from core.models import user_detail
 from twbot.models import User_details, postdetails
 import parallel
-from gender_guesser import detector
-import random, names
-from conf import APPIUM_SERVER_HOST, APPIUM_SERVER_PORT, US_TIMEZONE
-from conf import TWITTER_VERSIONS
+from conf import APPIUM_SERVER_HOST, APPIUM_SERVER_PORT
+from conf import TWITTER_VERSIONS, RECAPTCHA_ALL_RETRY_TIMES
 from conf import WAIT_TIME
 from constants import COUNTRY_CODES
 from exceptions import CannotStartDriverException
@@ -32,23 +29,16 @@ from twbot.utils import *
 from twbot.vpn.nord_vpn import NordVpn
 from utils import get_installed_packages
 from utils import run_cmd
-from .utils import get_sms,get_number,ban_number, GetInstaComments, INSTA_PROFILE_BIO_LIST, random_insta_bio
+from verify import RecaptchaAndroidUI, FuncaptchaAndroidUI
+from accounts_conf import GETSMSCODE_PID
+from .utils import get_sms,get_number,ban_number, GetInstaComments, INSTA_PROFILE_BIO_LIST, NEW_INSTA_ACC_BIO
 timeout = 10
-
 
 def random_sleep(min_sleep_time=1, max_sleep_time=5,reason=''):
     sleep_time = random.randint(min_sleep_time, max_sleep_time)
     if not reason:LOGGER.debug(f'Random sleep: {sleep_time}')
     else:LOGGER.debug(f'Random sleep: {sleep_time} for {reason}')
     time.sleep(sleep_time)
-    
-class button_name:
-    change_profile_pic = "Change profile photo"
-    follow = "Follow"
-    ok = "OK"
-    edit_profile = "Edit profile"
-    not_now = "Not now"
-    
 
 class InstaBot:
     def __init__(self, emulator_name, start_appium=True, start_adb=True,
@@ -57,26 +47,26 @@ class InstaBot:
         self.emulator_name = emulator_name
         load_dotenv()
         self.user_avd = UserAvd.objects.filter(name=emulator_name).first()
+        
+        if not self.user_avd:
+            self.user_avd = UserAvd.objects.filter(name=emulator_name).first()
+        # if not self.user_avd:
+        #     UserAvd.objects.filter(name=emulator_name).first()
+        # breakpoint()
         self.logger = LOGGER
         #  self.kill_bot_process(appium=True, emulators=True)
         self.app_driver = None
         try:
-            self.df = pd.read_csv('delete_avd.csv')
+            self.df = pd.read_csv(f'{BASE_DIR}/delete_avd.csv')
         except FileNotFoundError:
             self.df = pd.DataFrame(columns=['avd'])
             self.df.to_csv('delete_avd.csv', index=False)
-        
-        # try:
-        #     self.random = pd.read_csv('random.csv')
-        # except FileNotFoundError:
-        #     self.random = pd.DataFrame(columns=['postdetails','like','date'])
-        #     self.random.to_csv('random.csv',index=False)
-            
         try:
-            self.today_avd = pd.read_csv('today_avd.csv')
+            self.today_avd = pd.read_csv(f'{BASE_DIR}/today_avd.csv')
         except FileNotFoundError:
             self.today_avd = pd.DataFrame(columns=['avd'])
             self.today_avd.to_csv('today_avd.csv', index=False)
+
 
         #  self.emulator_port = None
         #  self.service = self.start_appium(port=4724) if start_appium else None
@@ -110,7 +100,22 @@ class InstaBot:
             int(self.adb_console_port)))
         self.emulator_port = self.adb_console_port
         self.parallel_opts = self.get_parallel_opts()
-
+        fake = Faker()
+        seed=None
+        np.random.seed(seed)
+        fake.seed_instance(seed)
+        self.gender =np.random.choice(["male", "female"], p=[0.5, 0.5])
+        self.fname =  fake.first_name_male() if "gender"=="male" else fake.first_name_female()
+        self.lname =  fake.last_name()
+        self.password = self.fname+'@1234'
+        self.full_name = self.fname + self.lname
+        self.birth_year = str(random.randint(1990,2003))
+        self.birth_date = str(random.randint(1,28))
+        if len(self.birth_date)==1:
+            self.birth_date = f"0{self.birth_date}"
+        # birth_month_li = ['January','February','March','April','May','June','July','August','September','October','November', 'December']
+        birth_month_li = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov', 'Dec']
+        self.birth_month = random.choice(birth_month_li)
 
     @property
     def wait_obj(self):
@@ -123,13 +128,9 @@ class InstaBot:
             'appium:avdArgs': ['-port', str(self.adb_console_port)] + self.get_avd_options(),
             'appium:systemPort': self.system_port,
             'appium:noReset': True,
-            # 'appPackage': 'com.instagram.android',
-            # 'appActivity': 'com.instagram.android.activity.MainTabActivity'
             #  'appium:skipLogCapture': True,
         }
-        
-        # driver = webdriver.Remote(http://127.0.0.1:4724/wd/hub/session/:sessionId/cookie,desired_caps)
-    
+
     def start_appium(self, port):
         # start appium server
         LOGGER.debug(f'Start appium server, port: {port}')
@@ -154,36 +155,14 @@ class InstaBot:
             )
             return False
 
-    def create_avd_object(self,avdname):
-        LOGGER.debug('Start to creating AVD user')
-        used_ports = set(UserAvd.objects.values_list('port', flat=True))
-        port_range = range(1, 10000)
-        port = next((1000 + port for port in port_range if (1000 + port) not in used_ports), None)
-        if port is not None:
-
-            country = 'Hong Kong'
-            LOGGER.debug(f'country: {country}')
-            if 'united states' in country.lower():
-                user_avd = UserAvd.objects.create(
-                    user=User.objects.all().first(),
-                    name=avdname,
-                    port=port,
-                    proxy_type="CYBERGHOST",
-                    country=country,
-                    timezone=random.choice(US_TIMEZONE),
-                )
-            else:
-                user_avd = UserAvd.objects.create(
-                    user=User.objects.all().first(),
-                    name=avdname,
-                    port=port,
-                    proxy_type="CYBERGHOST",
-                    country=country
-                )
-
     def get_avd_options(self):
         emulator_options = [
+            # Set the emulation mode for a camera facing back or front
+            #  '-camera-back', 'emulated',
+            #  '-camera-front', 'emulated',
+
             #  '-phone-number', str(self.phone) if self.phone else '0',
+
         ]
 
         if self.user_avd.timezone:
@@ -193,6 +172,26 @@ class InstaBot:
 
     def get_device(self):
         name = self.emulator_name
+
+        #  LOGGER.debug(f'Start AVD: {name}')
+
+        #  if not self.device:
+        #      LOGGER.debug(f'Start AVD: ["emulator", "-avd", "{name}"] + '
+        #                   f'{self.get_avd_options()}')
+        #      self.device = subprocess.Popen(
+        #          #  ["emulator", "-avd", f"{name}"],
+        #          ["emulator", "-avd", f"{name}"] + self.get_avd_options(),
+        #          stdout=subprocess.PIPE,
+        #          stderr=subprocess.PIPE,
+        #          universal_newlines=True,
+        #      )
+        #      time.sleep(5)
+        #      log_activity(
+        #          self.user_avd.id,
+        #          action_type="StartAvd",
+        #          msg=f"Started AVD for {self.user_avd.name}",
+        #          error=None,
+        #      )
 
         if self.get_adb_device():
             self.get_device_retires = 0
@@ -217,7 +216,7 @@ class InstaBot:
             self.get_device()
 
         return self.device
-# desired_caps = {'platformName': 'Android','deviceName': 'instagram_2972','appPackage': 'com.instagram.android','appActivity': 'com.instagram.android.activity.MainTabActivity','automationName': 'UiAutomator2'}
+
     def check_apk_installation(self):
         LOGGER.debug('Check if apk is installed')
         vpn = CyberGhostVpn(self.driver())
@@ -225,17 +224,18 @@ class InstaBot:
             vpn.terminate_app()
 
         LOGGER.debug('Check if cyberghost is installed')
-        if not self.driver().is_app_installed('de.mobileconcepts.cyberghost'):
-            cmd = f"adb -s emulator-{self.adb_console_port} install -t -r -d -g {os.path.join(BASE_DIR, 'apk/cyberghost.apk')}"
-            p = subprocess.Popen([cmd], stdin=subprocess.PIPE, shell=True, stdout=subprocess.DEVNULL)
-            p.wait()
-        
-        LOGGER.debug('Check if instagram is installed')
+        self.driver().install_app('apk/cyberghost.apk')
+            
+        LOGGER.debug('Check if instagram is installed')        
         if not self.driver().is_app_installed("com.instagram.android"):
             LOGGER.debug('instagram is not installed, now install it')
             self.install_apk(self.adb_console_port, "instagram")
-            LOGGER.info('instagram app installed successfully')
-            
+            log_activity(
+                self.user_avd.id,
+                action_type="Installinstagram",
+                msg=f"instagram app installed successfully.",
+                error=None,
+            )
         else:
             LOGGER.debug('Check instagram version')
             apk_version = self.get_apk_version('com.instagram.android')
@@ -245,22 +245,22 @@ class InstaBot:
                 self.Install_new_insta()
             else:
                 self.driver().terminate_app('com.instagram.android')
-
-        if self.driver().is_app_installed('com.windscribe.vpn'):
-            self.driver().remove_app('com.windscribe.vpn')
-            
+        
         try:
             command = f"adb -s emulator-{self.adb_console_port} shell rm -r /sdcard/Download/*"
             subprocess.run(command, shell=True, check=True)
         except Exception as e:
             print(e)
+
+        if self.driver().is_app_installed('com.windscribe.vpn'):
+            self.driver().remove_app('com.windscribe.vpn')
         #     LOGGER.info('install windscribe')
         #     cmd = f"adb -s emulator-{self.adb_console_port} install -t -r -d -g {os.path.join(BASE_DIR, 'apk/windscribe-2.apk')}"
         #     p = subprocess.Popen([cmd], stdin=subprocess.PIPE, shell=True, stdout=subprocess.DEVNULL)
         #     p.wait()
         # else:
         #     self.driver().terminate_app('com.windscribe.vpn')
-    
+
     def clear_app_tray(self):
         try:
             output = subprocess.check_output(["adb", '-s',f'emulator-{self.adb_console_port}',"shell", "dumpsys", "activity", "recents"], universal_newlines=True)
@@ -276,7 +276,8 @@ class InstaBot:
                     LOGGER.info(f"Removed StackId: {stack_id}")
         except Exception as e:
             print("Error:", str(e))
-        
+            
+            
     def get_adb_device(self):
         #  LOGGER.debug('Get adb device')
         for x in range(20):
@@ -302,7 +303,13 @@ class InstaBot:
                 "noVerify": True,
                 "ignoreHiddenApiPolicyError": True,
                 # "appWaitDuration": 10000
+                # "newCommandTimeout": 30,
+                #  #Don't use this
+                #  "systemPort": "8210",
+                #  'isHeadless': True,
+                #  "udid": f"emulator-{self.emulator_port}",
             }
+
             opts.update(self.parallel_opts)
 
             #  LOGGER.debug('Start appium driver')
@@ -410,17 +417,21 @@ class InstaBot:
                         print(output.strip())
 
             LOGGER.info(f'AVD command: {cmd}')
+            #  result = run_cmd(cmd)
+            #  return result
             p = subprocess.Popen(
                 [cmd], stdin=subprocess.PIPE, shell=True, stdout=subprocess.DEVNULL
             )
             time.sleep(1)
             p.communicate(input=b"\n")
             p.wait()
+            # breakpoint()
             updated_config = os.path.join(settings.BASE_DIR, 'twbot/avd_config/config.ini')
             new_config_file = f"{settings.AVD_DIR_PATH}/{avd_name}.avd/config.ini"
             LOGGER.debug(f'updated_config: {updated_config}')
             LOGGER.debug(f'new_config_file: {new_config_file}')
             if os.path.isdir(f"{settings.AVD_DIR_PATH}/{avd_name}.avd") and os.path.isfile(new_config_file):
+                # os.replace(updated_config, new_config_file)
                 from shutil import copyfile
                 copyfile(updated_config, new_config_file)
             return True
@@ -562,6 +573,57 @@ class InstaBot:
         name = self.emulator_name
         port = self.adb_console_port
         parallel.stop_avd(name=name, port=port)
+
+    def connect_windscribe(self,country):
+        self.driver().activate_app('com.windscribe.vpn')
+        random_sleep(5,10,reason='open windscribe')
+        if self.driver().current_activity == 'com.windscribe.mobile.welcome.WelcomeActivity':
+            self.click_element('login','//android.widget.Button[@text="Login"]')
+            self.input_text(os.getenv('windscribe_username'),'username','com.windscribe.vpn:id/username',By.ID)
+            self.input_text(os.getenv('windscribe_password'),'password','com.windscribe.vpn:id/password',By.ID)  
+            self.click_element('continue','//android.widget.Button[@text="Continue"]') 
+            random_sleep(15,15,reason='get server list')
+            while self.driver().current_activity != 'com.windscribe.mobile.windscribe.WindscribeActivity':
+                time.sleep(5)
+        if self.driver().current_activity == 'com.windscribe.mobile.windscribe.WindscribeActivity':
+            city_name = self.find_element('city name','com.windscribe.vpn:id/tv_connected_city_name',By.ID)    
+            while not city_name:
+                city_name = self.find_element('city name','com.windscribe.vpn:id/tv_connected_city_name',By.ID,timeout=2)
+            connection_status = self.find_element('status','com.windscribe.vpn:id/tv_connection_state',By.ID)
+            if city_name.text == 'Hong Kong' and connection_status.text == 'OFF':
+                self.click_element('connect btn','com.windscribe.vpn:id/on_off_button',By.ID)
+                self.click_element('ok','android:id/button1',By.ID,timeout=5)
+                connection_status = self.find_element('status','com.windscribe.vpn:id/tv_connection_state',By.ID)
+                while not connection_status.text == 'ON':
+                    connection_status = self.find_element('status','com.windscribe.vpn:id/tv_connection_state',By.ID)
+                    if connection_status.text == 'ON':
+                        return True
+            elif city_name.text == 'Hong Kong' and connection_status.text == 'ON':
+                return True
+            else:
+                self.click_element('search','com.windscribe.vpn:id/img_search_list',By.ID)
+                self.input_text(country,'search country','com.windscribe.vpn:id/search_src_text',By.ID)
+                self.click_element('country',"//android.widget.TextView[@text='Hong Kong Victoria' and @resource-id='com.windscribe.vpn:id/node_name']")
+                self.click_element('ok','android:id/button1',By.ID)
+                connection_status = self.find_element('status','com.windscribe.vpn:id/tv_connection_state',By.ID)
+                while not connection_status.text == 'ON':
+                    try:
+                        connection_status = self.find_element('status','com.windscribe.vpn:id/tv_connection_state',By.ID)
+                        if connection_status.text == 'ON':
+                            return True
+                    except Exception as e:
+                        print(e)
+                if connection_status.text == 'ON':
+                        return True 
+
+    def logout_windscribe(self):
+        try:
+            self.driver().start_activity('com.windscribe.vpn','com.windscribe.mobile.windscribe.WindscribeActivity')
+            self.click_element('menu','com.windscribe.vpn:id/img_hamburger_menu',By.ID)
+            self.click_element('logout','com.windscribe.vpn:id/cl_sign',By.ID)
+            self.click_element('ok','android:id/button1',By.ID)
+        except Exception as e:
+            print(e)
     
     def connect_to_vpn(self, fail_tried=0, vpn_type='cyberghostvpn',
                        country='', city=""):
@@ -607,7 +669,7 @@ class InstaBot:
 
     def get_arch_of_device(self):
         LOGGER.debug('Get the architecture of the current device')
-        device = self.adb.device(f'emulator-{self.adb_console_port} -no-boot-anim')
+        device = self.adb.device(f'emulator-{self.adb_console_port}')
         if device:
             arch = device.shell('getprop ro.product.cpu.abi').strip()
             LOGGER.debug(f'Architecture of current device: {arch}')
@@ -616,7 +678,9 @@ class InstaBot:
             
             
     def find_element(self, element, locator, locator_type=By.XPATH,
-            page=None, timeout=10,timesleep=1):
+            page=None, timeout=10,timesleep=1,
+            condition_func=EC.presence_of_element_located,
+            condition_other_args=tuple()):
         """Find an element, then return it or None.
         If timeout is less than or requal zero, then just find.
         If it is more than zero, then wait for the element present.
@@ -644,7 +708,7 @@ class InstaBot:
                         f' in the page "{page}"')
             else:
                 self.logger.info(f'Cannot find the element: {element}')
-    
+
     def find_elements(self, element, locator, locator_type=By.XPATH,
             page=None, timeout=10,timesleep=1):
         """Find an element, then return it or None.
@@ -674,7 +738,7 @@ class InstaBot:
                         f' in the page "{page}"')
             else:
                 self.logger.info(f'Cannot find the element: {element}')
-
+                
     def click_element(self, element, locator, locator_type=By.XPATH,
             timeout=timeout,page=None,timesleep=1):
         
@@ -704,6 +768,16 @@ class InstaBot:
                 return ele
         except Exception as e :
             self.logger.info(f'Got an error in input text :{element} {e}')  
+
+    def swipe_down(self):
+        try:
+            size = self.driver().get_window_size()
+            x, y = size['width'], size['height']
+            x1, y1, y2 = x * 0.5, y * 0.4, y * 0.7  # start from the middle of the screen and swipe down to the bottom
+            t = 200
+            self.driver().swipe(x1, y1, x1, y2, t)
+        except Exception as e:
+            print(e)
     
     def swip_display(self,scroll_height):
         try:
@@ -716,6 +790,21 @@ class InstaBot:
             self.driver().swipe(start_x = x1,start_y = y1,end_x = x1,end_y = y2, duration=random.randrange(1050, 1250),)
         except Exception as e : print(e)
 
+    def swipe_up(self):
+        try:
+            size = self.app_driver.get_window_size()
+            x, y = size['width'], size['height']
+            x1, y1, y2 = x * 0.5, y * 0.7, y * 0.4 # start from the middle of the screen and swipe up to the top
+            t = 200
+            self.app_driver.swipe(x1, y1, x1, y2, t)
+            # size = self.driver().get_window_size()
+            # x, y = size['width'], size['height']
+            # x1 = x * 0.5
+            # y1, y2 = y * 0.75, y * 0.25  # move 1/4 up from the bottom and 3/4 down from the top
+            # t = 200
+            # self.app_driver.swipe(x1, y1, x1, y2, t)
+        except Exception as e: print(e)
+    
     def swipe_left(self):
         try:
             window_size = self.driver().get_window_size()
@@ -740,31 +829,6 @@ class InstaBot:
         except Exception as e:
             print(e)
 
-    def swipe_down(self):
-        try:
-            size = self.driver().get_window_size()
-            x, y = size['width'], size['height']
-            x1, y1, y2 = x * 0.5, y * 0.4, y * 0.7  # start from the middle of the screen and swipe down to the bottom
-            t = 200
-            self.driver().swipe(x1, y1, x1, y2, t)
-        except Exception as e:
-            print(e)
-
-    def swipe_up(self):
-        try:
-            size = self.app_driver.get_window_size()
-            x, y = size['width'], size['height']
-            x1, y1, y2 = x * 0.5, y * 0.7, y * 0.4 # start from the middle of the screen and swipe up to the top
-            t = 200
-            self.app_driver.swipe(x1, y1, x1, y2, t)
-            # size = self.driver().get_window_size()
-            # x, y = size['width'], size['height']
-            # x1 = x * 0.5
-            # y1, y2 = y * 0.75, y * 0.25  # move 1/4 up from the bottom and 3/4 down from the top
-            # t = 200
-            # self.app_driver.swipe(x1, y1, x1, y2, t)
-        except Exception as e: print(e)
-
     def tap_left(self):
         from appium.webdriver.common.touch_action import TouchAction
         try:
@@ -774,7 +838,8 @@ class InstaBot:
             action.tap(x=x, y=y).perform()
         except Exception as e:
             print(e)
-            
+
+
     def back_until_number(self,number):
         try:
             for i in range(number):
@@ -784,51 +849,47 @@ class InstaBot:
             self.logger.info(f'Got an error in Go back to the number : {e}')
 
     def phone_number_proccess(self):
-        self.phone_number = get_number()
-        phone_number_digit = str(self.phone_number).isdigit()
+        phone_number = get_number()
+        phone_number_digit = str(phone_number).isdigit()
         if phone_number_digit:
             for i in range(2):
-                print(self.phone_number)
-                self.input_text(self.phone_number,'phone number input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[1]/android.widget.EditText')
+
+                print(phone_number)
+                self.input_text(phone_number,'phone number input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[1]/android.widget.EditText')
                 next_btn = self.driver().find_element(By.XPATH,'//android.widget.Button[@content-desc="Next"]')
                 next_btn.click()
-                random_sleep(5,7,reason='next page')
-                otp = self.find_element('otp page', '//android.view.View[@text="Enter the confirmation code"]',timeout=5)
+                self.next_btn()
+                otp = self.find_element('otp','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
                 if otp:
                     pass
-                elif self.find_element('something went wrong','//android.view.View[@content-desc="Something went wrong. Please try again later."]',timeout=2):
-                    self.create_account()
-
-                elif self.find_element('phone number page', '''//android.view.View[@text="What's your mobile number?"]''',timeout=2):
-                    self.df.loc['avd']=self.emulator_name
-                    self.df.to_csv('delete_avd.csv', index=False)
-                    LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
-                    self.user_avd.delete()
-                    return False      
-                elif self.find_element('name page', '''//android.view.View[@text="What's your name?"]''',timeout=2):
-                    return True
-                    
+                something_wrong_error = self.find_element('something went wrong','//android.view.View[@content-desc="Something went wrong. Please try again later."]')
+                if something_wrong_error:
+                    return False
                 time.sleep(5)
-                otp = get_sms(self.phone_number)
+                otp = get_sms(phone_number)
                 count = 0
                 time.sleep(13)
                 while not otp:
-                    otp = get_sms(self.phone_number)
+                    otp = get_sms(phone_number)
                     time.sleep(10)
                     count+=1
-                    if count == 6:
-                        ban_number(self.phone_number)
+                    if count == 5:
+                        ban_number(phone_number)
+                        self.back_until_number(2)
                         self.df.loc['avd']=self.emulator_name
                         self.df.to_csv('delete_avd.csv', index=False)
                         LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
+                        self.user_avd.delete()
                         return False
+                    
                 if otp:
                     print(otp)
                     self.input_text(str(otp),'input otp','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
                     next_btn = self.driver().find_element(By.XPATH,'//android.widget.Button[@content-desc="Next"]')
                     next_btn.click()
-                    return True
-
+                    break
+            return phone_number
+        
     def send_request(self):
         import requests
         import random
@@ -884,7 +945,6 @@ class InstaBot:
 
         run_cmd(f'adb -s emulator-{self.adb_console_port} push {profile_pic_path} /sdcard/Download')
 
-
     def add_profile_pic(self):
         self.click_element('click on add_rofile','//android.widget.Button[@content-desc="Add picture"]')
         self.profile_img_download()
@@ -895,6 +955,7 @@ class InstaBot:
         self.click_element('download','/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.support.v4.widget.DrawerLayout/android.widget.LinearLayout[2]/android.widget.FrameLayout/android.widget.ListView/android.widget.LinearLayout[2]/android.widget.LinearLayout')
         self.click_element('choose pic','com.android.documentsui:id/icon_thumb',By.ID)
         self.click_element('also share post','//android.widget.Switch[@content-desc="Also share this picture as a post"]/android.view.ViewGroup/android.widget.FrameLayout/android.widget.Switch')
+        # breakpoint()
         
         time.sleep(3)
         donne = self.click_element('Done','//android.widget.Button[@content-desc="Done"]')
@@ -915,50 +976,12 @@ class InstaBot:
             return True
         else:return False
 
-
     def delete_avd(self,emulator_name):
         try:
             cmd = f'avdmanager delete avd --name {emulator_name}'
             p = subprocess.Popen([cmd], stdin=subprocess.PIPE, shell=True, stdout=subprocess.DEVNULL)
         except Exception as e:
             pass
-    
-    def set_value(self,value,type):
-        if type == 'year':
-            NumberPicker = 3
-            Button = 1
-            num = 2023 - int(self.birth_year) - 2
-            for i in range(num):
-                self.click_element(f'select {type}',f'//android.widget.DatePicker//android.widget.NumberPicker[{NumberPicker}]//android.widget.Button[{Button}]')                
-        elif type == 'day':
-            NumberPicker = 2
-            Button = 1
-            initial_day = int(self.find_element(f'{type}', f'//android.widget.DatePicker//android.widget.NumberPicker[{NumberPicker}]//android.widget.EditText').text)
-            target_day = int(value)
-            total_days = 31  
-            downside_clicks = (target_day - initial_day) % total_days
-            upside_clicks = (initial_day - target_day) % total_days
-            if downside_clicks > upside_clicks:
-                Button = 1
-            else:
-                Button = 2
-            
-        elif type == 'month':
-            birth_month_li = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov', 'Dec']
-            NumberPicker = 1
-            now = self.find_element(f'{type}',f'//android.widget.DatePicker//android.widget.NumberPicker[{NumberPicker}]//android.widget.EditText').text
-            now_index = birth_month_li.index(now)
-            value_index = birth_month_li.index(value)
-            if now_index < value_index:
-                Button = 2
-            elif now_index > value_index:
-                Button = 1
-
-        now = self.find_element(f'{type}',f'//android.widget.DatePicker//android.widget.NumberPicker[{NumberPicker}]//android.widget.EditText').text
-        while str(now) != str(value):
-            LOGGER.info(f'set {value} in {type}')
-            self.click_element(f'select {type}',f'//android.widget.DatePicker//android.widget.NumberPicker[{NumberPicker}]//android.widget.Button[{Button}]')
-            now = self.find_element(f'{type}',f'//android.widget.DatePicker//android.widget.NumberPicker[{NumberPicker}]//android.widget.EditText').text
 
     def swip_until_match(self,comperison_xpath,comperison_text):
         rect_ele = self.driver().find_element_by_xpath(comperison_xpath).rect
@@ -978,31 +1001,39 @@ class InstaBot:
                     end_y = start_y - rect_ele['height']
                 elif is_digit and len(comperison_text) == 2 and int(comperison_xpath_text) >= 15:
                     end_y = start_y - rect_ele['height']
-                
+
                 self.driver().swipe(start_x=start_x,start_y=start_y,end_x=end_x,end_y=end_y,duration=random.randrange(200, 250))
+                time.sleep(0.80)
             except Exception as e :print(e)
 
     def set_birth_date(self):
-        
         self.click_element('birthday input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[2]/android.widget.EditText')
         middle_month_picker_relative_xpath = '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.DatePicker/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.NumberPicker[1]/android.widget.EditText'
         middle_day_picker_relative_xpath = '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.DatePicker/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.NumberPicker[2]/android.widget.EditText'
         middle_year_picker_relative_xpath = '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.DatePicker/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.NumberPicker[3]/android.widget.EditText'
-
+        
+        # breakpoint()
         LOGGER.debug(f'set_year: {self.birth_year}')
-        year = str(self.birth_year)
-        self.set_value(value=year,type='year')
+        year = str(int(self.birth_year)+1)
+        self.swip_until_match(middle_year_picker_relative_xpath,year)
 
         LOGGER.debug(f'set_date: {self.birth_date}')
-        self.set_value(value=self.birth_date,type='day')
+        self.swip_until_match(middle_day_picker_relative_xpath,self.birth_date)
 
         LOGGER.debug(f'set_month: {self.birth_month}')
-        self.set_value(value=self.birth_month,type='month')
-
+        self.swip_until_match(middle_month_picker_relative_xpath,self.birth_month)
+        
+        time.sleep(1)
         self.birth_year = self.find_element('self.birth_year',middle_year_picker_relative_xpath).text
+        time.sleep(1)
         self.birth_month = self.find_element('self.birth_month',middle_month_picker_relative_xpath).text
+        time.sleep(1)
         self.birth_date = self.find_element('self.birth_date',middle_day_picker_relative_xpath).text
+        time.sleep(1)
+        
+        
         self.click_element('Set btn','android:id/button1',By.ID)
+        # breakpoint()
         self.next_btn()
         
     
@@ -1014,143 +1045,123 @@ class InstaBot:
         # com.instagram.android:id/find_people_card_button
         add_btn = self.click_element('Add Bio btn','com.instagram.android:id/find_people_card_button',By.ID)
         if add_btn:
-            self.bio = random_insta_bio()
+            self.bio = NEW_INSTA_ACC_BIO
             self.input_text(self.bio,"User's Bio", 'com.instagram.android:id/caption_edit_text',By.ID)
             check = self.click_element('tick btn','//android.widget.Button[@content-desc="Done"]/android.widget.ImageView')
             if check:
                 return True
+
             time.sleep(3)
         else:
+            # breakpoint()
             return False
-    
-    def username_process(self):
-        try:
-            LOGGER.info(f' Full name is {self.full_name}')
-            self.input_text(self.full_name,'first name input','//*[@class="android.widget.EditText"]')
-            self.next_btn()
-            LOGGER.info(f'password is {self.password}')
-            time.sleep(5)
-            self.input_text(self.password,'password input','//*[@class="android.widget.EditText"]')
-            self.next_btn()
-            self.click_element('save info','//android.widget.Button[@content-desc="Save"]')
-            #  ----------------
-        except Exception as e:
-            print(e)
-
-        self.set_birth_date()
-        random_sleep(10,12,reason='green tick or username')
-        green_tick = self.find_element('Green Tick','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[2]/android.widget.ImageView')
-        if green_tick:
-            self.i_username = self.driver().find_element(By.XPATH,'/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText').text
-            self.next_btn()
-        elif self.find_element('Check Usser Name',"//*[contains(@text, 'your Instagram username')]"):
-            user_name = self.find_element('Check Usser Name',"//*[contains(@text, 'your Instagram username')]")
-            self.i_username = user_name.text.split(' ')[0]
-            self.next_btn()
-        else:
-            user_ = self.find_element('username','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
-            if user_:
-                self.i_username = str(self.full_name)+str(random.randint(10000,99999))
-                self.input_text(self.i_username,'input user_name','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
-                time.sleep(3)
-                self.next_btn()
-
+        
     def next_btn(self):    
         next_btn = self.find_element('Next Button','//android.widget.Button[@content-desc="Next"]').click()
-        
-    def create_account(self):
-        print(f'\n\n\n----The ps name is : {os.getenv("PC")}----\n\n\n')
-        gender_detector = detector.Detector()
-        fake = Faker()
-        self.gender = random.choice(["male", "female"])
-        if self.gender == "male":
-            self.fname = names.get_first_name(gender="male")
-        else:
-            self.fname = names.get_first_name(gender="female")
-        detected_gender = gender_detector.get_gender(self.fname)
-        while detected_gender != self.gender:
-            if self.gender == "male":
-                self.fname = names.get_first_name(gender="male")
-            else:
-                self.fname = names.get_first_name(gender="female")
-            detected_gender = gender_detector.get_gender(self.fname)
-        self.lname =  fake.last_name()
-        self.password = self.fname+'@1234'
-        self.full_name = self.fname + self.lname
-        self.birth_year = str(random.randint(1990,2003))
-        self.birth_date = str(random.randint(1,28))
-        if len(self.birth_date)==1:
-            self.birth_date = f"0{self.birth_date}"
-        # birth_month_li = ['January','February','March','April','May','June','July','August','September','October','November', 'December']
-        birth_month_li = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov', 'Dec']
-        self.birth_month = random.choice(birth_month_li)
-        self.driver().terminate_app('com.instagram.android')
-        random_sleep(2,3,reason='open insta')
-        self.driver().activate_app('com.instagram.android')
-        random_sleep(15,17,reason='open insta app')
-        if self.driver().current_activity == 'com.instagram.nux.activity.SignedOutFragmentActivity':
-            self.driver().remove_app('com.instagram.android')
-            self.Install_new_insta()
-            self.create_account()        
-        self.click_element('create account btn','//android.widget.Button[@content-desc="Create new account"]')
-        if self.find_element('name page', '''//android.view.View[@text="What's your name?"]''',timeout=5):
-            self.username_process()
-            phone_number = self.phone_number_proccess()
-            if not phone_number:
-                return False
-        else:
-            phone_number = self.phone_number_proccess()
-            if not phone_number:
-                return False 
-            self.username_process()
 
-        
-        i_agree = self.find_element('i_agree','//android.widget.Button[@content-desc="I agree"]')
-        if i_agree:
-            self.click_element('I agree','//android.widget.Button[@content-desc="I agree"]')
-            random_sleep(22,25,reason='I agree')
+    def create_account(self):
+        # try:
+            # breakpoint()
             
-            add_profile = self.find_element('add_profile_btn','//android.widget.Button[@content-desc="Add picture"]')
-            if not add_profile:
-                self.driver().back()
-                self.next_btn()
-                self.click_element('i_agree','//android.widget.Button[@content-desc="I agree"]')
-                random_sleep(22,25,reason='I agree')
-                add_profile = self.find_element('add_profile_btn','//android.widget.Button[@content-desc="Add picture"]')
+            self.driver().activate_app('com.instagram.android')
             
-            add_profile = self.find_element('add_profile_btn','//android.widget.Button[@content-desc="Add picture"]')
-            if add_profile:
-                user = User_details.objects.create(
-                            avdsname=self.emulator_name,
-                            username=self.i_username,
-                            number=self.phone_number,
-                            password=self.password,
-                            birth_date=self.birth_date,
-                            birth_month=self.birth_month,
-                            birth_year=self.birth_year,
-                            status='ACTIVE',
-                            avd_pc = os.getenv('PC'),
-                        )
-                
-                # self.add_profile_pic()
-                # check_add_bio = self.add_bio()
-                # time.sleep(5)
-                # try:
-                #     user.bio = self.bio
-                #     user.is_bio_updated=check_add_bio
-                # except AttributeError  as a:print(a)
-                # except Exception as ee:print(ee)
-                user.updated=False
-                user.save()
-                self.driver().terminate_app('com.instagram.android')
-                self.driver().activate_app('com.instagram.android')
-                random_sleep(10,15,reason='open instagram')
-                # self.follow_rio()
-                self.follow_gpt()
-                return user
+            time.sleep(10)
+            create_btn = self.find_element('create account btn','//android.widget.Button[@content-desc="Create new account"]')
+            if create_btn:
+                self.click_element('create account btn','//android.widget.Button[@content-desc="Create new account"]')
             else:
+                self.df.loc['avd']=self.emulator_name
+                self.df.to_csv('delete_avd.csv', index=False)
+                LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
                 return False
+                
+            phone_number = self.phone_number_proccess()
+            if not phone_number:
+                return False
+            try:
+                print(self.full_name)
+                self.input_text(self.full_name,'first name input','//*[@class="android.widget.EditText"]')
+                self.next_btn()
+                print(self.password)
+                time.sleep(5)
+                self.input_text(self.password,'password input','//*[@class="android.widget.EditText"]')
+                self.next_btn()
+                self.click_element('save info','//android.widget.Button[@content-desc="Save"]')
+                #  ----------------
+            except Exception as e:
+                print(e)
+
+            self.set_birth_date()
+            time.sleep(10)
+            green_tick = self.find_element('Green Tick','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[2]/android.widget.ImageView')
+            if green_tick:
+                self.i_username = self.driver().find_element(By.XPATH,'/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText').text
+                self.next_btn()
+            elif self.find_element('Check Usser Name',"//*[contains(@text, 'your Instagram username')]"):
+                user_name = self.find_element('Check Usser Name',"//*[contains(@text, 'your Instagram username')]")
+                self.i_username = user_name.text.split(' ')[0]
+                self.next_btn()                   
+            else:
+                user_ = self.find_element('username','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
+                if user_:
+                    self.i_username = str(self.full_name)+str(random.randint(10000,99999))
+                    self.input_text(self.i_username,'input user_name','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
+                    time.sleep(3)
+                    self.next_btn()
             
+            i_agree = self.find_element('i_agree','//android.widget.Button[@content-desc="I agree"]')
+            if i_agree:
+                self.click_element('I agree','//android.widget.Button[@content-desc="I agree"]')
+                time.sleep(13)
+                add_profile = self.find_element('add_profile_btn','//android.widget.Button[@content-desc="Add picture"]')
+                if add_profile:
+                    user = User_details.objects.create(
+                                avdsname=self.emulator_name,
+                                username=self.i_username,
+                                number=phone_number,
+                                password=self.password,
+                                birth_date=self.birth_date,
+                                birth_month=self.birth_month,
+                                birth_year=self.birth_year,
+                                status='ACTIVE',
+                                avd_pc = os.getenv('PC')
+                            )
+                    
+                    self.add_profile_pic()
+                    check_add_bio = self.add_bio()
+                    time.sleep(5)
+                    try:
+                        user.bio = self.bio
+                        user.is_bio_updated=check_add_bio
+                    except AttributeError  as a:print(a)
+                    except Exception as ee:print(ee)
+                    user.updated=True
+                    user.save()
+                    return user
+                else:
+                    return False
+            
+    def start_app(self,activity = ''):
+        time.sleep(3)
+        try:
+            time.sleep(3)
+            if activity.lower() == 'login':
+                LoginBtn = self.find_element('login btn','//android.view.View[@content-desc="Log in"]',timeout=15)
+                if LoginBtn: 
+                    if LoginBtn.text == 'Log in':
+                        return True
+            elif activity.lower() == 'sign up':
+                self.click_element('Sign up btn','com.instagram.android:id/sign_up_with_email_or_phone',By.ID,timeout=3)
+                allow_contacts_id = 'com.instagram.android:id/primary_button_row'
+                self.click_element('Allow contact',allow_contacts_id,By.ID, timeout=3)
+
+            time.sleep(0.5)
+            try:self.driver().hide_keyboard()
+            except Exception as e: ...
+
+            return True
+        except Exception as e:
+            self.logger.info(f'Got an error in opening the instagram {e}')
 
     def Install_new_insta(self,):
         cmd = f"adb -s emulator-{self.adb_console_port} install -t -r -d -g {os.path.join(BASE_DIR, 'apk/instagram.apk')}"
@@ -1160,101 +1171,40 @@ class InstaBot:
             msg=f"Installation of instagram apk",
             error=None,
         )
-        p = subprocess.Popen([cmd], stdin=subprocess.PIPE, shell=True, stdout=subprocess.DEVNULL)
+        p = subprocess.Popen(
+            [cmd], stdin=subprocess.PIPE, shell=True, stdout=subprocess.DEVNULL
+        )
         p.wait()
 
-    def connect_windscribe(self,country):
-        self.driver().activate_app('com.windscribe.vpn')
-        random_sleep(5,10,reason='open windscribe')
-        if self.driver().current_activity == 'com.windscribe.mobile.welcome.WelcomeActivity':
-            self.click_element('login','//android.widget.Button[@text="Login"]')
-            self.input_text(os.getenv('windscribe_username'),'username','com.windscribe.vpn:id/username',By.ID)
-            self.input_text(os.getenv('windscribe_password'),'password','com.windscribe.vpn:id/password',By.ID)  
-            self.click_element('continue','//android.widget.Button[@text="Continue"]') 
-            random_sleep(15,15,reason='get server list')
-            while self.driver().current_activity != 'com.windscribe.mobile.windscribe.WindscribeActivity':
-                time.sleep(5)
-        if self.driver().current_activity == 'com.windscribe.mobile.windscribe.WindscribeActivity':
-            city_name = self.find_element('city name','com.windscribe.vpn:id/tv_connected_city_name',By.ID)    
-            while not city_name:
-                city_name = self.find_element('city name','com.windscribe.vpn:id/tv_connected_city_name',By.ID,timeout=2)
-            connection_status = self.find_element('status','com.windscribe.vpn:id/tv_connection_state',By.ID)
-            if city_name.text == 'Hong Kong' and connection_status.text == 'OFF':
-                self.click_element('connect btn','com.windscribe.vpn:id/on_off_button',By.ID)
-                self.click_element('ok','android:id/button1',By.ID,timeout=5)
-                random_sleep(8,9,reason='wait for connection')
-                connection_status = self.find_element('status','com.windscribe.vpn:id/tv_connection_state',By.ID)
-                while not connection_status.text == 'ON':
-                    connection_status = self.find_element('status','com.windscribe.vpn:id/tv_connection_state',By.ID)
-                    if connection_status.text == 'ON':
-                        return True
-            elif city_name.text == 'Hong Kong' and connection_status.text == 'ON':
-                return True
-            else:
-                self.click_element('search','com.windscribe.vpn:id/img_search_list',By.ID)
-                self.input_text(country,'search country','com.windscribe.vpn:id/search_src_text',By.ID)
-                self.click_element('country',"//android.widget.TextView[@text='Hong Kong Victoria' and @resource-id='com.windscribe.vpn:id/node_name']")
-                self.click_element('ok','android:id/button1',By.ID)
-                connection_status = self.find_element('status','com.windscribe.vpn:id/tv_connection_state',By.ID)
-                random_sleep(4,5,reason='wait for connection')
-                while not connection_status.text == 'ON':
-                    connection_status = self.find_element('status','com.windscribe.vpn:id/tv_connection_state',By.ID)
-                    if connection_status.text == 'ON':
-                        return True
-                    
-    def logout_windscribe(self):
-        try:
-            self.driver().start_activity('com.windscribe.vpn','com.windscribe.mobile.windscribe.WindscribeActivity')
-            self.click_element('menu','com.windscribe.vpn:id/img_hamburger_menu',By.ID)
-            self.click_element('logout','com.windscribe.vpn:id/cl_sign',By.ID)
-            self.click_element('ok','android:id/button1',By.ID)
-        except Exception as e:
-            print(e)
-            breakpoint()
-            
-            
     def get_apk_version(self,package_name):
         dumpsys_output = subprocess.check_output(['adb','-s',f'emulator-{self.adb_console_port}', 'shell', 'dumpsys', 'package', package_name]).decode('utf-8')
         version_line = [line.strip() for line in dumpsys_output.split('\n') if 'versionName' in line][0]
         version_name = version_line.split('=')[1]
         return version_name
-    
-    def login_checker(self):
-        for i in range(3):
-            self.driver().terminate_app('com.instagram.android')    
-            self.driver().activate_app('com.instagram.android')
-            random_sleep(14,15,reason='open insta')
-            if self.driver().current_activity == 'com.instagram.mainactivity.MainActivity':
-                return True
-            elif self.driver().current_activity == 'com.instagram.nux.activity.SignedOutFragmentActivity':
-                self.Install_new_insta()
-                return f"version not match"
-            elif self.driver().current_activity == 'com.instagram.nux.activity.BloksSignedOutFragmentActivity':
-                if self.find_element('profile photo','//android.widget.Button[@content-desc="Profile photo"]'):
-                    return True
-                else:
-                    if self.connect_to_vpn(country='Hong Kong'):
-                        return True
-                    else:
-                        return False
 
     def login(self,username,password):
         LOGGER.info("inside login methods")
+        # breakpoint()
         self.user = User_details.objects.filter(username=username).first()
         for i in range(3):
             self.driver().activate_app('com.instagram.android')
-            random_sleep(14,15,reason='open insta')
+            time.sleep(12)
             if self.driver().current_activity == 'com.instagram.mainactivity.MainActivity':
                 if not self.find_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID):
+                    self.click_element('Allow Cookies','//android.widget.Button[@text="Allow all cookies"]',timeout=5)
                     try:
-                        self.click_element('Allow All Cookies','//android.widget.Button[@content-desc="Allow all cookies"]')
                         allow_btn  = self.find_element('Allow Cookies','com.instagram.android:id/primary_button',By.ID).text
                         if allow_btn == 'Allow Access':
                             self.click_element('Allow Cookies','com.instagram.android:id/primary_button',By.ID)
                             self.click_element('back','//android.widget.ImageView[@content-desc="Back"]')
                     except AttributeError as f: print(f)
-                    except Exception as e :print(e) 
-                return True
+                    except Exception as e :print(e)
+                HomeBtn = self.find_element('Home page','com.instagram.android:id/feed_tab',By.ID)
+                if HomeBtn :
+                    return True
+                else:
+                    self.driver().terminate_app('com.instagram.android')
+                    self.login(username,password)
                     
             if self.driver().current_activity == 'com.instagram.nux.activity.SignedOutFragmentActivity':
                 self.driver().remove_app('com.instagram.android')
@@ -1263,12 +1213,10 @@ class InstaBot:
                 
             if self.driver().current_activity == 'com.instagram.nux.activity.BloksSignedOutFragmentActivity':
                 LOGGER.info(f'Username :{username}, Password :{password}')
-                input_ele = None
-                if self.find_element('input element','//*[@class="android.widget.EditText"]',timeout=3):
+                if self.find_element('input element','//*[@class="android.widget.EditText"]', timeout=5):
                     try:
                         input_ele = self.driver().find_elements(By.XPATH,'//*[@class="android.widget.EditText"]')
-                    except Exception as e: 
-                        print(e)
+                    except Exception as e: print(e)
                     if input_ele:   
                         try:
                             LOGGER.info(f"your username is {username}")
@@ -1284,9 +1232,11 @@ class InstaBot:
                 else:
                     self.find_element('profile photo','//android.widget.Button[@content-desc="Profile photo"]')
                     self.click_element('Login btn','//android.widget.Button[@content-desc="Log in"]')
-                    HomeBtn = self.find_element('Home page','com.instagram.android:id/feed_tab',By.ID,timeout=5)
+                    
+                    HomeBtn = self.find_element('Home page','com.instagram.android:id/feed_tab',By.ID)
                     if HomeBtn : 
                         return True
+                    
                     else:
                         if self.click_element('try another','//android.widget.Button[@content-desc="Try another way"]',timeout=3):
                             self.click_element('password','//android.widget.RadioButton[@content-desc="Enter password to log in"]')
@@ -1318,8 +1268,8 @@ class InstaBot:
                 if SaveInfo:
                     self.click_element('Save','//android.widget.Button[@content-desc="Save"]')
                     time.sleep(7)
+                    self.click_element('Allow Cookies','//android.widget.Button[@text="Allow all cookies"]')
                     try:
-                        self.click_element('Allow All Cookies','//android.widget.Button[@content-desc="Allow all cookies"]')
                         allow_btn  = self.find_element('Allow Cookies','com.instagram.android:id/primary_button',By.ID).text
                         if allow_btn == 'Allow Access':
                             self.click_element('Allow Cookies','com.instagram.android:id/primary_button',By.ID)
@@ -1379,46 +1329,14 @@ class InstaBot:
             else : return False
         else: return False
         
-    def find_user(self):
-        CanSearchUsers = User_details.objects.filter(status='ACTIVE').all()
-        try:   
-            for Follow_user in CanSearchUsers:
-                self.Follow_user = Follow_user
-                if self.search_user(Follow_user.username):
-                    pass
-                else:
-                    breakpoint()
-                    print('---->')
-        except Exception as e :print(e)
+    def random_like(self):
+        if random.randint(1,3) ==1 : self.click_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2)
 
-    def check_notification(self):
-        if self.click_element('notification','//android.widget.Button[@content-desc="Activity"]'):
-            notifications = self.driver().find_elements(By.XPATH,'//*[@resource-id="com.instagram.android:id/row_container"]')
-            for element in notifications:
-                try:
-                    text_elements = element.find_elements_by_xpath(".//android.widget.TextView")
-                    for text_element in text_elements:
-                        text = text_element.text
-                        if 'following you' in text:
-                            follow = element.find_element(By.XPATH,".//android.widget.Button[@text='Follow']")
-                            # breakpoint()
-                            if follow:
-                                LOGGER.info('Follow back user')
-                                follow.click()
-                                self.bot_follow = True
-                            break
-                    random_sleep(1,1,reason='Follow user')
-                except Exception as e:
-                    random_sleep(1,1,reason='exception')
-                    print(e)
-            back = self.click_element('back','//android.widget.ImageView[@content-desc="Back"]')
-            if not back:
-                self.driver().back()
-                
-    def random_activity(self,random_=False):
+    
+    def search_user(self,Username,random_=False):
+        self.click_element('Search btn','com.instagram.android:id/search_tab',By.ID)
         if random_:
             xpath = random.choice(['image_preview', 'image_button'])
-            # //android.widget.Button[@content-desc="Activity"]
             if not self.find_element('Random', f"//*[@resource-id='com.instagram.android:id/{xpath}']"):
                 for i in range(2):
                     if not self.click_element('Back','com.instagram.android:id/action_bar_button_back',By.ID):
@@ -1426,23 +1344,29 @@ class InstaBot:
             self.click_element('Random', f"//*[@resource-id='com.instagram.android:id/{xpath}']")
             if xpath == 'image_preview':
                 for i in range(3):
-                    random_sleep(3,7,reason='see reels')
-                    self.swip_display(9)                    
+                    time.sleep(random.randint(8,10))
+                    # self.random_like()
+                    self.swip_display(9)
+                    
             else:
-                for i in range(random.randint(3,6)):
-                    random_sleep(3,5,reason='Change post')
+                for i in range(3):
+                    for _ in range(7):
+                        self.swip_display(4)
+                        PostDetails = self.find_element('Post Details','com.instagram.android:id/row_feed_comment_textview_layout',By.ID,timeout=3)
+                        if PostDetails :
+                            break
+                    # self.random_like()
                     self.swip_display(9)
                     
             if not self.click_element('Back','com.instagram.android:id/action_bar_button_back',By.ID):
                 self.driver().back()
-                    
-    def search_user(self,Username):
-        self.click_element('Search btn','com.instagram.android:id/search_tab',By.ID)
+                
         self.click_element('Search input','com.instagram.android:id/action_bar_search_edit_text',By.ID)
         if not self.find_element('Search input','com.instagram.android:id/action_bar_search_edit_text',By.ID):
             for i in range(2):
                 self.click_element('Back','com.instagram.android:id/action_bar_button_back',By.ID,timeout=5)
         self.input_text(Username,'Search input','com.instagram.android:id/action_bar_search_edit_text',By.ID)
+        #  find which is correct user
         time.sleep(3)
         try:
             search_results = WebDriverWait(self.driver(), 10).until(EC.presence_of_all_elements_located((By.XPATH, "//*[@resource-id='com.instagram.android:id/row_search_user_username']")))
@@ -1468,106 +1392,80 @@ class InstaBot:
                 else:return False
             else:return False
                     
-        # check searched user
         SearchedUsername = self.find_element('Searched Username','com.instagram.android:id/action_bar_title',By.ID)
+        # check searched user
         if SearchedUsername:
             if str(SearchedUsername.text).lower() == str(Username).lower():
                 return True
-        else: return False
-        
+        else: return False         
+
+    def check_notification(self):
+        if self.click_element('notification','//android.widget.Button[@content-desc="Activity"]'):
+            notifications = self.driver().find_elements(By.XPATH,'//*[@resource-id="com.instagram.android:id/row_container"]')
+            # breakpoint()
+            for element in notifications:
+                try:
+                    text_elements = element.find_elements_by_xpath(".//android.widget.TextView")
+                    for text_element in text_elements:
+                        text = text_element.text
+                        if 'following you' in text:
+                            follow = element.find_element(By.XPATH,".//android.widget.Button[@text='Follow']")
+                            # breakpoint()
+                            if follow:
+                                LOGGER.info('Follow back user')
+                                follow.click()
+                                self.bot_follow = True
+                            break
+                    random_sleep(1,2,reason='Follow user')  
+                except Exception as e:
+                    random_sleep(1,2,reason='exception')  
+                    print(e)
+            back = self.click_element('back','//android.widget.ImageView[@content-desc="Back"]')
+            if not back:
+                self.driver().back
+
     def seen_story(self):
         start_time = time.time()
-        while time.time() - start_time < 120:
+        while time.time() - start_time < 180:
             if self.click_element('seen story',"//android.widget.ImageView[contains(@content-desc, 'story at column 1. Unseen.') and @resource-id='com.instagram.android:id/avatar_image_view']",timeout=2):
                 self.click_element('ok',"//android.widget.Button[@text='OK']",timeout=2)
                 self.click_element('ok',"//android.widget.Button[@text='OK']",timeout=2)
                 self.click_element('Tap',"//android.widget.FrameLayout[@resource-id='com.instagram.android:id/reel_viewer_media_layout']",timeout=1)
                 for i in range(10):
                     self.click_element('ok',"//android.widget.Button[@text='OK']",timeout=1)
-                    # element = self.find_element('story list',"//*[@resource-id='com.instagram.android:id/reel_viewer_text_container']")
-                    # if element:
-                    #     try:
-                    #         content_desc = element.get_attribute("content-desc")
-                    #         match = re.search(r"story \d+ of (\d+)", content_desc)    
-                    #         story_count = int(match.group(1))
-                    #         for i in range(story_count):
-                    HomeBtn = self.find_element('Home page','com.instagram.android:id/feed_tab',By.ID,timeout=0.1)
+                    element = self.find_element('story list',"//*[@resource-id='com.instagram.android:id/reel_viewer_text_container']")
+                    if element:
+                        try:
+                            content_desc = element.get_attribute("content-desc")
+                            match = re.search(r"story \d+ of (\d+)", content_desc)    
+                            story_count = int(match.group(1))
+                            for i in range(story_count):
+                                HomeBtn = self.find_element('Home page','com.instagram.android:id/feed_tab',By.ID,timeout=1)
+                                if HomeBtn:
+                                    break
+                                self.tap_left()
+                        except Exception as e:
+                            print(e)
+                            self.tap_left()
+                        
+                    HomeBtn = self.find_element('Home page','com.instagram.android:id/feed_tab',By.ID,timeout=1)
                     if HomeBtn:
                         break
-                    self.tap_left()
-                        # except Exception as e:
-                        #     print(e)
-                        #     self.tap_left()
-                        
-                    # HomeBtn = self.find_element('Home page','com.instagram.android:id/feed_tab',By.ID,timeout=1)
-                    # if HomeBtn:
-                    #     break
             HomeBtn = self.find_element('Home page','com.instagram.android:id/feed_tab',By.ID,timeout=2)
             if not HomeBtn:
                 self.driver().back()
                 break
-            else:
-                break
-                
-    def scroll_home_page(self):
-        post_count = 0
-        for i in range(10):
-            LOGGER.info(f'{post_count}')
-            try:
-                post = self.find_element('post','com.instagram.android:id/row_feed_photo_profile_name',By.ID,timeout=2)
-                if post:
-                    location = post.location
-                    x = location['x']
-                    y = location['y']
-                    try:
-                        action = TouchAction(self.driver())
-                        action.long_press(x=x, y=y).move_to(x=x, y=0).release().perform()
-                    except Exception as e:
-                        print(e)
-                    if post.text == 'xanametaverse' or  post.text =='xana_gpt' or post.text =='xana_rio':
-                        post_count+=1
-                        if self.click_element('play button','com.instagram.android:id/view_play_button',By.ID,timeout=2):
-                            random_sleep(5,9,reason='scrolling home page')
-                        PostDetails = self.click_element('Post Details','com.instagram.android:id/row_feed_comment_textview_layout',By.ID,timeout=3)
-                        PostDetails = self.find_element('Post Details','com.instagram.android:id/row_feed_comment_textview_layout',By.ID,timeout=3)
-                        if PostDetails :
-                            PostDetailsText = str(PostDetails.text).replace('\n',' ')
-                            try:
-                                if self.find_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2):
-                                    post_ = postdetails.objects.get(details=PostDetailsText)
-                                    random_count = post_.like
-                                    try:
-                                        like_count= self.find_element('like count','com.instagram.android:id/row_feed_textview_likes',By.ID)
-                                        like_count_text = like_count.text
-                                        if 'and' and 'others' in like_count_text: 
-                                            like_counts = int(re.search(r'and (\d+(?:,\d+)*) others', like_count_text).group(1).replace(",", ""))
-                                        else:
-                                            like_counts = int(re.search(r"([\d,]+) (?:likes|others)?", like_count_text).group(1).replace(',',''))
-                                            post_.target_like = like_counts
-                                    except AttributeError:
-                                        like_counts = 0
-                                    LOGGER.info(f'like count was {like_counts} and require count is {random_count}')
-                                    if like_counts >=random_count:
-                                        pass
-                                    else:
-                                        self.click_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2)
-                            except:
-                                post_count+=1
-                                post_details_text = str(PostDetailsText).lower()
-                                if 'xana_gpt' in post_details_text:
-                                    self.click_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2)
-                    self.swip_display(4)
-                else:
-                    self.swip_display(4)
-            except AttributeError as a:
-                print(a)
-            except Exception as e:
-                print(e)
-                
+            else:return
+
     def Follow(self):
         FollowBtn = self.find_element('Follow btn','com.instagram.android:id/profile_header_follow_button',By.ID)
         if FollowBtn.text != 'Following': FollowBtn.click()
-        
+
+    def follow_xana_girl(self):
+        if self.user.updated:
+            self.search_user('xanametaverse_girl')
+            self.Follow() 
+
     def ChangeReels(self):
         random_sleep(8,10)
         self.swip_display(9)
@@ -1579,16 +1477,9 @@ class InstaBot:
             for _ in range(int(reels_watch_time)):
                 self.ChangeReels()
             self.driver().back()
-    
-    def check_story_permission(self):
-        self.click_element('Allow camera','com.android.packageinstaller:id/permission_message',timeout=3)
-        ...
-
-    def stories_avds_permissions(self):
-        for _ in range(3) : self.click_element('allow','com.android.packageinstaller:id/permission_allow_button',By.ID,timeout=1)
-        ...
-
-    def ActionOnPost(self,swipe_number=4,Comment = False, Share = False, Save = True):
+            
+    def ActionOnPost(self,swipe_number=4,like_count_list=[],Comment = False, Share = False, Save = True):
+        random_count = ''
         self.click_element('play button','com.instagram.android:id/view_play_button',By.ID,timeout=2)
         time.sleep(2)
         for _ in range(7):
@@ -1596,42 +1487,98 @@ class InstaBot:
             more = self.click_element('more','//android.widget.Button[@content-desc="more"]',timeout=3)
             time.sleep(1)
             PostDetails = self.find_element('Post Details','com.instagram.android:id/row_feed_comment_textview_layout',By.ID,timeout=3)
-            self.click_element('more','//*[@text="… more"]')
-            if PostDetails :break
-
-        self.click_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2)
+            if PostDetails :
+                if '… more' in PostDetails.text:
+                    breakpoint()
+                PostDetailsText = str(PostDetails.text).replace('\n',' ')
+                try:
+                    post_ = postdetails.objects.get(details=PostDetailsText)
+                    random_count = post_.like
+                except:
+                    random_count = random.randint(like_count_list[0], like_count_list[1])
+                    target_comment = random.randint(10,20)
+                    post_ = postdetails.objects.create(details=PostDetailsText,like=random_count,target_comment=target_comment)
+                break
+        # breakpoint()
+        # if post_.like > post_.target_like:
+        if self.find_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2):
+            try:
+                like_count= self.find_element('like count','com.instagram.android:id/row_feed_textview_likes',By.ID)
+                like_count_text = like_count.text
+                if 'and' and 'others' in like_count_text: 
+                    like_counts = int(re.search(r'and (\d+(?:,\d+)*) others', like_count_text).group(1).replace(",", ""))
+                else:
+                    like_counts = int(re.search(r"([\d,]+) (?:likes|others)?", like_count_text).group(1).replace(',',''))
+                post_.target_like = like_counts
+                post_.save()
+            except AttributeError:
+                like_counts = 0
+            LOGGER.info(f'like count was {like_counts} and require count is {random_count}')
+            if like_counts >=random_count:pass
+            else:
+                self.click_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2)
+                post_.target_like+=1
+                post_.save()
                 
+        if Comment and post_.comment < post_.target_comment:
+            if self.user not in post_.commented_users.all():
+                CommentBtn = self.click_element('Comment btn', '//android.widget.ImageView[@content-desc="Comment"]')
+                if CommentBtn and PostDetails:
+                    self.input_text(GetInstaComments(PostDetailsText), 'Comment input', 'com.instagram.android:id/layout_comment_thread_edittext', By.ID)
+                    self.click_element('Post comment btn', '//android.widget.Button[@content-desc="Post"]/android.widget.LinearLayout/android.widget.TextView')
+                    post_.comment += 1
+                    post_.commented_users.add(self.user)
+                    post_.save()
+                    random_sleep(3)
+                    CommentHeadingEle = self.find_element('Comment header', '//android.widget.TextView[@content-desc="Comments"]')
+                    if CommentHeadingEle and CommentHeadingEle.text == 'Comments':
+                        LOGGER.info('Comment page found')
+                        self.click_element('Back btn', '//android.widget.ImageView[@content-desc="Back"]')
+            else:
+                LOGGER.info('User has already commented on this post')
+
         if Share:
-            if self.click_element('Share btn','//android.widget.ImageView[@content-desc="Send post"]'):
-                self.click_element('Add reel to your story','//android.widget.Button[@content-desc="Add reel to your story"]',timesleep=2)
-                while not self.driver().current_activity == 'com.instagram.modal.TransparentModalActivity':
-                    random_sleep(1,1,reason='Wait untill story opens')
-                random_sleep(2,3,reason='share to story')
-                self.stories_avds_permissions()
-                self.click_element('introducing longer stories','/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.Button',timeout=3)
-                self.click_element('Ok btn2','//android.widget.Button[@content-desc="Continue watching stories"]',By.XPATH,timeout=2)
-                self.click_element('Ok btn','com.instagram.android:id/primary_button',By.ID,timeout=2)
-                self.click_element('Share to','//android.widget.FrameLayout[@content-desc="Share to"]',timeout=2)
-                self.click_element('Share btn','com.instagram.android:id/share_story_button',By.ID,timeout=2)
-                self.click_element('share done btn','//android.widget.Button[@content-desc="Done"]')
-                random_sleep(5,10,reason='Let story uploads')
-            
-            user_sheet_drag = self.find_element('User sheet drag','com.instagram.android:id/bottom_sheet_drag_handle',By.ID,timeout=3)
-            if user_sheet_drag:
-                try:
-                    self.driver().back()
-                except:
-                    self.driver().back()
-                    # self.swipe_up()
-            elif self.click_element('cancel','//android.widget.Button[@content-desc="Discard video"]',timeout= 3):
-                try:
-                    self.driver().back()
-                except:
-                    pass
-            
+            if self.user not in post_.shared_users.all():
+                if self.click_element('Share btn','//android.widget.ImageView[@content-desc="Send post"]'):
+                    self.click_element('Add reel to your story','//android.widget.Button[@content-desc="Add reel to your story"]')
+                    while not self.driver().current_activity == 'com.instagram.modal.TransparentModalActivity':
+                        random_sleep(2,3,reason='Wait untill story opens')
+                    random_sleep(2,3,reason='share to story')
+                    self.click_element('Ok btn2','//android.widget.Button[@content-desc="Continue watching stories"]',By.XPATH,timeout=2)
+                    self.click_element('Ok btn','com.instagram.android:id/primary_button',By.ID,timeout=2)
+                    self.click_element('Share to','//android.widget.FrameLayout[@content-desc="Share to"]',timeout=2)
+                    self.click_element('cancel','//android.widget.Button[@content-desc="Cancel"]',timeout= 2)
+                    # self.click_element('Share to your story','com.instagram.android:id/row_add_to_story_container',By.ID,timeout=2)
+                    self.click_element('Share btn','com.instagram.android:id/share_story_button',By.ID,timeout=2)
+                    if self.click_element('share done btn','//android.widget.Button[@content-desc="Done"]'):
+                        post_.shared_users.add(self.user)
+                        post_.save()
+                    random_sleep(5,10,reason='Let story uploads')
+                
+                user_sheet_drag = self.find_element('User sheet drag','com.instagram.android:id/bottom_sheet_drag_handle',By.ID,timeout=3)
+                if user_sheet_drag:
+                    try:
+                        self.driver().back()
+                    except:
+                        self.driver().back()
+                        # self.swipe_up()
+                elif self.click_element('cancel','//android.widget.Button[@content-desc="Discard video"]',timeout= 3):
+                    try:
+                        self.driver().back()
+                    except:
+                        pass
+        
         # save post
-        if Save :
-            self.click_element('Save post btn','//android.widget.ImageView[@content-desc="Add to Saved"]',page="user's post",timeout=2)      
+        save_user = post_.saved_users.all()
+        if Save and self.user not in save_user:
+            if random_count and int(random_count/2) >= len(save_user):
+                if not self.click_element('Save post btn', '//android.widget.ImageView[@content-desc="Add to Saved"]',timeout=2):
+                    post_.saved_users.add(self.user)
+                    post_.save()
+                else:
+                    post_.saved_users.add(self.user)
+                    post_.save()
+
         
         post = self.find_element('posts','com.instagram.android:id/action_bar_title',By.ID,timeout=3)
         if post:
@@ -1641,7 +1588,6 @@ class InstaBot:
                 self.driver().back()
         else:
             self.driver().back()
-        
             
     def update_follow_user_info(self):
         followers = self.find_element('Followers','com.instagram.android:id/row_profile_header_textview_followers_count',By.ID)
@@ -1688,10 +1634,10 @@ class InstaBot:
                     
             if not self.click_element('Back','com.instagram.android:id/action_bar_button_back',By.ID):
                 self.driver().back()
+        # breakpoint()
             
     def update_user_follow_info(self):
-        profile_btn = ''
-        profile_btn = self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
+        self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
         ProfileName = self.find_element('Profile name','com.instagram.android:id/action_bar_large_title_auto_size',By.ID)
         if ProfileName:
             if ProfileName.text == self.user.username: 
@@ -1706,39 +1652,38 @@ class InstaBot:
                         self.user.following = following.text
                 self.user.save()
                 LOGGER.info(f'User followers :{self.user.followers}\n User following :{self.user.following}')
-                self.click_element('Home page','com.instagram.android:id/feed_tab',By.ID)
-        return profile_btn
-    def check_login(self,):
+        self.click_element('Home page','com.instagram.android:id/feed_tab',By.ID)
+        
+
+    def check_login(self,avd):
         for i in range(2):
             try:
                 self.driver().start_activity('com.instagram.android','com.instagram.mainactivity.MainActivity')
             except:
                 self.driver().activate_app('com.instagram.android')
-            random_sleep(12,15,reason='open insta')
-            try:
-                if self.driver().current_activity == 'com.instagram.nux.activity.SignedOutFragmentActivity':
-                    return False
+            # breakpoint()
+            try:           
                 time.sleep(random.randint(3,7))
-                if self.driver().current_activity == 'com.instagram.mainactivity.MainActivity':
-                    HomeBtn = self.find_element('Home page','com.instagram.android:id/feed_tab',By.ID)
-                    # breakpoint()
-                    if HomeBtn : 
-                        self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
-                        ProfileName = self.find_element('Profile name','com.instagram.android:id/action_bar_large_title_auto_size',By.ID)
-                        if ProfileName:
-                            try:
-                                if not User_details.objects.filter(username=ProfileName.text).exists():
-                                    # usser = User_details.objects.create(username = ProfileName.text,avd_pc = "PC11",avdsname = avd)
-                                    return True
-                                else:
-                                    LOGGER.info(f'Your username is {ProfileName.text}')
-                                    usser = User_details.objects.filter(username=ProfileName.text).first()
-                                    usser.avd_pc = os.getenv('PC')
-                                    usser.save()
-                                    return True
-                            except Exception as e:
-                                print(e)
-                                breakpoint()
+                HomeBtn = self.find_element('Home page','com.instagram.android:id/feed_tab',By.ID)
+                # breakpoint()
+                if HomeBtn : 
+                    self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
+                    ProfileName = self.find_element('Profile name','com.instagram.android:id/action_bar_large_title_auto_size',By.ID)
+                    if ProfileName:
+                        try:
+                            if not User_details.objects.filter(username=ProfileName.text).exists():
+                                # usser = User_details.objects.create(username = ProfileName.text,avd_pc = "PC11",avdsname = avd)
+                                return True
+                            else:
+                                LOGGER.info(f'Your username is {ProfileName.text}')
+                                usser = User_details.objects.filter(username=ProfileName.text).first()
+                                usser.avd_pc = os.getenv('PC')
+                                usser.save()
+                                return True
+                        except Exception as e:
+                            print(e)
+                            breakpoint()
+                # breakpoint()
                 prof_pic = self.find_element('profile photo','//android.widget.Button[@content-desc="Profile photo"]')
                 if prof_pic: 
                     username = self.find_element('username','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup[1]/android.view.View')
@@ -1772,21 +1717,18 @@ class InstaBot:
                     return False
 
             except Exception as e:
+                breakpoint()
                 print(e)
                 continue
             
-    def click_btn(self,name=''):
-        self.click_element('Edit profile btn',f'//android.widget.Button[@text={name}]')
-        
-            
-    def EngagementOnUser(self,share=True):
+    def EngagementOnUser(self):
         self.click_element('Follow btn','com.instagram.android:id/row_right_aligned_follow_button_stub',By.ID,timeout=3)
-        ele = self.find_element('Grid View','//android.widget.ImageView[@content-desc="Grid view"]')
+        ele = self.click_element('Grid View','//android.widget.ImageView[@content-desc="Grid view"]')
         while not ele:
-            self.swip_display(4)
-            ele = self.find_element('Grid View','//android.widget.ImageView[@content-desc="Grid view"]')
-            if ele: 
-                break
+                self.swip_display(4)
+                ele = self.find_element('Grid View','//android.widget.ImageView[@content-desc="Grid view"]')
+                if ele: 
+                    break
         location = ele.location
         x = location['x']
         y = location['y']
@@ -1795,23 +1737,23 @@ class InstaBot:
             action.long_press(x=x, y=y).move_to(x=x, y=0).release().perform()
         except Exception as e:
             print(e)
-        PostCount =1
-        for indexx in range(4):
-            parent_element = self.find_element('list','android:id/list',By.ID)
+        PostCount = 1
+            
+        for indexx in range(9):
+            LOGGER.info(f'post count = {PostCount}')
+            parent_element = self.driver().find_element_by_id('android:id/list')
             buttons = parent_element.find_elements_by_class_name('android.widget.Button')
-            try :
-                buttons[indexx].click()
-                # Share = True if PostCount <= 4  else False
-                share = True if 2 == random.randint(1,4) else False
-                self.ActionOnPost(Share=share)
-                time.sleep(1)
-                post = self.find_element('posts','com.instagram.android:id/action_bar_title',By.ID,timeout=2).text
-                if post == 'Posts':
-                    self.click_element('Back','//android.widget.ImageView[@content-desc="Back"]')
-                    PostCount+=1 
-            except : ...
-
-    
+            LOGGER.info(f'post {indexx}')
+            buttons[indexx].click()
+            # Share = True if PostCount <= 4  else False
+            self.ActionOnPost(like_count_list=[250,350],Comment=self.comment)
+            # self.ActionOnPost(like_count_list=[250,350],Comment=self.comment,Share=Share)
+            time.sleep(1)
+            post = self.find_element('posts','com.instagram.android:id/action_bar_title',By.ID,timeout=2).text
+            if post == 'Posts':
+                self.click_element('Back','//android.widget.ImageView[@content-desc="Back"]')
+            PostCount+=1
+            
     def get_gender(self):
         name = self.user.password.split('@')[0]
         import requests
@@ -1860,14 +1802,11 @@ class InstaBot:
                 self.user.save()
                 self.is_profile_photo = True
         self.driver().back()
-        self.click_element('done','//android.widget.ImageView[@content-desc="Back"]')
+        self.click_element('back','//android.widget.ImageView[@content-desc="Back"]')
         random_sleep(2,3,reason='done')
         if self.is_bio_text and self.is_profile_photo:
             return True
         else:
-            self.is_profile_photo = False
-            self.user.updated = False
-            self.user.save()
             return False
                 
 
@@ -1879,6 +1818,7 @@ class InstaBot:
         import time
         gender = self.get_gender()
         # gender = "female"
+        
         driver = webdriver.Chrome(executable_path=ChromeDriverManager().install())
         driver.get("https://this-person-does-not-exist.com")
         time.sleep(2)
@@ -1916,7 +1856,6 @@ class InstaBot:
             url =  image_element[1].get_attribute("src")            
         driver.get(url)
         time.sleep(3)
-        
         file_name = "prof_img/profile_pic.jpg"
         profile_pic_path = os.path.join(os.getcwd(), file_name)
         try:
@@ -1925,37 +1864,6 @@ class InstaBot:
             driver.get_screenshot_as_file(profile_pic_path)
         driver.quit()
         run_cmd(f'adb -s emulator-{self.adb_console_port} push {profile_pic_path} /sdcard/Download')
-    
-    def set_profile_pic(self):
-        gender = self.get_gender()
-        if gender == 'female':
-            profile_path = "prof_img/female"
-        else:
-            profile_path =  "prof_img/male"
-        folder = os.path.join(os.getcwd(), profile_path)
-        os.makedirs(folder, exist_ok=True)
-        file_name = os.listdir(profile_path)
-        if len(file_name) <= 1:
-            print('add more profile pic in directory')
-            breakpoint()
-            file_name = os.listdir(profile_path)
-        profile_pic_path = os.path.join(os.getcwd(), f'{profile_path}/{random.choice(file_name)}')
-        run_cmd(f'adb -s emulator-{self.adb_console_port} push {profile_pic_path} /sdcard/Download')
-        new_file_name = f"{self.user.username}.jpg"
-        new_profile_pic_path = os.path.join(os.getcwd(), f'{profile_path}/{new_file_name}')
-        os.rename(profile_pic_path, new_profile_pic_path)
-        used_pic_path = os.path.join(os.getcwd(), 'prof_img/used_pic')
-        os.makedirs(used_pic_path, exist_ok=True)
-        os.replace(new_profile_pic_path, os.path.join(used_pic_path, new_file_name))
-
-    def upload_post(self):
-        self.click_element('create_btn','//android.widget.FrameLayout[@content-desc="Camera"]')
-        self.click_element('next','//android.widget.ImageView[@content-desc="Next"]')
-        self.click_element('next','//android.widget.ImageView[@content-desc="Next"]')
-        self.click_element('ok','//android.widget.Button[@content-desc="OK"]')
-        self.click_element('done','//android.widget.ImageView[@content-desc="Share"]')
-        random_sleep(4,6,reason=' for upload post')
-        
         
     def update_profile(self):
         self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
@@ -1970,17 +1878,17 @@ class InstaBot:
                 text.click()
                 bio_text = random_insta_bio()
                 self.input_text(bio_text,'add bio','//android.widget.EditText')
-                self.click_element('Done','//android.widget.Button[@content-desc="Done"]')
-                random_sleep(4,5,reason='upload bio')
                 self.click_element('done','//android.widget.Button[@content-desc="Done"]')
+                random_sleep(4,5,reason='upload bio')
             else:
                 self.click_element('done','//android.widget.Button[@content-desc="Done"]')
         time.sleep(2)
-        self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
+        if not self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID):
+            self.click_element('back','//android.widget.ImageView[@content-desc="Back"]')            
         self.click_element('Edit profile btn','//android.widget.Button[@text="Edit profile"]')
         if self.click_element('Edit profile btn','//android.widget.Button[@text="Change profile photo"]',timeout=5):
             if not self.find_element('remove profile btn','//android.widget.Button[@text="Remove profile photo"]'):
-                self.set_profile_pic()
+                self.download_profilepic()
                 self.click_element('Edit profile btn','//android.widget.Button[@text="New profile photo"]')
                 self.click_element('gallery','//android.widget.TextView[@text="GALLERY"]')
                 self.click_element('select gallery','com.instagram.android:id/gallery_folder_menu',By.ID)
@@ -1994,12 +1902,9 @@ class InstaBot:
                 self.click_element('next','//android.widget.ImageView[@content-desc="Next"]')
                 random_sleep(14,15,reason='upload photo')
                 self.click_element('next','//android.widget.ImageView[@content-desc="Next"]')
-                random_sleep(10,12,reason='upload photo')
-                self.upload_post()
-
         if self.click_element('Edit profile btn','//android.widget.Button[@text="Edit picture or avatar"]',timeout=5):
             if not self.find_element('remove profile btn', '//android.view.ViewGroup[@content-desc="Remove current picture"]',timeout=3):
-                self.set_profile_pic()
+                self.download_profilepic()
                 self.click_element('New profile btn','//android.view.ViewGroup[@content-desc="New profile picture"]')
                 self.click_element('gallery','//android.widget.TextView[@text="GALLERY"]')
                 self.click_element('select gallery','com.instagram.android:id/gallery_folder_menu',By.ID)
@@ -2012,16 +1917,12 @@ class InstaBot:
                 random_sleep(14,15,reason='upload photo')
                 self.click_element('next','//android.widget.ImageView[@content-desc="Next"]')
                 random_sleep(10,12,reason='upload photo')
-                self.upload_post()
             else:
                 self.driver().back()
                 self.click_element('done','//android.widget.Button[@content-desc="Done"]')
+        if not self.find_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID):
+            self.click_element('back','//android.widget.ImageView[@content-desc="Back"]')  
         self.check_profile_updated()
-        try:
-            command = f"adb -s emulator-{self.adb_console_port} shell rm -r /sdcard/Download/*"
-            subprocess.run(command, shell=True, check=True)
-        except Exception as e:
-            print(e)
         
 
             
@@ -2032,7 +1933,7 @@ class InstaBot:
             self.check_notification()
             self.seen_story()
             self.scroll_home_page()
-        if not self.update_user_follow_info()  : return
+        self.update_user_follow_info()
         if int(self.user.followers) < 20:
             is_updated = self.check_profile_updated()
             if not is_updated:
@@ -2041,16 +1942,16 @@ class InstaBot:
             self.comment = True
         else:
             self.comment = False
-        # if not self.bot_follow:
-            # self.Follow_4_Follow()
+        self.comment = True
+        if not self.bot_follow:
+            self.Follow_4_Follow()
         self.follow_rio()
-        if self.search_user(Username):
-            self.Follow()
-            self.EngagementOnUser()
-            self.ReelsView()
-        self.comment = False
-        
-        multiple_users = ["imanijohnson132","niamwangi63","lucamoretti6445","malikrobinson726","tylerevans2913","1aaliyahbrown","4nanyashah","haileymitchell161","tianaharris554","deandrewashington652",'minjipark11','haraoutp','rayaanhakim']
+        self.search_user(Username)
+        self.Follow()
+        self.EngagementOnUser()
+        self.ReelsView()
+
+        send_views = ["imanijohnson132","niamwangi63","lucamoretti6445","malikrobinson726","tylerevans2913","1aaliyahbrown","4nanyashah","haileymitchell161","tianaharris554","deandrewashington652",'minjipark11','haraoutp','rayaanhakim']
         for Username_multiple in multiple_users :
             try :
                 self.search_user(Username_multiple)
@@ -2061,18 +1962,15 @@ class InstaBot:
             self.user.avd_pc = os.getenv('PC')
         self.today_avd.loc['avd']=self.emulator_name
         self.today_avd.to_csv('today_avd.csv',index=False)
-        
+        self.clear_app_tray()
+
     def scroller(self):
         self.search_user(Username='xanametaverse')
         self.swip_display(4)
         for _ in range(int(999999999)):
             self.click_element('Reels','//android.widget.ImageView[@content-desc="Reels"]')
             self.click_element('First reel','(//android.widget.ImageView[@content-desc="Reel by xanametaverse. Double tap to play or pause."])[1]')
-            for _ in range():
-                if self.driver().current_activity != "com.instagram.mainactivity.MainActivity":
-                    self.driver().start_activity('com.instagram.android','com.instagram.mainactivity.MainActivity')
-                    time.sleep(10)
-                    self.scroller()
+            for _ in range(9):
                 self.ChangeReels()
             try:
                 self.driver().back()
@@ -2082,25 +1980,21 @@ class InstaBot:
                 time.sleep(10)
                 self.search_user(Username='xanametaverse')
                 self.swip_display(4)
-            
-    def follow_xana_girl(self):
-        if self.user.updated:
-            self.search_user('xanametaverse_girl')
-            self.Follow() 
-        
+
+
     def follow_gpt(self):
-        # self.driver().start_activity('com.instagram.android','com.instagram.mainactivity.MainActivity')
         self.search_user('xana_gpt')
         self.Follow() 
-        
+
+
     def follow_rio(self,like=True):
         self.search_user('xana_rio')
         self.Follow()
         if like:
-            ele = self.find_element('Grid View','//android.widget.ImageView[@content-desc="Grid view"]')
+            ele = self.find_element('Grid View','//android.widget.ImageView[@content-desc="Grid view"]',timeout=2)
             while not ele:
                 self.swip_display(4)
-                ele = self.find_element('Grid View','//android.widget.ImageView[@content-desc="Grid view"]')
+                ele = self.find_element('Grid View','//android.widget.ImageView[@content-desc="Grid view"]',timeout=2)
                 if ele: 
                     break
             location = ele.location
@@ -2111,21 +2005,73 @@ class InstaBot:
                 action.long_press(x=x, y=y).move_to(x=x, y=0).release().perform()
             except Exception as e:
                 print(e)
-            for indexx in range(4):
+            for indexx in range(10):
                 parent_element = self.find_element('list','android:id/list',By.ID)
                 buttons = parent_element.find_elements_by_class_name('android.widget.Button')
                 buttons[indexx].click()
-                self.ActionOnPost(Share=False)
+                self.ActionOnPost(like_count_list=[250,350],Share=False,Save=True)
         try:
             self.click_element('Home page','com.instagram.android:id/feed_tab',By.ID)
             for i in range(2):
                 self.click_element('Search btn','com.instagram.android:id/search_tab',By.ID)
         except Exception as e:
             print(e)
-        
+
+
+    def scroll_home_page(self):
+        post_count = 0
+        for i in range(10):
+            LOGGER.info(f'{post_count}')
+            try:
+                post = self.find_element('post','com.instagram.android:id/row_feed_photo_profile_name',By.ID,timeout=2)
+                if post:
+                    location = post.location
+                    x = location['x']
+                    y = location['y']
+                    try:
+                        action = TouchAction(self.driver())
+                        action.long_press(x=x, y=y).move_to(x=x, y=0).release().perform()
+                    except Exception as e:
+                        print(e)
+                    if post.text == 'xanametaverse' or post.text =='xana_gpt' or post.text =='xana_rio':
+                        post_count+=1
+                        if self.click_element('play button','com.instagram.android:id/view_play_button',By.ID,timeout=2):
+                            random_sleep(5,9,reason='scrolling home page')
+                        PostDetails = self.click_element('Post Details','com.instagram.android:id/row_feed_comment_textview_layout',By.ID,timeout=3)
+                        PostDetails = self.find_element('Post Details','com.instagram.android:id/row_feed_comment_textview_layout',By.ID,timeout=3)
+                        if PostDetails :
+                            PostDetailsText = str(PostDetails.text).replace('\n',' ')
+                            try:
+                                post_ = postdetails.objects.get(details=PostDetailsText)
+                                random_count = post_.like
+                                try:
+                                    like_count= self.find_element('like count','com.instagram.android:id/row_feed_textview_likes',By.ID)
+                                    like_count_text = like_count.text
+                                    if 'and' and 'others' in like_count_text: 
+                                        like_counts = int(re.search(r'and (\d+(?:,\d+)*) others', like_count_text).group(1).replace(",", ""))
+                                    else:
+                                        like_counts = int(re.search(r"([\d,]+) (?:likes|others)?", like_count_text).group(1).replace(',',''))
+                                except AttributeError:
+                                    like_counts = 0
+                                LOGGER.info(f'like count was {like_counts} and require count is {random_count}')
+                                if like_counts >=random_count:pass
+                                else:
+                                    self.click_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2)
+                            except:
+                                post_count+=1
+                                post_details_text = str(PostDetailsText).lower()
+                                if 'xana_gpt' in post_details_text:
+                                    self.click_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2)
+                    self.swip_display(4)
+                else:
+                    self.swip_display(7)
+            except AttributeError as a:
+                print(a)
+            except Exception as e:
+                print(e)
+
     def Follow_4_Follow(self):
         top_accounts = ['instagram', 'cristiano', 'therock', 'kimkardashian', 'kyliejenner', 'beyonce', 'justinbieber', 'taylorswift', 'neymarjr', 'leomessi', 'arianagrande', 'kendalljenner', 'natgeo', 'jlo', 'nickiminaj', 'khloekardashian', 'mileycyrus', 'katyperry', 'kourtneykardash', 'nike', 'kevinhart4real', 'theellenshow', 'realmadrid', 'fcbarcelona', 'iamcardib', 'zendaya', 'badgalriri', 'nasa', 'victoriassecret', 'davidbeckham', 'shakira', 'billieeilish', 'iamzlatanibrahimovic', 'drake', 'justintimberlake', 'emmawatson', 'jamesrodriguez10', 'lelepons', 'vindiesel', 'nickjonas', 'maluma', 'shawnmendes', 'emmahill', 'gigihadid', 'iamhalsey', 'dualipa', 'brunomars', 'harrystyles', 'laliga', 'priyankachopra', 'blakelively', 'zacefron', 'jenniferaniston', 'niallhoran', 'kourtneykardash', 'chrissyteigen', 'hugogloss', 'maddieziegler', 'iamamyjackson', 'caradelevingne', 'emmastone', 'serenawilliams', 'realbarbarapalvin', 'adidas', 'jw.anderson', 'lucyhale', 'selenagomez', 'snoopdogg', 'krisjenner', 'jasonstatham', 'alessandraambrosio', 'virat.kohli', 'caraashe', 'garethbale11', 'zara', 'lilireinhart', 'twhiddleston', 'harrykane', 'milliebobbybrown', 'vanessahudgens', 'karliekloss', 'shaymitchell', 'daddario', 'gigihadid', 'dovecameron', 'bellahadid', 'reesewitherspoon', 'robertdowneyjr', 'chrisbrownofficial', 'realdonaldtrump', 'travisscott', 'anushkasharma', 'ashleybenson', 'gisele', 'imdb', 'khloekardashian', 'milliebobbybrown', 'jonasbrothers', 'mileycyrus', 'maisie_williams', 'louisvuitton', 'krisjenner', 'jenniferlopez', 'zacbrownband', 'priyankachopra', 'marvel', 'milliebobbybrown', 'kimkardashian', 'zendaya']
-
         CanSearchUsers = User_details.objects.filter(status='ACTIVE', can_search=True).order_by('-updated_at')
         CanSearchUsers = [user for user in CanSearchUsers if int(user.followers) <20]
         if self.user in CanSearchUsers:
@@ -2144,14 +2090,12 @@ class InstaBot:
                     self.Follow_user.save()
             except Exception as e :
                 print(e)
-
-        
-
-        #     try:
+        # try:
+        #     for account in top_accounts:
         #         if self.search_user(account):
         #             self.Follow()
-        #     except Exception as e:
-        #         print(e)
+        # except Exception as e:
+        #     print(e)
             
     def random_action(self):
         
@@ -2169,5 +2113,3 @@ class InstaBot:
         if ProfileName:
             if ProfileName.text == self.user.username:
                 print('yesss')
-                
-                
