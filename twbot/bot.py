@@ -20,6 +20,8 @@ from selenium.webdriver.common.keys import Keys
 from core.models import user_detail
 from twbot.models import User_details, postdetails
 import parallel
+from django.db import connection
+
 from gender_guesser import detector
 import random, names
 from conf import APPIUM_SERVER_HOST, APPIUM_SERVER_PORT, US_TIMEZONE
@@ -888,7 +890,7 @@ class InstaBot:
         run_cmd(f'adb -s emulator-{self.adb_console_port} push {profile_pic_path} /sdcard/Download')
 
 
-    def add_profile_pic(self):
+    def add_profile_pic2(self):
         self.click_element('click on add_rofile','//android.widget.Button[@content-desc="Add picture"]')
         self.profile_img_download()
         time.sleep(3)
@@ -986,27 +988,30 @@ class InstaBot:
             except Exception as e :print(e)
 
     def set_birth_date(self):
-        
-        self.click_element('birthday input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[2]/android.widget.EditText')
+        set_date = self.find_element('Set date scroller','android:id/alertTitle',By.ID,timeout=4)
+        if set_date :
+            if set_date.text == 'Set date' : ...
+            else : return 
+        else : return
+
+        self.click_element('birthday input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[2]/android.widget.EditText',timeout=5)
         middle_month_picker_relative_xpath = '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.DatePicker/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.NumberPicker[1]/android.widget.EditText'
         middle_day_picker_relative_xpath = '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.DatePicker/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.NumberPicker[2]/android.widget.EditText'
         middle_year_picker_relative_xpath = '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.DatePicker/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.NumberPicker[3]/android.widget.EditText'
-
+        
         LOGGER.debug(f'set_year: {self.birth_year}')
-        year = str(self.birth_year)
-        self.set_value(value=year,type='year')
-
-        LOGGER.debug(f'set_date: {self.birth_date}')
-        self.set_value(value=self.birth_date,type='day')
-
+        year = str(int(self.birth_year)+1)
+        self.swip_until_match(middle_year_picker_relative_xpath,year)
+        
         LOGGER.debug(f'set_month: {self.birth_month}')
-        self.set_value(value=self.birth_month,type='month')
-
-        self.birth_year = self.find_element('self.birth_year',middle_year_picker_relative_xpath).text
-        self.birth_month = self.find_element('self.birth_month',middle_month_picker_relative_xpath).text
-        self.birth_date = self.find_element('self.birth_date',middle_day_picker_relative_xpath).text
+        self.swip_until_match(middle_month_picker_relative_xpath,self.birth_month)
+        
+        LOGGER.debug(f'set_date: {self.birth_date}')
+        self.swip_until_match(middle_day_picker_relative_xpath,self.birth_date)
         self.click_element('Set btn','android:id/button1',By.ID)
-        self.next_btn()
+        if self.next_btn() :
+            random_sleep(3)
+        return True
         
     
     def add_bio(self):
@@ -1040,7 +1045,7 @@ class InstaBot:
         except Exception as e:
             print(e)
 
-        self.set_birth_date()
+        self.set_birth_date_main()
         random_sleep(10,12,reason='green tick or username')
         breakpoint()
         green_tick = self.find_element('Green Tick','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[2]/android.widget.ImageView')
@@ -1061,8 +1066,230 @@ class InstaBot:
 
     def next_btn(self):    
         next_btn = self.find_element('Next Button','//android.widget.Button[@content-desc="Next"]').click()
+    
+    def add_profile_pic(self):
+        self.click_element('profile button','//android.widget.FrameLayout[@content-desc="Profile"]/android.view.ViewGroup')
+        self.click_element('Edit profile','(//android.widget.FrameLayout[@resource-id="com.instagram.android:id/button_container"])[1]')
+        self.click_element('Create avatar cancle','com.instagram.android:id/negative_button',By.ID)
+        self.click_element('Change avatar button','com.instagram.android:id/change_avatar_button',By.ID)
+        self.click_element('click on add_rofile','//android.view.ViewGroup[@content-desc="New profile picture"]')
+        self.click_element('Gallary btn','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.TabWidget/android.widget.TextView[1]')
+        self.click_element('gallary folder menu','com.instagram.android:id/gallery_folder_menu',By.ID)
+        self.click_element('Other ...','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[2]/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.widget.Button[2]')
+        self.profile_img_download() 
+        if self.click_element('Show roots','//android.widget.ImageButton[@content-desc="Show roots"]',timeout=15):
+            if self.click_element('download','//android.widget.TextView[@resource-id="android:id/title" and @text="Downloads"]'):
+                if self.click_element('choose pic','com.android.documentsui:id/icon_thumb',By.ID) :
+                    if self.click_element('next btn','com.instagram.android:id/save',By.ID,timeout=30) :
+                        if self.click_element('next_button_imageview','com.instagram.android:id/next_button_imageview',By.ID):
+                            return True
+        return False
+            
+    
+    def add_bio(self):
+        self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID,timeout=30)
+        self.click_element('Edit profile','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout[1]/android.widget.FrameLayout[1]/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.LinearLayout[1]/android.widget.LinearLayout/android.widget.LinearLayout[1]/android.widget.Button[1]/android.widget.FrameLayout/android.widget.Button')
+        self.swip_display(4)
+        self.click_element('Add Bio btn','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout[1]/android.widget.FrameLayout[1]/android.widget.FrameLayout/android.widget.ScrollView/android.widget.LinearLayout/android.widget.LinearLayout[2]/android.view.ViewGroup[4]/android.widget.EditText')
+        self.bio = random_insta_bio()
+        self.input_text(self.bio,"User's Bio", 'com.instagram.android:id/caption_edit_text',By.ID)
+        check = self.click_element('tick btn','//android.widget.Button[@content-desc="Done"]/android.widget.ImageView')
+        check = self.click_element('tick btn','//android.widget.Button[@content-desc="Done"]/android.widget.ImageView')
+        if check:
+            return True
+        return False
         
+    def enter_password(self):
+        create_ps_tl =  self.find_element('Create a password title','//android.view.View[@content-desc="Create a password"]',timeout=4) 
+        if create_ps_tl :
+            if create_ps_tl.text == "Create a password" :
+                self.input_text(self.password,'password input','//*[@class="android.widget.EditText"]')
+                self.next_btn()
+                random_sleep(3)
+                return True
+            
+    def save_info(self):
+        save_info_title = self.find_element('Save info','//android.view.View[@content-desc="Save your login info?"]',timeout=4) 
+        if save_info_title :
+            if save_info_title.text == "Save your login info?":
+                self.click_element('save info','//android.widget.Button[@content-desc="Save"]')
+                random_sleep(3)
+                return True
+            
+    def add_name_in_new_user(self):
+        try:
+            name_title = self.find_element('Full name title','''//android.view.View[@content-desc="What's your name?"]''')
+            if name_title :
+                if name_title.text != "What's your name?":
+                    return
+            else : return
+
+
+            print(self.full_name)
+            self.input_text(self.full_name,'first name input','''//*[@class="android.widget.EditText"]''')
+            self.next_btn()
+            print(self.password)
+            time.sleep(5)
+            if self.input_text(self.password,'password input','//*[@class="android.widget.EditText"]') :
+                self.process_acc_creation.remove("enter_password")
+            if self.next_btn() :
+                random_sleep(5,10)
+            if self.click_element('save info','//android.widget.Button[@content-desc="Save"]') :
+                self.process_acc_creation.remove("save_info")
+                random_sleep(5,10)
+
+            return True
+
+        except Exception as e:
+            print(e)
+            return False
+    
+    def create_set_username(self):
+        create_username_title = self.find_element('username title','//android.view.View[@content-desc="Create a username"]')
+        if create_username_title :
+            if create_username_title.text == "Create a username" :
+                username_input = self.find_element('username input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
+                self.user_username = str(self.full_name)+"_"+str(random.randint(1000000,9999999))
+                self.input_text(self.user_username,'username input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
+                random_sleep(10,15)
+                self.next_btn()
+                return self.user_username
+
+        ...
+    def agree_btn(self) :
+        if self.click_element('Agree policy','//android.widget.Button[@content-desc="I agree"]/android.view.ViewGroup',timeout=2) :
+            # random_sleep(15,20)
+            if self.find_element('Suspended account','//android.view.View[@text="We suspended your account, AdrienneGardner" and @class="android.view.View"]') : return False
+            return True
+        if self.click_element('Agree policy','//android.widget.Button[@content-desc="I agree"]/android.view.ViewGroup',timeout=2) : return True
+    
+    def other_stuff_create_account(self):
+        proc_pic_title = self.find_element('Add a profile pic title','//android.view.View[@content-desc="Add a profile picture"]',timeout=50)
+        if proc_pic_title:
+            if proc_pic_title.text == "Add a profile picture":
+                self.click_element('Skip btn for profile pic','//android.widget.Button[@content-desc="Skip"]/android.view.ViewGroup')
+
+            follow_fb_fri = self.find_element('Follow fb friends title','com.instagram.android:id/igds_headline_headline',By.ID,timeout=40)
+            if follow_fb_fri :
+                if follow_fb_fri.text == "Find Facebook friends to follow":
+                    a2 = self.click_element('Skip btn for profile pic','com.instagram.android:id/skip_button',By.ID)
+
+            Follow_friends = self.find_element('Find friends','com.instagram.android:id/primary_button',By.ID,timeout=40)
+            if Follow_friends : 
+                if Follow_friends.text == "Follow friends":
+                    self.click_element('skip button','com.instagram.android:id/negative_button',By.ID)
+
+            Invite_friends_to_follow = self.find_element('Invite_friends_to_follow','com.instagram.android:id/igds_headline_headline',By.ID,timeout=40)
+            if Invite_friends_to_follow :
+                if Invite_friends_to_follow.text == "Invite friends to follow you":
+                    self.click_element("skip button","com.instagram.android:id/skip_button",By.ID)
+
+            discover_ppl = self.find_element('Discover people','com.instagram.android:id/action_bar_large_title',By.ID,timeout=40)
+            if discover_ppl : 
+                if discover_ppl.text == "Discover people":
+                    self.click_element("Next arrow",'//android.widget.Button[@content-desc="Next"]/android.widget.ImageView')
+            return True
+        return False
+    
     def create_account(self):
+        self.gender =np.random.choice(["male", "female"], p=[0.5, 0.5])
+        fake = Faker()
+        seed=None
+        np.random.seed(seed)
+        fake.seed_instance(seed)
+        self.fname =  fake.first_name_male() if "gender"=="male" else fake.first_name_female()
+        self.lname =  fake.last_name()
+        self.password = self.fname+'@1234'
+        self.full_name = self.fname + self.lname
+        self.birth_year = str(random.randint(1990,2003))
+        self.birth_date = str(random.randint(1,28))
+        if len(self.birth_date)==1:
+            self.birth_date = f"0{self.birth_date}"
+        # birth_month_li = ['January','February','March','April','May','June','July','August','September','October','November', 'December']
+        birth_month_li = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov', 'Dec']
+        self.birth_month = random.choice(birth_month_li)
+        
+        LOGGER.debug('Check if instagram is installed')        
+        if not self.driver().is_app_installed("com.instagram.android"):
+            LOGGER.debug('instagram is not installed, now install it')
+            self.Install_new_insta()
+        random_sleep()
+        breakpoint()
+        for _ in range(1) :
+            self.driver().activate_app('com.instagram.android')
+            create_btn = self.find_element('create account btn','//android.widget.Button[@content-desc="Create new account"]',timeout=30)
+
+            if create_btn:
+                self.click_element('create account btn','//android.widget.Button[@content-desc="Create new account"]')
+            else:
+
+                LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
+                return False
+
+            refreash_ele = self.find_element('page isnt available','''//android.widget.TextView[@text="Page isn't available right now" and @class="android.widget.TextView"]''')
+            if refreash_ele :
+                if refreash_ele.text == "Page isn't available right now":
+                    return False
+            
+            self.process_acc_creation = ['enter_password'
+                                    ,"save_info"
+                                    ,"set_birth_date"
+                                    ,"phone_number_proccess"
+                                    ,"create_set_username"
+                                    ,"add_name_in_new_user"
+                                        ]
+            for i in range(9):
+                if "add_name_in_new_user" in self.process_acc_creation :
+                    if self.add_name_in_new_user():
+                        self.process_acc_creation.remove("add_name_in_new_user")
+                if "enter_password" in self.process_acc_creation :
+                    if self.enter_password() :
+                        self.process_acc_creation.remove("enter_password")
+                if "save_info" in self.process_acc_creation :
+                    if self.save_info():
+                        self.process_acc_creation.remove("save_info")
+                if "set_birth_date" in self.process_acc_creation :
+                    if self.set_birth_date():
+                        self.process_acc_creation.remove("set_birth_date")
+                if "create_set_username" in self.process_acc_creation :
+                    if self.create_set_username():
+                        self.process_acc_creation.remove("create_set_username")
+                if "phone_number_proccess" in self.process_acc_creation :
+                    numberr = self.phone_number_proccess()
+                    if numberr:
+                        if numberr == "delete_avd" :
+                            return False
+                        self.process_acc_creation.remove("phone_number_proccess")
+                    
+                    
+
+                if self.agree_btn() : 
+                    break
+            else :return False
+            
+            if self.other_stuff_create_account() == False : return False
+            else :
+                breakpoint()
+            # add_profile = self.click_element('profile button','//android.widget.FrameLayout[@content-desc="Profile"]/android.view.ViewGroup',timeout=15)
+            # if add_profile:
+                connection.connect()
+                self.user_gender = random.choice(['MALE','FEMALE'])
+                self.user = User_details.objects.create(avdsname=self.emulator_name,username=self.user_username,number=self.phone_number,password=self.password,birth_date=self.birth_date,birth_month=self.birth_month,birth_year=self.birth_year,status='ACTIVE',avd_pc = 'local-rk',gender=self.user_gender)
+                self.add_profile_pic()
+                check_add_bio = self.add_bio()
+                self.upload_post()
+                try:
+                    self.user.bio = self.bio
+                    self.user.is_bio_updated=check_add_bio
+                except AttributeError  as a:print(a)
+                except Exception as ee:print(ee)
+                self.user.updated=True
+                connection.connect()
+                self.user.save()
+                return True
+        return False
+    
+    def create_account2(self):
         print(f'\n\n\n----The ps name is : {os.getenv("PC")}----\n\n\n')
         gender_detector = detector.Detector()
         fake = Faker()
