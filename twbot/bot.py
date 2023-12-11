@@ -1135,13 +1135,13 @@ class InstaBot:
                             avd_pc = os.getenv('PC'),
                         )
                 
-                # self.add_profile_pic()
-                # check_add_bio = self.add_bio()
-                # time.sleep(5)
-                # try:
-                #     user.bio = self.bio
-                #     user.is_bio_updated=check_add_bio
-                # except AttributeError  as a:print(a)
+                self.add_profile_pic()
+                check_add_bio = self.add_bio()
+                time.sleep(5)
+                try:
+                    user.bio = self.bio
+                    user.is_bio_updated=check_add_bio
+                except AttributeError  as a:print(a)
                 # except Exception as ee:print(ee)
                 user.updated=False
                 user.save()
