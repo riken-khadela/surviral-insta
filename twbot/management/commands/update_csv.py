@@ -44,7 +44,7 @@ class Command(BaseCommand):
                     print(user.id)
         df.to_csv(csv_path,index=False)
         if  dub_avd_name :
-            # breakpoint()
+            # ...
             print('there are dublicates avds name in user data')
         ...
         

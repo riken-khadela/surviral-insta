@@ -1047,7 +1047,7 @@ class InstaBot:
 
         self.set_birth_date_main()
         random_sleep(10,12,reason='green tick or username')
-        breakpoint()
+        ...
         green_tick = self.find_element('Green Tick','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[2]/android.widget.ImageView')
         if green_tick:
             self.i_username = self.driver().find_element(By.XPATH,'/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText').text
@@ -1214,7 +1214,6 @@ class InstaBot:
             LOGGER.debug('instagram is not installed, now install it')
             self.Install_new_insta()
         random_sleep()
-        breakpoint()
         for _ in range(1) :
             self.driver().activate_app('com.instagram.android')
             create_btn = self.find_element('create account btn','//android.widget.Button[@content-desc="Create new account"]',timeout=30)
@@ -1264,17 +1263,18 @@ class InstaBot:
                     
 
                 if self.agree_btn() : 
+                    ...
                     break
             else :return False
             
             if self.other_stuff_create_account() == False : return False
             else :
-                breakpoint()
+                ...
             # add_profile = self.click_element('profile button','//android.widget.FrameLayout[@content-desc="Profile"]/android.view.ViewGroup',timeout=15)
             # if add_profile:
                 connection.connect()
                 self.user_gender = random.choice(['MALE','FEMALE'])
-                self.user = User_details.objects.create(avdsname=self.emulator_name,username=self.user_username,number=self.phone_number,password=self.password,birth_date=self.birth_date,birth_month=self.birth_month,birth_year=self.birth_year,status='ACTIVE',avd_pc = 'local-rk',gender=self.user_gender)
+                self.user = User_details.objects.create(avdsname=self.emulator_name,username=self.user_username,number=self.phone_number,password=self.password,birth_date=self.birth_date,birth_month=self.birth_month,birth_year=self.birth_year,status='ACTIVE',avd_pc = 'local-rk')
                 self.add_profile_pic()
                 check_add_bio = self.add_bio()
                 self.upload_post()
@@ -1843,7 +1843,7 @@ class InstaBot:
             PostDetails = self.find_element('Post Details','com.instagram.android:id/row_feed_comment_textview_layout',By.ID,timeout=3)
             if PostDetails :
                 if '… more' in PostDetails.text:
-                    breakpoint()
+                    ...
                 PostDetailsText = str(PostDetails.text).replace('\n',' ')
                 try:
                     post_ = postdetails.objects.get(details=PostDetailsText)
@@ -1853,7 +1853,7 @@ class InstaBot:
                     target_comment = random.randint(10,20)
                     post_ = postdetails.objects.create(details=PostDetailsText,like=random_count,target_comment=target_comment)
                 break
-        # breakpoint()
+        # ...
         # if post_.like > post_.target_like:
         if self.find_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2):
             try:
