@@ -29,7 +29,7 @@ class Command(BaseCommand):
             for user in inactive_user :
                 
                 if not user.avdsname in this_pc_avds_list and user.avdsname in avd_list :
-                    print(user.id)
+                    print("delete avd name :",user.avdsname)
                     try:
                         subprocess.check_output(['avdmanager', 'delete', 'avd', '-n', user.avdsname])
                     except Exception as e:

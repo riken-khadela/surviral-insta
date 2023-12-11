@@ -115,12 +115,6 @@ class Command(BaseCommand):
                     userr_avd = UserAvd.objects.filter(id=userr['avd_id']).first()
                     userr = User_details.objects.filter(username=userr['username']).first()
                     
-                df = pd.read_csv('today_avd.csv')
-                if len(df['avd'].values) >= 60:
-                    df = df.iloc[:0]
-                    df.to_csv(f'today_avd.csv', index=False)
-                    continue
-                if userr.avdsname in df['avd'].values:continue
                 
                 avd_list = subprocess.check_output(['emulator', '-list-avds'])
                 avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
