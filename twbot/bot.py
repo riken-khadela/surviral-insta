@@ -794,7 +794,6 @@ class InstaBot:
         if phone_number_digit:
             for i in range(2):
                 print(self.phone_number)
-                breakpoint()
                 self.input_text(self.phone_number,'phone number input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[1]/android.widget.EditText')
                 next_btn = self.driver().find_element(By.XPATH,'//android.widget.Button[@content-desc="Next"]')
                 next_btn.click()
@@ -813,6 +812,8 @@ class InstaBot:
                     return False      
                 elif self.find_element('name page', '''//android.view.View[@text="What's your name?"]''',timeout=2):
                     return True
+                
+                self.click_element('Create account','//android.widget.Button[@content-desc="Create new account"]')
                     
                 time.sleep(5)
                 otp = get_sms(self.phone_number)
@@ -1287,7 +1288,7 @@ class InstaBot:
                 self.user.updated=True
                 connection.connect()
                 self.user.save()
-                return True
+                return self.user
         return False
     
     def create_account2(self):
