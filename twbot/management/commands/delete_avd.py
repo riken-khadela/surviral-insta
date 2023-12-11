@@ -7,6 +7,7 @@ from twbot.utils import delete_avd_by_name
 class Command(BaseCommand):
     # def add_arguments(self, parser):
     def handle(self, *args, **options):
+        return 
         avd_list = subprocess.check_output(['emulator', '-list-avds'])
         avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
         
