@@ -23,8 +23,6 @@ class Command(BaseCommand):
         # if not os.path.exists(csv_path) :
         headers = ['avd_id','user_id','Avdsname','username','created_at','eng_at']  # Add your column names here
         df = pd.DataFrame(columns=headers)
-        # else :
-        #     df = pd.read_csv(csv_path)
         
         ThisPcUsername = []
         if not df.empty:
