@@ -1371,6 +1371,20 @@ class InstaBot:
                         LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
                         return False
 
+    def user_update_check(self):
+        if self.user.is_bio_updated == False :
+            
+            self.click_element('Edit profile','(//android.widget.Button[@class="android.widget.Button"])[1]',By.XPATH)
+            self.click_element('Create avatar not now','com.instagram.android:id/negative_button',By.ID)
+            add_btn = self.click_element('Add Bio btn','(//android.widget.EditText[@class="android.widget.EditText"])[4]',By.XPATH)
+            if add_btn:
+                self.bio = random_insta_bio()
+                self.input_text(self.bio,"User's Bio", 'com.instagram.android:id/caption_edit_text',By.ID)
+                check = self.click_element('tick btn','//android.widget.Button[@content-desc="Done"]/android.widget.ImageView')
+                if check:
+                    return True
+                time.sleep(3)
+    
     def check_profile(self,username):
         time.sleep(3)
         self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
@@ -1591,7 +1605,7 @@ class InstaBot:
         for _ in range(3) : self.click_element('allow','com.android.packageinstaller:id/permission_allow_button',By.ID,timeout=1)
         ...
 
-    def ActionOnPost(self,swipe_number=4,Comment = False, Share = False, Save = True):
+    def ActionOnPost(self,swipe_number=4,like_count_list=[],Comment = False, Share = False, Save = True):
         self.click_element('play button','com.instagram.android:id/view_play_button',By.ID,timeout=2)
         time.sleep(2)
         for _ in range(7):
@@ -1599,10 +1613,54 @@ class InstaBot:
             more = self.click_element('more','//android.widget.Button[@content-desc="more"]',timeout=3)
             time.sleep(1)
             PostDetails = self.find_element('Post Details','com.instagram.android:id/row_feed_comment_textview_layout',By.ID,timeout=3)
-            self.click_element('more','//*[@text="… more"]')
-            if PostDetails :break
-
-        self.click_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2)
+            if PostDetails :
+                if '… more' in PostDetails.text:
+                    breakpoint()
+                PostDetailsText = str(PostDetails.text).replace('\n',' ')
+                try:
+                    post_ = postdetails.objects.get(details=PostDetailsText)
+                    random_count = post_.like
+                except:
+                    random_count = random.randint(like_count_list[0], like_count_list[1])
+                    target_comment = random.randint(10,20)
+                    post_ = postdetails.objects.create(details=PostDetailsText,like=random_count,target_comment=target_comment)
+                break
+        # breakpoint()
+        # if post_.like > post_.target_like:
+        if self.find_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2):
+            try:
+                like_count= self.find_element('like count','com.instagram.android:id/row_feed_textview_likes',By.ID)
+                like_count_text = like_count.text
+                if 'and' and 'others' in like_count_text: 
+                    like_counts = int(re.search(r'and (\d+(?:,\d+)*) others', like_count_text).group(1).replace(",", ""))
+                else:
+                    like_counts = int(re.search(r"([\d,]+) (?:likes|others)?", like_count_text).group(1).replace(',',''))
+                post_.target_like = like_counts
+                post_.save()
+            except AttributeError:
+                like_counts = 0
+            LOGGER.info(f'like count was {like_counts} and require count is {random_count}')
+            if like_counts >=random_count:pass
+            else:
+                self.click_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2)
+                post_.target_like+=1
+                post_.save()
+        if Comment and post_.comment < post_.target_comment:
+            if self.user not in post_.commented_users.all():
+                CommentBtn = self.click_element('Comment btn', '//android.widget.ImageView[@content-desc="Comment"]')
+                if CommentBtn and PostDetails:
+                    self.input_text(GetInstaComments(PostDetailsText), 'Comment input', 'com.instagram.android:id/layout_comment_thread_edittext', By.ID)
+                    self.click_element('Post comment btn', '//android.widget.Button[@content-desc="Post"]/android.widget.LinearLayout/android.widget.TextView')
+                    post_.comment += 1
+                    post_.commented_users.add(self.user)
+                    post_.save()
+                    random_sleep(3)
+                    CommentHeadingEle = self.find_element('Comment header', '//android.widget.TextView[@content-desc="Comments"]')
+                    if CommentHeadingEle and CommentHeadingEle.text == 'Comments':
+                        LOGGER.info('Comment page found')
+                        self.click_element('Back btn', '//android.widget.ImageView[@content-desc="Back"]')
+            else:
+                LOGGER.info('User has already commented on this post')
                 
         if Share:
             if self.click_element('Share btn','//android.widget.ImageView[@content-desc="Send post"]'):
@@ -1631,7 +1689,8 @@ class InstaBot:
                     self.driver().back()
                 except:
                     pass
-            
+        
+        
         # save post
         if Save :
             self.click_element('Save post btn','//android.widget.ImageView[@content-desc="Add to Saved"]',page="user's post",timeout=2)      
@@ -1805,7 +1864,7 @@ class InstaBot:
                 buttons[indexx].click()
                 # Share = True if PostCount <= 4  else False
                 share = True if 2 == random.randint(1,4) else False
-                self.ActionOnPost(Share=share)
+                self.ActionOnPost(Share=share,like_count_list=[250,350],Comment=self.comment)
                 time.sleep(1)
                 post = self.find_element('posts','com.instagram.android:id/action_bar_title',By.ID,timeout=2).text
                 if post == 'Posts':
@@ -2035,11 +2094,11 @@ class InstaBot:
             self.seen_story()
             self.scroll_home_page()
         self.update_user_follow_info()
-        if int(self.user.followers) < 20:
+        if int(self.user.followers) <= 20:
             is_updated = self.check_profile_updated()
             if not is_updated:
                 self.update_profile()
-        if comment and int(self.user.followers) > 20:
+        if comment and int(self.user.followers) >= 20:
             self.comment = True
         else:
             self.comment = False
@@ -2050,7 +2109,7 @@ class InstaBot:
             self.Follow()
             self.EngagementOnUser()
             self.ReelsView()
-        self.comment = False
+        # self.comment = False
         
         multiple_users = ["imanijohnson132","niamwangi63","lucamoretti6445","malikrobinson726","tylerevans2913","1aaliyahbrown","4nanyashah","haileymitchell161","tianaharris554","deandrewashington652",'minjipark11','haraoutp','rayaanhakim']
         for Username_multiple in multiple_users :

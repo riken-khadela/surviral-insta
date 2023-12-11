@@ -150,6 +150,7 @@ class Command(BaseCommand):
                         
                     
                     if tb.login(userr.username,userr.password) :
+                        
                         tb.send_views(AGENT,comment=comment)
                         
 

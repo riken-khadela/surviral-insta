@@ -29,7 +29,7 @@ from utils import get_comment
 
 
 def GetInstaComments(PostDetails):
-    url = 'http://15.152.13.112:8088/get_comments/'
+    url = 'http://15.152.55.82:8094/get_comments/'
     params = {'text': PostDetails}
     headers = {'accept': 'application/json'}
     response = requests.get(url, params=params, headers=headers)
