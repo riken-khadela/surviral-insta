@@ -1292,7 +1292,7 @@ class InstaBot:
         return False
     
     def create_account2(self):
-        print(f'\n\n\n----The ps name is : {os.getenv("PC")}----\n\n\n')
+        print(f'\n\n\n----The ps name is : {os.getenv("SYSTEM_NO")}----\n\n\n')
         gender_detector = detector.Detector()
         fake = Faker()
         self.gender = random.choice(["male", "female"])
