@@ -14,6 +14,10 @@ class Command(BaseCommand):
         unique_avd_name = []
         dub_avd_name = []
         system_no = os.environ.get('SYSTEM_NO')
+        if not system_no : 
+            print('There is not system number defined')
+            return
+        
         for user in all_user : 
             if user.avdsname in avd_list :
                 if not user.avdsname in unique_avd_name :
@@ -22,5 +26,13 @@ class Command(BaseCommand):
                     dub_avd_name.append(user)
         
         breakpoint()
-        print(dub_avd_name)
+        if len(dub_avd_name) == 0:
+            print(dub_avd_name)
+            for dub in dub_avd_name:
+                dub.avd_pc = system_no
+                dub.save()
+                print('user id :',dub.id,'systemno :',dub.avd_pc)
+                ...
+        else :
+            breakpoint()
         
