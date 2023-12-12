@@ -28,10 +28,10 @@ class Command(BaseCommand):
         breakpoint()
         if len(dub_avd_name) == 0:
             print(dub_avd_name)
-            for dub in dub_avd_name:
-                dub.avd_pc = system_no
-                dub.save()
-                print('user id :',dub.id,'systemno :',dub.avd_pc)
+            for unique in unique_avd_name:
+                unique.avd_pc = system_no
+                unique.save()
+                print('user id :',unique.id,'systemno :',unique.avd_pc)
                 ...
         else :
             breakpoint()
