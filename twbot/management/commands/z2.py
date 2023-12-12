@@ -18,6 +18,8 @@ class Command(BaseCommand):
             print('There is not system number defined')
             return
         
+        breakpoint()
+        
         for user in all_user : 
             if user.avdsname in avd_list :
                 if not user.avdsname in unique_avd_name :
@@ -25,7 +27,6 @@ class Command(BaseCommand):
                 else:
                     dub_avd_name.append(user)
         
-        breakpoint()
         if len(dub_avd_name) == 0:
             print(dub_avd_name)
             for unique in unique_avd_name:
