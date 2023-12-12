@@ -6,8 +6,10 @@ load_dotenv()
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        # my_variable = os.environ.get('MY_VARIABLE')
-        # print(my_variable)
+        objects_with_not_null_field = User_details.objects.filter(avd_pc='PKPC16')
+        print(len(objects_with_not_null_field))
+        
+        
         avd_list = subprocess.check_output(['emulator', '-list-avds'])
         avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
         all_user = User_details.objects.filter(avd_pc__isnull=True,status="ACTIVE")
@@ -21,6 +23,7 @@ class Command(BaseCommand):
         breakpoint()
         
         for user in all_user : 
+            
             if user.avdsname in avd_list :
                 if not user.avdsname in unique_avd_name :
                     unique_avd_name.append(user.avdsname)
