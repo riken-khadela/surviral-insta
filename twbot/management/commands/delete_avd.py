@@ -1,9 +1,7 @@
 from django.core.management.base import BaseCommand
 import subprocess,os
 import pandas as pd
-from etc.test import delete_avd
 from twbot.models import User_details
-from twbot.utils import delete_avd_by_name
 
 class Command(BaseCommand):
     # def add_arguments(self, parser):
@@ -39,7 +37,7 @@ class Command(BaseCommand):
             
             for pcavd in avd_list :
                 if pcavd.startswith('instagram_') :
-                    if not this_pc_avds_list :
+                    if not pcavd in this_pc_avds_list :
                         self.delete_avd(pcavd)
             
             return
