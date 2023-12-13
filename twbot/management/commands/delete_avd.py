@@ -1,13 +1,22 @@
 from django.core.management.base import BaseCommand
 import subprocess,os
 import pandas as pd
+from etc.test import delete_avd
 from twbot.models import User_details
 from twbot.utils import delete_avd_by_name
 
 class Command(BaseCommand):
     # def add_arguments(self, parser):
+    
+    def delete_avd(self,avdname) :
+        print("delete avd name :",avdname)
+        try:
+            subprocess.check_output(['avdmanager', 'delete', 'avd', '-n', avdname])
+        except Exception as e:
+            print(e)
+        ...
     def handle(self, *args, **options):
-        return 
+        # return 
         avd_list = subprocess.check_output(['emulator', '-list-avds'])
         avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
         
@@ -24,17 +33,21 @@ class Command(BaseCommand):
         #             print(e)
         csv_path = os.path.join(os.getcwd(),'csv','this_pc_avd.csv')
         if os.path.exists(os.path.join(os.getcwd(),'csv','this_pc_avd.csv')) :
+            
         
             this_pc_avds_list = pd.read_csv(csv_path)['Avdsname'].tolist()
+            
+            for pcavd in avd_list :
+                if pcavd.startswith('instagram_') :
+                    if not this_pc_avds_list :
+                        self.delete_avd(pcavd)
+            
+            return
             inactive_user = User_details.objects.exclude(status="ACTIVE")
             for user in inactive_user :
                 
                 if not user.avdsname in this_pc_avds_list and user.avdsname in avd_list :
-                    print("delete avd name :",user.avdsname)
-                    try:
-                        subprocess.check_output(['avdmanager', 'delete', 'avd', '-n', user.avdsname])
-                    except Exception as e:
-                        print(e)
+                    self.delete_avd(user.avdsname)
         
 
         
