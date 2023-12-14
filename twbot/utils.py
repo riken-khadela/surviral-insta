@@ -68,7 +68,6 @@ def get_number():
     return mobile_number
 
 def get_sms(phone_number):
-    breakpoint()
     response = make_request("get_sms", {"mobile": phone_number})
     if response.status_code == 200:
         response_text = response.text

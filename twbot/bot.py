@@ -819,7 +819,6 @@ class InstaBot:
                 otp = get_sms(self.phone_number)
                 count = 0
                 while not otp:
-                    breakpoint()
                     otp = get_sms(self.phone_number)
                     time.sleep(10)
                     count+=1
