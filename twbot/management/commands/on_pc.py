@@ -101,6 +101,9 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
+        
+        print(f'\n\n\n--- PC number : {os.environ.get("SYSTEM_NO")}\n\n\n')
+        
         self.total_accounts_created = 0
         self.avd_pack = []
         # if UserAvd.objects.all().count() >= 500:
