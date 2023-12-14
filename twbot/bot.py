@@ -799,11 +799,13 @@ class InstaBot:
                 next_btn = self.driver().find_element(By.XPATH,'//android.widget.Button[@content-desc="Next"]')
                 next_btn.click()
                 random_sleep(5,7,reason='next page')
-                otp = self.find_element('otp page', '//android.view.View[@text="Enter the confirmation code"]',timeout=5)
-                if otp:
-                    pass
+                if self.click_element('Create account','//android.widget.Button[@content-desc="Create new account"]'):
+                    ...
                 elif self.find_element('something went wrong','//android.view.View[@content-desc="Something went wrong. Please try again later."]',timeout=2):
                     self.create_account()
+                    
+                elif self.find_element('otp page', '//android.view.View[@text="Enter the confirmation code"]',timeout=5):
+                    ...
 
                 elif self.find_element('phone number page', '''//android.view.View[@text="What's your mobile number?"]''',timeout=2):
                     self.df.loc['avd']=self.emulator_name
@@ -814,7 +816,6 @@ class InstaBot:
                 elif self.find_element('name page', '''//android.view.View[@text="What's your name?"]''',timeout=2):
                     return True
                 
-                self.click_element('Create account','//android.widget.Button[@content-desc="Create new account"]')
                     
                 otp = get_sms(self.phone_number)
                 count = 0
