@@ -36,22 +36,43 @@ def GetInstaComments(PostDetails):
     CommentList = response.json()['Comments']
     return random.choice(CommentList)
 
+username = "pay@noborders.net"
+GETSMSCODE_API_KEY = "cfca2f0dd0be35a82de94e038ad2a7e8"
+GETSMSCODE_PID = "8"
+removevr = "0" 
+endpoints = {
+    "login": {"action": "login", "username": username, "token": GETSMSCODE_API_KEY},
+    "get_mobile": {"action": "getmobile", "username": username, "token": GETSMSCODE_API_KEY, "pid": GETSMSCODE_PID, "removevr": removevr},
+    "get_sms": {"action": "getsms", "username": username, "token": GETSMSCODE_API_KEY, "pid": GETSMSCODE_PID},
+    "add_blacklist": {"action": "addblack", "username": username, "token": GETSMSCODE_API_KEY, "pid": GETSMSCODE_PID}
+
+
+}
+base_url = "http://api.getsmscode.com/do.php"
+def make_request(endpoint, params=None):
+    url = base_url
+    data = endpoints[endpoint]
+    if params:
+        data.update(params)
+
+    response = requests.post(url, data=data)
+    return response
+
 def get_number():
     while True:
-        url = f"http://api.getsmscode.com/vndo.php?action=getmobile&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&cocode={GETSMSCODE_COUNTRY}"
-        payload={}
-        headers = {}
-        response = requests.request("POST", url, headers=headers, data=payload)
-        if str(response) == 'Message|Capture Max mobile numbers,you max is 5':
+        get_mobile_response = make_request("get_mobile")
+        mobile_number = get_mobile_response.text.strip()
+        if str(mobile_number) == 'Message|Capture Max mobile numbers,you max is 5':
             continue
         else:break
-    return response.text
+    return mobile_number
 
 def get_sms(phone_number):
-    url = f"http://api.getsmscode.com/vndo.php?action=getsms&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net&cocode={GETSMSCODE_COUNTRY}"
-    response = requests.post(url=url)
+    breakpoint()
+    response = make_request("get_sms", {"mobile": phone_number})
     if response.status_code == 200:
         response_text = response.text
+        print(response_text)
         if str(response_text).isdigit() :
             return (response_text)
         if 'insta' in (response_text).lower():
@@ -68,10 +89,9 @@ def get_sms(phone_number):
 
 
 def ban_number(phone_number):
-    url = f"http://api.getsmscode.com/vndo.php?action=addblack&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net&cocode={GETSMSCODE_COUNTRY}"
-    response = requests.post(url=url)
-    print(response.text)
-    return response
+    add_blacklist_response = make_request("add_blacklist", {"mobile": phone_number})
+    print(add_blacklist_response.text)
+    return add_blacklist_response
 
 
 

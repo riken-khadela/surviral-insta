@@ -198,3 +198,10 @@ AVD_DIR_PATH = os.environ.get("AVD_DIR_PATH", os.environ.get("ANDROID_AVD_HOME")
 
 # Remote system Number
 SYSTEM_NO = ""
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587  # TLS port for Gmail
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'rikenkhadela22@gmail.com'  # Your Gmail address
+EMAIL_HOST_PASSWORD = 'Riken@123'

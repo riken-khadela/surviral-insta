@@ -11,7 +11,9 @@ LOG_DIR_PATH = PRJ_PATH / 'logs'
 LOG_DIR_PATH.mkdir(parents=True, exist_ok=True)  # create it if it doesn't exist
 LOG_LEVEL = logging.DEBUG
 LOG_IN_ONE_FILE = True
-
+MIN_HARD_DISK_FREE_SPACE = 20
+MAX_ACTIVE_ACCOUNTS = 55000
+MIN_ACTIVE_ACCOUNTS = 50000
 # AVD
 AVD_DEVICES = ["Nexus 6"]
 

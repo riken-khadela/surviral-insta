@@ -1,13 +1,13 @@
 import sys
 import time
 from concurrent import futures
-import pandas as pd, os
+import pandas as pd, os, shutil
 
 import numpy as np
 from django.core.management.base import BaseCommand
 import selenium.common.exceptions as sel_ex
 
-from conf import US_TIMEZONE, PARALLEL_NUMER
+from conf import US_TIMEZONE, PARALLEL_NUMER, MIN_HARD_DISK_FREE_SPACE, MAX_ACTIVE_ACCOUNTS, MIN_ACTIVE_ACCOUNTS
 from core.models import User
 from twbot.models import User_details
 from exceptions import PhoneRegisteredException, CannotRegisterThisPhoneNumberException, GetSmsCodeNotEnoughBalance
@@ -55,6 +55,14 @@ class Command(BaseCommand):
         self.devices = [f"instagram_50{x}" for x in range(1,90000) if f"instagram_{x}" not in used_name]
         # for avd_name  in self.devices:
         while accounts_created < required_accounts :
+            
+            total, used, free = shutil.disk_usage("/")
+            free_in_gb = free // (2 ** 30)
+            if free_in_gb < MIN_HARD_DISK_FREE_SPACE:
+                LOGGER.info(
+                    f"Your hard disk free space less than {MIN_HARD_DISK_FREE_SPACE} so skipping account creation")
+                return
+            
             # else:break
             # fix the error
             # psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "twbot_useravd_port_key"
@@ -78,6 +86,7 @@ class Command(BaseCommand):
                 continue
             # create all accounts in USA
             country = 'Hong Kong'
+            country = 'China'
             LOGGER.debug(f'country: {country}')
             try:
                 # if UserAvd.objects.filter(name=avd_name).exists(): continue
@@ -128,10 +137,9 @@ class Command(BaseCommand):
                     else :
                         df = pd.read_csv(csv_path)
                         
-                    df.loc[len(df.index)] = [user_avd.id,created_user_obj.id,user_avd.name,created_user_obj.username,created_user_obj.created_at,created_user_obj.created_at]
+                    df.loc[len(df.index)] = [self.user_avd.id,self.user.id,self.user_avd.name,self.user.username,self.user.created_at,self.user.created_at]
                     df.to_csv(csv_path,index=False)
                         
-                    # tb.follow_rio()
                     accounts_created += 1
 
             except GetSmsCodeNotEnoughBalance as e:

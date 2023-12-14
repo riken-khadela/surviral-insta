@@ -582,8 +582,9 @@ class InstaBot:
             self.user_avd.save()
 
         if vpn_type == 'cyberghostvpn':
-            ghost_vpn_countries = difflib.get_close_matches(country, CyberGhostVpn.get_server_list())
-            country = random.choice(ghost_vpn_countries)
+            if not country in CyberGhostVpn.get_server_list() :
+                ghost_vpn_countries = difflib.get_close_matches(country, CyberGhostVpn.get_server_list())
+                country = random.choice(ghost_vpn_countries)
             if not country:
                 country = "United States"
             self.user_avd.proxy_type = "CYBERGHOST"
@@ -815,11 +816,10 @@ class InstaBot:
                 
                 self.click_element('Create account','//android.widget.Button[@content-desc="Create new account"]')
                     
-                time.sleep(5)
                 otp = get_sms(self.phone_number)
                 count = 0
-                time.sleep(13)
                 while not otp:
+                    breakpoint()
                     otp = get_sms(self.phone_number)
                     time.sleep(10)
                     count+=1
@@ -1016,7 +1016,7 @@ class InstaBot:
         return True
         
     
-    def add_bio(self):
+    def add_bio2(self):
         time.sleep(5)
         self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
         for i in range(5):
@@ -1271,12 +1271,12 @@ class InstaBot:
             
             if self.other_stuff_create_account() == False : return False
             else :
-                ...
+                
             # add_profile = self.click_element('profile button','//android.widget.FrameLayout[@content-desc="Profile"]/android.view.ViewGroup',timeout=15)
             # if add_profile:
                 connection.connect()
                 self.user_gender = random.choice(['MALE','FEMALE'])
-                self.user = User_details.objects.create(avdsname=self.emulator_name,username=self.user_username,number=self.phone_number,password=self.password,birth_date=self.birth_date,birth_month=self.birth_month,birth_year=self.birth_year,status='ACTIVE',avd_pc = 'local-rk')
+                self.user = User_details.objects.create(avdsname=self.emulator_name,username=self.user_username,number=self.phone_number,password=self.password,birth_date=self.birth_date,birth_month=self.birth_month,birth_year=self.birth_year,status='ACTIVE',avd_pc = os.environ.get('SYSTEM_NO'))
                 self.add_profile_pic()
                 check_add_bio = self.add_bio()
                 self.upload_post()
@@ -1289,6 +1289,7 @@ class InstaBot:
                 connection.connect()
                 self.user.save()
                 return self.user
+            
         return False
     
     def create_account2(self):
@@ -2244,8 +2245,11 @@ class InstaBot:
         self.click_element('next','//android.widget.ImageView[@content-desc="Next"]')
         self.click_element('next','//android.widget.ImageView[@content-desc="Next"]')
         self.click_element('ok','//android.widget.Button[@content-desc="OK"]')
-        self.click_element('done','//android.widget.ImageView[@content-desc="Share"]')
+        done_ele = self.click_element('done','//android.widget.ImageView[@content-desc="Share"]')
+        
         random_sleep(4,6,reason=' for upload post')
+        if done_ele : return True
+        else : return False
         
         
     def update_profile(self):

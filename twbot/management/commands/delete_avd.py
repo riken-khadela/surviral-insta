@@ -40,7 +40,7 @@ class Command(BaseCommand):
                     if not pcavd in this_pc_avds_list :
                         self.delete_avd(pcavd)
             
-            return
+            # return
             inactive_user = User_details.objects.exclude(status="ACTIVE")
             for user in inactive_user :
                 

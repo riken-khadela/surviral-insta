@@ -1,12 +1,12 @@
 import sys
-import time, os
+import time, os,shutil
 from concurrent import futures
 from xml.dom import UserDataHandler
 
 import numpy as np
 from django.core.management.base import BaseCommand
 from dotenv import load_dotenv
-from conf import US_TIMEZONE, PARALLEL_NUMER
+from conf import US_TIMEZONE, PARALLEL_NUMER, MIN_HARD_DISK_FREE_SPACE, MAX_ACTIVE_ACCOUNTS, MIN_ACTIVE_ACCOUNTS
 from core.models import User, user_detail
 from twbot.models import User_details
 from exceptions import PhoneRegisteredException, CannotRegisterThisPhoneNumberException, GetSmsCodeNotEnoughBalance
@@ -36,6 +36,13 @@ class Command(BaseCommand):
             type=int,
             help=(f'Number of parallel running. Default: {PARALLEL_NUMER}'
                   '(PARALLEL_NUMER in the file conf.py)')
+        )
+        parser.add_argument(
+            '--venv_activate_path',
+            nargs='?',
+            default=f'{BASE_DIR}/env/bin/activate',
+            help=('The path of "bin/activate" for python virtual environment. '
+                  f'Default: {BASE_DIR}/env/bin/activate'),
         )
 
     def create_avd(self,avdname):
@@ -84,7 +91,32 @@ class Command(BaseCommand):
             LOGGER.info(f"**** AVD created with name2222: {avdname} ****")
             return user_avd
 
+
+    def handle(self, *args, **options):
+        self.total_accounts_created = 0
+        self.avd_pack = []
+        # if UserAvd.objects.all().count() >= 500:
+        #     return "Cannot create more than 500 AVDs please delete existing to create a new one."
+
+
+        self.no_vpn = options.get('no_vpn')
+        self.parallel_number = options.get('parallel_number')
+        self.venv_activate_path = options.get("venv_activate_path")
+        
+        print(1)
+        self.run_times = options.get('run_times')
+        LOGGER.debug(f'Run times: {self.run_times}')
+        while True:
+            with futures.ThreadPoolExecutor(max_workers=self.parallel_number) as executor:
+                for i in range(self.parallel_number):
+                    executor.submit(self.run_tasks,i)
+            print(f" All created UserAvd and TwitterAccount ****\n")
+        
+        # random_sleep(10, 30)
+
+
     def run_tasks(self,i):
+        self.create_accounts_if_not_enough()
         country = 'Hong Kong'
         
         while True:
@@ -105,7 +137,7 @@ class Command(BaseCommand):
                 
                 
             if not all_users :
-                all_users = list(User_details.objects.filter(status='ACTIVE',avdsname='instagram_5073730').order_by('?'))
+                all_users = list(User_details.objects.filter(status='ACTIVE').order_by('?'))
                 
             ...
             for userr in all_users:
@@ -173,26 +205,39 @@ class Command(BaseCommand):
                         name = userr.avdsname
                         port = ''
                         parallel.stop_avd(name=name, port=port)
-    def handle(self, *args, **options):
-        self.total_accounts_created = 0
-        self.avd_pack = []
-        # if UserAvd.objects.all().count() >= 500:
-        #     return "Cannot create more than 500 AVDs please delete existing to create a new one."
+    
 
-
-        self.no_vpn = options.get('no_vpn')
-        self.parallel_number = options.get('parallel_number')
-        print(1)
-        self.run_times = options.get('run_times')
-        LOGGER.debug(f'Run times: {self.run_times}')
-        while True:
-            with futures.ThreadPoolExecutor(max_workers=self.parallel_number) as executor:
-                for i in range(self.parallel_number):
-                    executor.submit(self.run_tasks,i)
-            print(f" All created UserAvd and TwitterAccount ****\n")
-        
-        # random_sleep(10, 30)
-
+    def create_accounts_if_not_enough(self):
+        """ """
+        # Create new accounts if existing accounts are not enough
+        try:
+            total, used, free = shutil.disk_usage("/")
+            free_in_gb = free // (2 ** 30)
+            total_in_gb = total // (2 ** 30)
+            used_in_gb = used // (2 ** 30)
+            if free_in_gb < MIN_HARD_DISK_FREE_SPACE:
+                LOGGER.info(
+                    f"Your hard disk free space less than {MIN_HARD_DISK_FREE_SPACE} so skipping account creation")
+                return
+            
+            # active_accounts = User_details.objects.filter(status='ACTIVE',avd_pc = os.getenv("SYSTEM_NO"))
+            active_accounts = User_details.objects.filter(status='ACTIVE')
+            print(f"Total Active accounts: {active_accounts.count()}")
+            if active_accounts.count() < MIN_ACTIVE_ACCOUNTS :
+                LOGGER.debug(
+                    f"Active accounts are less than {MIN_ACTIVE_ACCOUNTS} of required accounts so running "
+                    f"account creation")
+                accounts_to_create = int(min((free_in_gb - MIN_HARD_DISK_FREE_SPACE )/10, MAX_ACTIVE_ACCOUNTS))
+                shell_cmd = f". {self.venv_activate_path} && {BASE_DIR}/manage.py create_accounts " \
+                            f"-n {accounts_to_create} --parallel_number {self.parallel_number}"
+                subprocess.run(shell_cmd, check=True, shell=True)
+            else:
+                LOGGER.debug("Active accounts more than maximum number of required accounts so skipping account creation")
+        except KeyboardInterrupt as e:
+            raise e
+        except Exception as e:
+            LOGGER.debug(e)
+            
     def clean_bot(self, tb, is_sleep=True):
         LOGGER.debug('Quit app driver and kill bot processes')
         #  tb.app_driver.quit()
