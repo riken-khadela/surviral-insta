@@ -22,4 +22,4 @@ git pull
 
 python manage.py update_csv 
 python manage.py delete_avd 
-python manage.py on_pc --no_vpn --account_creation=True
+python manage.py on_pc --account_creation=True
