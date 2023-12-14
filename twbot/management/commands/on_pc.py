@@ -38,6 +38,14 @@ class Command(BaseCommand):
                   '(PARALLEL_NUMER in the file conf.py)')
         )
         parser.add_argument(
+            '--account_creation',
+            nargs='?',
+            default=False,
+            type=int,
+            help=(f'Number of parallel running. Default: {PARALLEL_NUMER}'
+                  '(PARALLEL_NUMER in the file conf.py)')
+        )
+        parser.add_argument(
             '--venv_activate_path',
             nargs='?',
             default=f'{BASE_DIR}/env/bin/activate',
@@ -102,6 +110,7 @@ class Command(BaseCommand):
         self.no_vpn = options.get('no_vpn')
         self.parallel_number = options.get('parallel_number')
         self.venv_activate_path = options.get("venv_activate_path")
+        self.account_creation = options.get("account_creation")
         
         print(1)
         self.run_times = options.get('run_times')
@@ -116,7 +125,8 @@ class Command(BaseCommand):
 
 
     def run_tasks(self,i):
-        self.create_accounts_if_not_enough()
+        if self.account_creation :
+            self.create_accounts_if_not_enough()
         country = 'Hong Kong'
         
         while True:
