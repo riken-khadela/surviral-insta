@@ -41,7 +41,7 @@ class Command(BaseCommand):
             '--account_creation',
             nargs='?',
             default=False,
-            type=int,
+            type=bool,
             help=(f'Number of parallel running. Default: {PARALLEL_NUMER}'
                   '(PARALLEL_NUMER in the file conf.py)')
         )
