@@ -19,7 +19,6 @@ git stash
 git pull 
 
 # setup database
-sh variable.sh
 python manage.py update_csv 
 python manage.py delete_avd 
 python manage.py on_pc --account_creation=True
