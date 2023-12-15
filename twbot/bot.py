@@ -790,51 +790,67 @@ class InstaBot:
             self.logger.info(f'Got an error in Go back to the number : {e}')
 
     def phone_number_proccess(self):
-        self.phone_number = get_number()
-        phone_number_digit = str(self.phone_number).isdigit()
-        if phone_number_digit:
-            for i in range(2):
+        for phone_try in range(3):
+            self.phone_number = get_number()
+            phone_number_digit = str(self.phone_number).isdigit()
+            if phone_number_digit:
                 print(self.phone_number)
                 self.input_text(self.phone_number,'phone number input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[1]/android.widget.EditText')
-                next_btn = self.driver().find_element(By.XPATH,'//android.widget.Button[@content-desc="Next"]')
-                next_btn.click()
-                random_sleep(5,7,reason='next page')
-                if self.click_element('Create account','//android.widget.Button[@content-desc="Create new account"]'):
-                    ...
-                elif self.find_element('something went wrong','//android.view.View[@content-desc="Something went wrong. Please try again later."]',timeout=2):
-                    self.create_account()
-                    
-                elif self.find_element('otp page', '//android.view.View[@text="Enter the confirmation code"]',timeout=5):
-                    ...
-
-                elif self.find_element('phone number page', '''//android.view.View[@text="What's your mobile number?"]''',timeout=2):
-                    self.df.loc['avd']=self.emulator_name
-                    self.df.to_csv('delete_avd.csv', index=False)
-                    LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
-                    self.user_avd.delete()
-                    return False      
-                elif self.find_element('name page', '''//android.view.View[@text="What's your name?"]''',timeout=2):
-                    return True
-                
-                    
-                otp = get_sms(self.phone_number)
-                count = 0
-                while not otp:
-                    otp = get_sms(self.phone_number)
-                    time.sleep(10)
-                    count+=1
-                    if count == 6:
+                if self.click_element('Next btn','//android.widget.Button[@content-desc="Next"]') :
+                    random_sleep(5,7,reason='next page')
+                else :
+                    ban_number(self.phone_number)
+                    continue
+                if not self.find_element('Confirmation code','//android.view.View[@content-desc="Enter the confirmation code"]') :
+                    if self.find_element('Incorrect number','//android.view.View[@content-desc="Looks like your mobile number may be incorrect. Try entering your full number, including the country code."]'):
                         ban_number(self.phone_number)
                         self.df.loc['avd']=self.emulator_name
                         self.df.to_csv('delete_avd.csv', index=False)
-                        LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
-                        return False
-                if otp:
-                    print(otp)
-                    self.input_text(str(otp),'input otp','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
-                    next_btn = self.driver().find_element(By.XPATH,'//android.widget.Button[@content-desc="Next"]')
-                    next_btn.click()
-                    return True
+                        print(f'add this {self.emulator_name} avd in delete local avd list')
+                        return 'delete_avd'
+                    
+                    elif self.click_element('Create account','//android.widget.Button[@content-desc="Create new account"]'):
+                        ...
+                        
+                    elif self.find_element('otp page', '//android.view.View[@text="Enter the confirmation code"]',timeout=5):
+                        ...
+                        
+                    elif self.find_element('something went wrong','//android.view.View[@content-desc="Something went wrong. Please try again later."]',timeout=2):
+                        ban_number(self.phone_number)
+                        self.df.loc['avd']=self.emulator_name
+                        self.df.to_csv('delete_avd.csv', index=False)
+                        print(f'add this {self.emulator_name} avd in delete local avd list')
+                        return 'delete_avd'  
+
+                    elif self.find_element('phone number page', '''//android.view.View[@text="What's your mobile number?"]''',timeout=2):
+                        ban_number(self.phone_number)
+                        self.df.loc['avd']=self.emulator_name
+                        self.df.to_csv('delete_avd.csv', index=False)
+                        print(f'add this {self.emulator_name} avd in delete local avd list')
+                        return 'delete_avd'      
+                    
+                    elif self.find_element('name page', '''//android.view.View[@text="What's your name?"]''',timeout=2):
+                        return True
+                
+                for I_otp in range(10) :
+                    
+                    otp = get_sms(self.phone_number)
+                    if otp:
+                        print(otp)
+                        self.input_text(str(otp),'input otp','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
+                        next_btn = self.app_driver.find_element(By.XPATH,'//android.widget.Button[@content-desc="Next"]')
+                        next_btn.click()
+                        return True
+                    if I_otp == 9:
+                        ban_number(self.phone_number)
+                        self.driver().back()
+                    time.sleep(10)
+                        
+                if phone_try == 0:
+                        self.df.loc['avd']=self.emulator_name
+                        self.df.to_csv('delete_avd.csv', index=False)
+                        print(f'add this {self.emulator_name} avd in delete local avd list')
+                        return 'delete_avd'
 
     def send_request(self):
         import requests
@@ -1153,6 +1169,7 @@ class InstaBot:
                 username_input = self.find_element('username input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
                 self.user_username = str(self.full_name)+"_"+str(random.randint(1000000,9999999))
                 self.input_text(self.user_username,'username input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
+                breakpoint()
                 random_sleep(10,15)
                 self.next_btn()
                 return self.user_username
@@ -1225,12 +1242,12 @@ class InstaBot:
             else:
 
                 LOGGER.info(f'add this {self.emulator_name} avd in delete local avd list')
-                return False
+                return False, False
 
             refreash_ele = self.find_element('page isnt available','''//android.widget.TextView[@text="Page isn't available right now" and @class="android.widget.TextView"]''')
             if refreash_ele :
                 if refreash_ele.text == "Page isn't available right now":
-                    return False
+                    return False, False
             
             self.process_acc_creation = ['enter_password'
                                     ,"save_info"
@@ -1258,8 +1275,8 @@ class InstaBot:
                 if "phone_number_proccess" in self.process_acc_creation :
                     numberr = self.phone_number_proccess()
                     if numberr:
-                        if numberr == "delete_avd" :
-                            return False
+                        if numberr == "delete_avd" or  numberr == False :
+                            return False, False
                         self.process_acc_creation.remove("phone_number_proccess")
                     
                     
@@ -1267,9 +1284,9 @@ class InstaBot:
                 if self.agree_btn() : 
                     ...
                     break
-            else :return False
+            else :return False, False
             
-            if self.other_stuff_create_account() == False : return False
+            if self.other_stuff_create_account() == False : return False, False
             else :
                 
             # add_profile = self.click_element('profile button','//android.widget.FrameLayout[@content-desc="Profile"]/android.view.ViewGroup',timeout=15)
@@ -1288,9 +1305,9 @@ class InstaBot:
                 self.user.updated=True
                 connection.connect()
                 self.user.save()
-                return self.user
+                return self.user, True
             
-        return False
+        return False, False
     
     def create_account2(self):
         print(f'\n\n\n----The ps name is : {os.getenv("SYSTEM_NO")}----\n\n\n')

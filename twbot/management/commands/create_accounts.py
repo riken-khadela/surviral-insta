@@ -127,9 +127,12 @@ class Command(BaseCommand):
                     if not tb.connect_to_vpn(country=country):
                         raise Exception("Couldn't able to connect Cyberghost VPN")
             
-                created_user_obj= tb.create_account()
-
-                if created_user_obj:
+                created_user_obj, user_obj_bool= tb.create_account()
+                if user_obj_bool == False or created_user_obj == "delete_avd" :
+                    self.clean_bot(tb, False)
+                    user_avd.delete()
+                    
+                elif created_user_obj or user_obj_bool == True :
                     csv_path = os.path.join(os.getcwd(),'csv','this_pc_avd.csv')
                     if not os.path.exists(csv_path) :
                         headers = ['avd_id','user_id','Avdsname','username','created_at','eng_at']  # Add your column names here
@@ -137,10 +140,11 @@ class Command(BaseCommand):
                     else :
                         df = pd.read_csv(csv_path)
                         
-                    df.loc[len(df.index)] = [self.user_avd.id,self.user.id,self.user_avd.name,self.user.username,self.user.created_at,self.user.created_at]
+                    df.loc[len(df.index)] = [user_avd.id,created_user_obj.id,user_avd.name,created_user_obj.username,created_user_obj.created_at,created_user_obj.created_at]
                     df.to_csv(csv_path,index=False)
                         
                     accounts_created += 1
+                
 
             except GetSmsCodeNotEnoughBalance as e:
                 LOGGER.debug('Not enough balance in GetSMSCode')
