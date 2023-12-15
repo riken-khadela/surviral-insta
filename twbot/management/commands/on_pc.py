@@ -101,9 +101,8 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
-        
+        old_pc = ['PC3','PC8','PC11','PC20','PKPC16','PKPC17']
         print(f'\n\n\n--- PC number : {os.environ.get("SYSTEM_NO")}\n\n\n')
-        
         self.total_accounts_created = 0
         self.avd_pack = []
         # if UserAvd.objects.all().count() >= 500:
@@ -128,7 +127,9 @@ class Command(BaseCommand):
 
 
     def run_tasks(self,i):
-        if self.account_creation :
+        old_pc = ['PC3','PC8','PC11','PC20','PKPC16','PKPC17']
+            
+        if self.account_creation and not os.environ.get("SYSTEM_NO") in old_pc :
             self.create_accounts_if_not_enough()
         country = 'Hong Kong'
         
@@ -184,7 +185,7 @@ class Command(BaseCommand):
                     # Connect vpn
                     if not self.no_vpn:
                         time.sleep(10)
-                        if not tb.connect_to_vpn(country=country):
+                        if not tb.connect_to_vpn(country=userr_avd.country):
                             raise Exception("Couldn't able to connect Cyberghost VPN")
                         
                     
