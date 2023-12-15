@@ -1,5 +1,5 @@
 import sys
-import time, os,shutil
+import time, os,shutil, tempfile
 from concurrent import futures
 from xml.dom import UserDataHandler
 
@@ -90,7 +90,7 @@ class Command(BaseCommand):
                         country=country
                     )
             except Exception as e:
-                print(e)
+                LOGGER.info(e)
                 self.create_avd_object(avdname)
 
             LOGGER.debug(f'AVD USER: {user_avd}')
@@ -101,8 +101,12 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
-        old_pc = ['PC3','PC8','PC11','PC20','PKPC16','PKPC17']
-        print(f'\n\n\n--- PC number : {os.environ.get("SYSTEM_NO")}\n\n\n')
+        self.random_cron_time_for_reboot()
+        self.change_cron_time_for_auto_manage()
+        LOGGER.info(f'\n\n\n--- PC number : {os.environ.get("SYSTEM_NO")}\n\n\n')
+        current_file_path = os.path.dirname(os.path.abspath(__file__))
+        
+        LOGGER.info(f'\n\n\n--- PC number : {current_file_path}\n\n\n')
         self.total_accounts_created = 0
         self.avd_pack = []
         # if UserAvd.objects.all().count() >= 500:
@@ -114,14 +118,14 @@ class Command(BaseCommand):
         self.venv_activate_path = options.get("venv_activate_path")
         self.account_creation = options.get("account_creation")
         
-        print(1)
+        LOGGER.info(1)
         self.run_times = options.get('run_times')
         LOGGER.debug(f'Run times: {self.run_times}')
         while True:
             with futures.ThreadPoolExecutor(max_workers=self.parallel_number) as executor:
                 for i in range(self.parallel_number):
                     executor.submit(self.run_tasks,i)
-            print(f" All created UserAvd and TwitterAccount ****\n")
+            LOGGER.info(f" All created UserAvd and TwitterAccount ****\n")
         
         # random_sleep(10, 30)
 
@@ -199,7 +203,7 @@ class Command(BaseCommand):
                     tb.kill_bot_process(True, True)
                     sys.exit(1)
                 except Exception as e:
-                    print(traceback.format_exc())
+                    LOGGER.info(traceback.format_exc())
                     try:
                         tb.kill_bot_process(True, True)
                         # user_avd.delete() if user_avd else None
@@ -236,7 +240,7 @@ class Command(BaseCommand):
             
             # active_accounts = User_details.objects.filter(status='ACTIVE',avd_pc = os.getenv("SYSTEM_NO"))
             active_accounts = User_details.objects.filter(status='ACTIVE')
-            print(f"Total Active accounts: {active_accounts.count()}")
+            LOGGER.info(f"Total Active accounts: {active_accounts.count()}")
             if active_accounts.count() < MIN_ACTIVE_ACCOUNTS :
                 LOGGER.debug(
                     f"Active accounts are less than {MIN_ACTIVE_ACCOUNTS} of required accounts so running "
@@ -251,7 +255,163 @@ class Command(BaseCommand):
             raise e
         except Exception as e:
             LOGGER.debug(e)
+    
+    @staticmethod
+    def random_cron_time_for_reboot():
+        LOGGER.info('Create random time to the one after reboot in crontab for auto_engage')
+        cmd = 'auto_manage'
+        cmds = 'crontab -l'
+        verbose = True
+        result = run_cmd(cmds, verbose=verbose)
+        current_file_path = os.path.dirname(os.path.abspath(__file__))
+        current_file_path = current_file_path.replace('/management/commands','')
+        
+        if result:
+            (returncode, output) = result
+            #  LOGGER.info(output)
+            outs = output.strip().split('\n')
+            outs_all = [e + '\n' for e in outs]
+            effective_outs = [ e + '\n' for e in outs if not e.strip().startswith('#')]
+            if 'no crontab for' in output:
+                #  outs_all = ['\n']
+                outs_all = []
+                effective_outs = []
+            exist_flag = False
+            exist_job = ''
+            for item in effective_outs:
+                if cmd in item :
+                    LOGGER.info(f'There has already been one job for command {cmd}')
+                    exist_flag = True
+                    exist_job = item
+                    break
             
+            if exist_flag:
+                LOGGER.info(f'Override the existing job: {exist_job}')
+                
+                outs_all.remove(exist_job) if exist_job in outs_all else ...
+
+                if exist_job.strip().startswith('@'):
+                    if 'sleep' in exist_job:
+                        LOGGER.info('The cron job starts with @ and with a command sleep, now ignore it')
+                        return True
+                
+            new_job_parts = ['@reboot', 'sleep', '300', '&&', '/bin/bash',os.path.join(current_file_path,'tasks/auto_manage.sh'), '>>', os.path.join(current_file_path,'tasks/auto_manage.log'), '2>&1']
+            new_job = ' '.join(new_job_parts) + '\n'
+            LOGGER.info(f'New crontab job: {new_job}')
+            
+            outs_all.append(new_job)
+            jobs_text = ''.join(outs_all)
+            LOGGER.info(jobs_text)
+            with tempfile.NamedTemporaryFile(mode='w+t') as fp:
+                LOGGER.info(f'Write jobs to file {fp.name}')
+                fp.write(jobs_text)
+                fp.flush()
+                # import crontab job
+                cmds = f'crontab {fp.name}'
+                verbose = True
+                result = run_cmd(cmds, verbose=verbose)
+                if result:
+                    (returncode, output) = result
+                    if returncode == 0:
+                        LOGGER.info('Imported jobs into crontab')
+                    else:
+                        LOGGER.info('Failed to import jobs into crontab')
+                else:
+                    LOGGER.info('Cannot importe jobs into crontab')
+                #  LOGGER.info(new_output)
+        else:
+            LOGGER.info('Cannot get crontab jobs')
+    
+    @staticmethod
+    def change_cron_time_for_auto_manage():
+        """ """
+        LOGGER.info('Create random time in crontab for auto_engage')
+        cmd = 'auto_manage'
+        cmds = 'crontab -l'
+        verbose = True
+        result = run_cmd(cmds, verbose=verbose)
+        if result:
+            (returncode, output) = result
+            #  LOGGER.info(output)
+            outs = output.strip().split('\n')
+            outs_all = [e + '\n' for e in outs]
+            effective_outs = [
+                e + '\n' for e in outs if not e.strip().startswith('#')]
+            if 'no crontab for' in output or output == '':
+                #  outs_all = ['\n']
+                outs_all = []
+                effective_outs = []
+            exist_flag = False
+            exist_job = ''
+            for item in effective_outs:
+                if cmd in item and not '@' in item:
+                    LOGGER.info(f'There has already been one job for command {cmd}')
+                    exist_flag = True
+                    exist_job = item
+                    break
+
+            if exist_flag:
+                LOGGER.info(f'Override the existing job: {exist_job}')
+                outs_all.remove(exist_job)
+                exist_job_parts = exist_job.strip().split()
+                m = random.randint(0, 59)
+
+                if exist_job_parts[1] != '*':
+                    original_hour = int(exist_job_parts[1])
+                else:
+                    original_hour = random.randint(0, 23)
+                next_hour = (original_hour + 8) % 24
+                h = (next_hour + random.randint(0, 4)) % 24
+
+                exist_job_parts[0] = f'{m}'
+                exist_job_parts[1] = f'{h}'
+                new_job = ' '.join(exist_job_parts) + '\n'
+                LOGGER.info(f'New crontab job: {new_job}')
+
+                outs_all.append(new_job)
+            else :
+                current_file_path = os.path.dirname(os.path.abspath(__file__))
+                current_file_path = current_file_path.replace('/management/commands','')
+                exist_job_parts = ['*','*','*','*','*','/bin/bash',os.path.join(current_file_path,'tasks/auto_manage.sh'),'>>',os.path.join(current_file_path,'tasks/auto_manage.log'),'2>&1']
+                m = random.randint(0, 59)
+
+                if exist_job_parts[1] != '*':
+                    original_hour = int(exist_job_parts[1])
+                else:
+                    original_hour = random.randint(0, 8)
+                next_hour = (original_hour + 8) % 24
+                ho = (next_hour + random.randint(0, 4)) % 24
+
+                exist_job_parts[0] = f'{m}'
+                exist_job_parts[1] = f'{ho}'
+                new_job = ' '.join(exist_job_parts) + '\n'
+                LOGGER.info(f'New crontab job: {new_job}')
+
+                outs_all.append(new_job)
+                ...
+            jobs_text = ''.join(outs_all)
+            LOGGER.info(jobs_text)
+            with tempfile.NamedTemporaryFile(mode='w+t') as fp:
+                #  LOGGER.info(f'jobs_text: {jobs_text}')
+                LOGGER.info(f'Write jobs to file {fp.name}')
+                fp.write(jobs_text)
+                fp.flush()
+                # import crontab job
+                cmds = f'crontab {fp.name}'
+                verbose = True
+                result = run_cmd(cmds, verbose=verbose)
+                if result:
+                    (returncode, output) = result
+                    if returncode == 0:
+                        LOGGER.info('Imported jobs into crontab')
+                    else:
+                        LOGGER.info('Failed to import jobs into crontab')
+                else:
+                    LOGGER.info('Cannot importe jobs into crontab')
+                #  LOGGER.info(new_output)
+        else:
+            LOGGER.info('Cannot get crontab jobs')
+    
     def clean_bot(self, tb, is_sleep=True):
         LOGGER.debug('Quit app driver and kill bot processes')
         #  tb.app_driver.quit()
