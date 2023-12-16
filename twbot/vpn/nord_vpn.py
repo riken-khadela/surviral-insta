@@ -121,7 +121,7 @@ class NordVpn:
                 search_button = self.find_elements_by_text("Search")
                 search_button[0].click()
                 self.wait_element_by_id("com.nordvpn.android:id/search_field")
-                breakpoint()
+                ...
                 search_box = self.driver.find_element_by_id("com.nordvpn.android:id/search_field")
                 search_box.send_keys(f"{country_name}")
                 time.sleep(3)

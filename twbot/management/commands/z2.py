@@ -7,7 +7,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # print(os.environ.get('SENDER_MAIL'),'-----')
-        # breakpoint()
+        # ...
         objects_with_not_null_field = User_details.objects.filter(avd_pc='PKPC16')
         print(len(objects_with_not_null_field))
         
@@ -22,7 +22,7 @@ class Command(BaseCommand):
             print('There is not system number defined')
             return
         
-        breakpoint()
+        ...
         
         for user in all_user : 
             
@@ -40,5 +40,5 @@ class Command(BaseCommand):
                 print('user id :',unique.id,'systemno :',unique.avd_pc)
                 ...
         else :
-            breakpoint()
+            ...
         
