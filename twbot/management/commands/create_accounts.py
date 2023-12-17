@@ -73,7 +73,7 @@ class Command(BaseCommand):
             print(avd_name)
             
             LOGGER.info(f'available avdname len is {len(self.devices)}')
-            LOGGER.info(f'available ports len is {len(port)}')
+            LOGGER.info(f'available ports len is {len(self.ports)}')
             # avd_name = random.choice(self.devices)
             # ...
             print(1111)
