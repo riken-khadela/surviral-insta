@@ -16,6 +16,7 @@ class Command(BaseCommand):
     #         )
             
     def handle(self, *args, **options):
+        print(f'\n\n\n--- PC number : {os.getenv("SYSTEM_NO")}\n\n\n')
         all_users = list(User_details.objects.filter(status='ACTIVE').order_by('?'))
         avd_list = subprocess.check_output(['emulator', '-list-avds'])
         avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
