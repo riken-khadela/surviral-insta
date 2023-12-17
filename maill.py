@@ -24,7 +24,7 @@ class SendErrorMail():
         body = body+f"\n\nCurrent IST Time: {current_time}"
 
         message = MIMEText(body)
-        message["Subject"] = 'PC number : '+system_no+' '+subject
+        message["Subject"] = 'PC number : '+str(system_no)+' '+subject
         message["From"] = sender_email
         message["To"] = receiver_email
         message["Date"] = formatdate(localtime=True)  # Set the email's date
