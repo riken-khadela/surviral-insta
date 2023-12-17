@@ -12,7 +12,6 @@ killall -9 python qemu-system-x86_64
 # activate the virtual environment for python
 #. env/bin/activate
 . env/bin/activate
-export SYSTEM_NO='RK'
 
 # update code
 # git checkout old-insta-rk
