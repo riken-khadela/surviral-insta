@@ -73,7 +73,7 @@ class Command(BaseCommand):
             print(avd_name)
             
             LOGGER.info(f'available avdname len is {len(self.devices)}')
-            LOGGER.info(f'available ports len is {len(self.devices)}')
+            LOGGER.info(f'available ports len is {len(avd_name)}')
             # avd_name = random.choice(self.devices)
             # ...
             if User_details.objects.filter(avdsname= avd_name).exists():

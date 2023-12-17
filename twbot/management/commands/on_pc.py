@@ -2,7 +2,7 @@ import sys
 import time, os,shutil, tempfile
 from concurrent import futures
 from xml.dom import UserDataHandler
-
+from maill import SendErrorMail
 import numpy as np
 from django.core.management.base import BaseCommand
 from dotenv import load_dotenv
@@ -101,9 +101,16 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
+        self.no_vpn = options.get('no_vpn')
+        self.parallel_number = options.get('parallel_number')
+        self.venv_activate_path = options.get("venv_activate_path")
+        self.account_creation = options.get("account_creation")
+        if not os.getenv("SYSTEM_NO") :
+            SendErrorMail(subject='The SYSTEM number could not found')
+            return
         self.random_cron_time_for_reboot()
         self.change_cron_time_for_auto_manage()
-        LOGGER.info(f'\n\n\n--- PC number : {os.environ.get("SYSTEM_NO")}\n\n\n')
+        LOGGER.info(f'\n\n\n--- PC number : {os.getenv("SYSTEM_NO")}\n\n\n')
         current_file_path = os.path.dirname(os.path.abspath(__file__))
         
         LOGGER.info(f'\n\n\n--- PC number : {current_file_path}\n\n\n')
@@ -113,10 +120,6 @@ class Command(BaseCommand):
         #     return "Cannot create more than 500 AVDs please delete existing to create a new one."
 
 
-        self.no_vpn = options.get('no_vpn')
-        self.parallel_number = options.get('parallel_number')
-        self.venv_activate_path = options.get("venv_activate_path")
-        self.account_creation = options.get("account_creation")
         
         LOGGER.info(1)
         self.run_times = options.get('run_times')
@@ -135,6 +138,8 @@ class Command(BaseCommand):
             
         if self.account_creation and not os.environ.get("SYSTEM_NO") in old_pc :
             self.create_accounts_if_not_enough()
+        if os.environ.get("SYSTEM_NO") in old_pc :
+            self.no_vpn == True
         country = 'Hong Kong'
         
         while True:

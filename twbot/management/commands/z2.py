@@ -17,7 +17,7 @@ class Command(BaseCommand):
         all_user = User_details.objects.filter(avd_pc__isnull=True,status="ACTIVE")
         unique_avd_name = []
         dub_avd_name = []
-        system_no = os.environ.get('SYSTEM_NO')
+        system_no = os.getenv('SYSTEM_NO')
         if not system_no : 
             print('There is not system number defined')
             return
