@@ -73,13 +73,16 @@ class Command(BaseCommand):
             print(avd_name)
             
             LOGGER.info(f'available avdname len is {len(self.devices)}')
-            LOGGER.info(f'available ports len is {len(avd_name)}')
+            LOGGER.info(f'available ports len is {len(port)}')
             # avd_name = random.choice(self.devices)
             # ...
+            print(1111)
             if User_details.objects.filter(avdsname= avd_name).exists():
                 continue
+            print(2222)
             if UserAvd.objects.filter(name = avd_name).exists():
                 continue
+            print(3333)
             avd_list = subprocess.check_output(['emulator', '-list-avds'])
             avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
             if avd_name  in avd_list:
