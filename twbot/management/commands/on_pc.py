@@ -269,7 +269,7 @@ class Command(BaseCommand):
         verbose = True
         result = run_cmd(cmds, verbose=verbose)
         current_file_path = os.path.dirname(os.path.abspath(__file__))
-        current_file_path = current_file_path.replace('/management/commands','')
+        current_file_path = current_file_path.replace('/twbot/management/commands','')
         
         if result:
             (returncode, output) = result
@@ -376,7 +376,7 @@ class Command(BaseCommand):
                 outs_all.append(new_job)
             else :
                 current_file_path = os.path.dirname(os.path.abspath(__file__))
-                current_file_path = current_file_path.replace('/management/commands','')
+                current_file_path = current_file_path.replace('/twbot/management/commands','')
                 exist_job_parts = ['*','*','*','*','*','/bin/bash',os.path.join(current_file_path,'tasks/auto_manage.sh'),'>>',os.path.join(current_file_path,'tasks/auto_manage.log'),'2>&1']
                 m = random.randint(0, 59)
 
