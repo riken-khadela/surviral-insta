@@ -2361,7 +2361,7 @@ class InstaBot:
             self.ReelsView()
         # self.comment = False
         
-        multiple_users = ["imanijohnson132","niamwangi63","lucamoretti6445","malikrobinson726","tylerevans2913","1aaliyahbrown","4nanyashah","haileymitchell161","tianaharris554","deandrewashington652",'minjipark11','haraoutp','rayaanhakim']
+        multiple_users = ["niamwangi63","imanijohnson132","deandrewashington652","haraoutp","HaileyMitchell161","rayaanhakim","haileymitchell161","4nanyaShah",'minjipark11','MalikRobinson726','TylerEvans2913']
         for Username_multiple in multiple_users :
             try :
                 self.search_user(Username_multiple)

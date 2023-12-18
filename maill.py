@@ -12,6 +12,7 @@ class SendErrorMail():
 
     def send_email(self,subject,system_no,body):
         sender_email = os.getenv('SENDER_MAIL')
+        print(sender_email)
         sender_password = os.getenv('SENDER_PASSWORD')
         # sender_password = os.getenv('SENDER_PASSWORD')
         receiver_email = os.getenv('RECEIVER_MAIL')
