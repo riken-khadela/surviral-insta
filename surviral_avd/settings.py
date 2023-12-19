@@ -132,20 +132,11 @@ DATABASES = {
             'USER': 'surviraluser',
             'PASSWORD': 'Surviral#786',
             'HOST': 'surviral-project.c4jxfxmbuuss.ap-southeast-1.rds.amazonaws.com',
-            'PORT': '5432'
+            'PORT': '5432',
+            'CONN_MAX_AGE' : 600
         }
     }
-MONITOR_TASKS = True
-if MONITOR_TASKS:
-    MONITOR_DB = {'monitor': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'surviral_instagram',
-        'USER': 'surviraluser',
-        'PASSWORD': 'Surviral#786',
-        'HOST': 'surviral-project.c4jxfxmbuuss.ap-southeast-1.rds.amazonaws.com',
-        'PORT': '5432'
-    }}
-    DATABASES = {**DATABASES, **MONITOR_DB}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
