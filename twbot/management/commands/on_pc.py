@@ -157,6 +157,7 @@ class Command(BaseCommand):
                 sorted_user_li = sorted(enged_date_times_li)
                 user_data_dict = df.to_dict(orient='records')
                 all_users = [user_data_dict[enged_date_times_li.index(user)] for user in sorted_user_li]
+                all_users = random.shuffle(all_users)
                 
                 
             if not all_users :
