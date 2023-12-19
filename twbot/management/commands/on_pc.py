@@ -134,7 +134,7 @@ class Command(BaseCommand):
 
 
     def run_tasks(self,i):
-        old_pc = ['PC3','PC8','PC11','PC20','PKPC16','PKPC17']
+        old_pc = ['PC3','PC8','PC11','PC20','PKPC16','PKPC17','RK']
             
         if self.account_creation and not os.environ.get("SYSTEM_NO") in old_pc :
             self.create_accounts_if_not_enough()
