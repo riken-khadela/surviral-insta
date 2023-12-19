@@ -2426,7 +2426,7 @@ class InstaBot:
                 parent_element = self.find_element('list','android:id/list',By.ID)
                 buttons = parent_element.find_elements_by_class_name('android.widget.Button')
                 buttons[indexx].click()
-                self.ActionOnPost(Share=False)
+                self.ActionOnPost(Share=False,like_count_list=[250,350])
         try:
             self.click_element('Home page','com.instagram.android:id/feed_tab',By.ID)
             for i in range(2):
@@ -2471,7 +2471,7 @@ class InstaBot:
         
         for indexx in random_index:
             self.choose_random_image(indexx)
-            self.ActionOnPost(swipe_number=3,RandomPostFollow=True,RandomPostFollowRation=30)
+            self.ActionOnPost(swipe_number=3,RandomPostFollow=True,RandomPostFollowRation=30,like_count_list=[250,350])
             
             
     def Profile_update(self):

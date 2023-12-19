@@ -12,6 +12,8 @@ from twbot.models import User_details
 from exceptions import PhoneRegisteredException, CannotRegisterThisPhoneNumberException, GetSmsCodeNotEnoughBalance
 from twbot.bot import *
 from twbot.utils import delete_avd_by_name
+from django.db import connections
+
 load_dotenv()
 AGENT='xanametaverse'
 
@@ -134,103 +136,110 @@ class Command(BaseCommand):
 
 
     def run_tasks(self,i):
-        old_pc = ['PC3','PC8','PC11','PC20','PKPC16','PKPC17','RK']
+        try:
+            old_pc = ['PC3','PC8','PC11','PC20','PKPC16','PKPC17','RK']
+                
+            if self.account_creation and not os.environ.get("SYSTEM_NO") in old_pc :
+                self.create_accounts_if_not_enough()
+            if os.environ.get("SYSTEM_NO") in old_pc :
+                self.no_vpn = True
+            country = 'Hong Kong'
             
-        if self.account_creation and not os.environ.get("SYSTEM_NO") in old_pc :
-            self.create_accounts_if_not_enough()
-        if os.environ.get("SYSTEM_NO") in old_pc :
-            self.no_vpn = True
-        country = 'Hong Kong'
-        
-        while True:
-            # all_users = list(user_detail.objects.using('monitor').filter(status='ACTIVE').order_by('-created_at'))
-            # all_users = list(User_details.objects.filter(status='ACTIVE').order_by('-created_at'))
-            csv_path = os.path.join(os.getcwd(),'csv','this_pc_avd.csv')
-            from datetime import datetime
-            all_users = []
-            df = pd.DataFrame()
-            
-            if os.path.exists(os.path.join(os.getcwd(),'csv','this_pc_avd.csv')) :
-                df = pd.read_csv(csv_path)  
-                enged_date_times_li = [datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f%z') for dt in df['eng_at'].tolist()]
-                enged_date_times_li = [datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f%z') for dt in df['eng_at'].tolist()]
-                sorted_user_li = sorted(enged_date_times_li)
-                user_data_dict = df.to_dict(orient='records')
-                all_users = [user_data_dict[enged_date_times_li.index(user)] for user in sorted_user_li]
-                all_users = random.shuffle(all_users)
+            while True:
+                connection.connect()
+                # all_users = list(user_detail.objects.using('monitor').filter(status='ACTIVE').order_by('-created_at'))
+                # all_users = list(User_details.objects.filter(status='ACTIVE').order_by('-created_at'))
+                csv_path = os.path.join(os.getcwd(),'csv','this_pc_avd.csv')
+                from datetime import datetime
+                all_users = []
+                df = pd.DataFrame()
                 
-                
-            if not all_users :
-                all_users = list(User_details.objects.filter(status='ACTIVE').order_by('?'))
-                
-            ...
-            for userr in all_users:
-                if df.empty :
-                    userr_avd = UserAvd.objects.filter(name=userr.avdsname).first()
-                else :
-                    userr_avd = UserAvd.objects.filter(id=userr['avd_id']).first()
-                    userr = User_details.objects.filter(username=userr['username']).first()
+                if os.path.exists(os.path.join(os.getcwd(),'csv','this_pc_avd.csv')) :
+                    df = pd.read_csv(csv_path)  
+                    shuffled_df = df.sample(frac=1).reset_index(drop=True)
+                    enged_date_times_li = [datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f%z') for dt in shuffled_df['eng_at'].tolist()]
+                    sorted_user_li = sorted(enged_date_times_li)
+                    user_data_dict = shuffled_df.to_dict(orient='records')
+                    all_users = [user_data_dict[enged_date_times_li.index(user)] for user in sorted_user_li]
                     
-                
-                avd_list = subprocess.check_output(['emulator', '-list-avds'])
-                avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
-                if userr.avdsname not in avd_list: continue
-                
-                try:
-                    output = subprocess.check_output(['adb', 'devices']).decode().strip()
-                    avd_names = [line.split('\t')[0] for line in output.split('\n')[1:] if line.endswith('\tdevice')]
-                    if userr.avdsname in avd_names:
-                        continue
-                except subprocess.CalledProcessError:
-                    pass
-
-                try:
-                    if userr.is_bio_updated:
-                        comment = True
-                    else:
-                        comment = False
                     
-                    tb = InstaBot(userr.avdsname,user_avd_obj=userr_avd)
-                    tb.check_apk_installation()
-                    # Connect vpn
-                    if not self.no_vpn:
-                        time.sleep(10)
-                        if not tb.connect_to_vpn(country=userr_avd.country):
-                            raise Exception("Couldn't able to connect Cyberghost VPN")
+                if not all_users :
+                    all_users = list(User_details.objects.filter(status='ACTIVE').order_by('?'))
+                    
+                ...
+                for userr in all_users:
+                    if df.empty :
+                        userr_avd = UserAvd.objects.filter(name=userr.avdsname).first()
+                    else :
+                        userr_avd = UserAvd.objects.filter(id=userr['avd_id']).first()
+                        userr = User_details.objects.filter(username=userr['username']).first()
                         
                     
-                    if tb.login(userr.username,userr.password) :
-                        
-                        tb.send_views(AGENT,comment=comment)
-                        
-
-                except GetSmsCodeNotEnoughBalance as e:
-                    LOGGER.debug('Not enough balance in GetSMSCode')
-                    tb.kill_bot_process(True, True)
-                    sys.exit(1)
-                except Exception as e:
-                    LOGGER.info(traceback.format_exc())
+                    avd_list = subprocess.check_output(['emulator', '-list-avds'])
+                    avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
+                    if userr.avdsname not in avd_list: continue
+                    
                     try:
-                        tb.kill_bot_process(True, True)
-                        # user_avd.delete() if user_avd else None
-                    except:
+                        output = subprocess.check_output(['adb', 'devices']).decode().strip()
+                        avd_names = [line.split('\t')[0] for line in output.split('\n')[1:] if line.endswith('\tdevice')]
+                        if userr.avdsname in avd_names:
+                            continue
+                    except subprocess.CalledProcessError:
                         pass
-                finally:
-                    if self.run_times != 0:
-                        count += 1
-                        if count >= self.run_times:
-                            LOGGER.info(f'Real run times: {count}, now exit')
-                            break
 
-                    if 'tb' in locals() or 'tb' in globals():
-                        LOGGER.info(f'Clean the bot: {userr.avdsname}')
-                        self.clean_bot(tb,is_sleep=False)
-                    else:
-                        name = userr.avdsname
-                        port = ''
-                        parallel.stop_avd(name=name, port=port)
-    
+                    try:
+                        if userr.is_bio_updated:
+                            comment = True
+                        else:
+                            comment = False
+                        
+                        tb = InstaBot(userr.avdsname,user_avd_obj=userr_avd)
+                        tb.check_apk_installation()
+                        # Connect vpn
+                        if not self.no_vpn:
+                            time.sleep(10)
+                            if not tb.connect_to_vpn(country=userr_avd.country):
+                                raise Exception("Couldn't able to connect Cyberghost VPN")
+                            
+                        
+                        if tb.login(userr.username,userr.password) :
+                            
+                            tb.send_views(AGENT,comment=comment)
+                            
 
+                    except GetSmsCodeNotEnoughBalance as e:
+                        LOGGER.debug('Not enough balance in GetSMSCode')
+                        tb.kill_bot_process(True, True)
+                        sys.exit(1)
+                    except Exception as e:
+                        LOGGER.info(traceback.format_exc())
+                        try:
+                            tb.kill_bot_process(True, True)
+                            # user_avd.delete() if user_avd else None
+                        except:
+                            pass
+                    finally:
+                        if self.run_times != 0:
+                            count += 1
+                            if count >= self.run_times:
+                                LOGGER.info(f'Real run times: {count}, now exit')
+                                break
+
+                        if 'tb' in locals() or 'tb' in globals():
+                            LOGGER.info(f'Clean the bot: {userr.avdsname}')
+                            self.clean_bot(tb,is_sleep=False)
+                        else:
+                            name = userr.avdsname
+                            port = ''
+                            parallel.stop_avd(name=name, port=port)
+        
+        except Exception as e :
+            print(e) 
+
+        finally : 
+            print('The script is closed !')
+            connections['default'].close()
+            
     def create_accounts_if_not_enough(self):
         """ """
         # Create new accounts if existing accounts are not enough
