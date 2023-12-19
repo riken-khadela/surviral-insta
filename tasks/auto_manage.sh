@@ -14,9 +14,9 @@ killall -9 python qemu-system-x86_64
 . env/bin/activate
 
 # update code
-# git checkout old-insta-rk
-# git stash
-# git pull 
+git checkout old-insta-rk
+git stash
+git pull 
 
 # setup database
 python manage.py update_csv 

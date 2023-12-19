@@ -2364,7 +2364,10 @@ class InstaBot:
             self.seen_story()
             self.scroll_home_page()
         
-        self.findele
+        if self.find_element('insta keeps stoping','//android.widget.TextView[@resource-id="android:id/alertTitle"]',timeout=5):
+            
+            self.click_element('close insta','//android.widget.Button[@resource-id="android:id/aerr_close"]')
+        
         self.update_user_follow_info()
         if int(self.user.followers) <= 20:
             is_updated = self.check_profile_updated()
