@@ -203,7 +203,6 @@ class Command(BaseCommand):
                             
                         
                         if tb.login(userr.username,userr.password) :
-                            
                             tb.send_views(AGENT,comment=comment)
                             
 
@@ -234,10 +233,10 @@ class Command(BaseCommand):
                             parallel.stop_avd(name=name, port=port)
         
         except Exception as e :
-            print(e) 
+            LOGGER.info(e) 
 
         finally : 
-            print('The script is closed !')
+            LOGGER.info('The script is closed !')
             connections['default'].close()
             
     def create_accounts_if_not_enough(self):

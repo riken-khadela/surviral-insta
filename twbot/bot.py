@@ -1872,8 +1872,7 @@ class InstaBot:
                     target_comment = random.randint(10,20)
                     post_ = postdetails.objects.create(details=PostDetailsText,like=random_count,target_comment=target_comment)
                 break
-        # ...
-        # if post_.like > post_.target_like:
+
         if self.find_element('Like btn','//android.widget.ImageView[@content-desc="Like"]',timeout=2):
             try:
                 like_count= self.find_element('like count','com.instagram.android:id/row_feed_textview_likes',By.ID)
@@ -2086,9 +2085,16 @@ class InstaBot:
     def click_btn(self,name=''):
         self.click_element('Edit profile btn',f'//android.widget.Button[@text={name}]')
         
-            
-    def EngagementOnUser(self,share=True):
-        self.click_element('Follow btn','com.instagram.android:id/row_right_aligned_follow_button_stub',By.ID,timeout=3)
+    def get_user_on_screen(self):
+        for _i in range(3):
+            self.logger.info(f'Trying to get user on display of time {_i}')
+            if self.search_user(self.engagement_user) :
+                self.logger.info(f'Found the user on screen {self.engagement_user}')
+                return True
+        return False
+                
+    def make_grid_view_on_display(self):
+        
         ele = self.find_element('Grid View','//android.widget.ImageView[@content-desc="Grid view"]')
         while not ele:
             self.swip_display(4)
@@ -2102,21 +2108,35 @@ class InstaBot:
             action = TouchAction(self.driver())
             action.long_press(x=x, y=y).move_to(x=x, y=0).release().perform()
         except Exception as e:
-            print(e)
-        PostCount =1
+            self.logger.error(e)
+        ...
+        
+    def EngagementOnUser(self,share=True):
+        self.click_element('Follow btn','com.instagram.android:id/row_right_aligned_follow_button_stub',By.ID,timeout=3)
+        self.make_grid_view_on_display()
+        
         for indexx in range(4):
+            if not self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]'):
+                if not self.get_user_on_screen() :
+                    self.driver().terminate_app('com.instagram.android')
+                    self.driver().start_activity('com.instagram.android','com.instagram.mainactivity.MainActivity')
+                    random_sleep(reason='Wait till the app is opened properly')
+                    self.get_user_on_screen()
+                    self.make_grid_view_on_display()
+                    if not self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]'):
+                        continue
+                
             parent_element = self.find_element('list','android:id/list',By.ID)
             buttons = parent_element.find_elements_by_class_name('android.widget.Button')
             try :
                 buttons[indexx].click()
-                # Share = True if PostCount <= 4  else False
                 share = True if 2 == random.randint(1,4) else False
                 self.ActionOnPost(Share=share,like_count_list=[250,350],Comment=self.comment)
                 time.sleep(1)
+                
                 post = self.find_element('posts','com.instagram.android:id/action_bar_title',By.ID,timeout=2).text
                 if post == 'Posts':
                     self.click_element('Back','//android.widget.ImageView[@content-desc="Back"]')
-                    PostCount+=1 
             except : ...
 
     
@@ -2343,6 +2363,8 @@ class InstaBot:
             self.check_notification()
             self.seen_story()
             self.scroll_home_page()
+        
+        self.findele
         self.update_user_follow_info()
         if int(self.user.followers) <= 20:
             is_updated = self.check_profile_updated()
@@ -2356,17 +2378,21 @@ class InstaBot:
             self.Follow_4_Follow()
         self.follow_rio()
         if self.search_user(Username):
+            self.engagement_user = Username
             self.Follow()
             self.EngagementOnUser()
             self.ReelsView()
-        # self.comment = False
+        self.comment = False
         
         multiple_users = ["niamwangi63","imanijohnson132","deandrewashington652","haraoutp","HaileyMitchell161","rayaanhakim","haileymitchell161","4nanyaShah",'minjipark11','MalikRobinson726','TylerEvans2913']
         for Username_multiple in multiple_users :
             try :
+                self.engagement_user = Username_multiple
                 self.search_user(Username_multiple)
                 self.Follow()
                 self.EngagementOnUser()
+                self.ReelsView()
+                
             except : ...
         if not self.user.avd_pc:
             self.user.avd_pc = os.getenv('PC')
@@ -2405,6 +2431,7 @@ class InstaBot:
         self.Follow() 
         
     def follow_rio(self,like=True):
+        self.engagement_user = 'xana_rio'
         self.search_user('xana_rio')
         self.Follow()
         if like:
