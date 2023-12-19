@@ -139,7 +139,7 @@ class Command(BaseCommand):
         if self.account_creation and not os.environ.get("SYSTEM_NO") in old_pc :
             self.create_accounts_if_not_enough()
         if os.environ.get("SYSTEM_NO") in old_pc :
-            self.no_vpn == True
+            self.no_vpn = True
         country = 'Hong Kong'
         
         while True:
