@@ -1848,8 +1848,7 @@ class InstaBot:
                     if not self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]'):
                         continue
             self.click_element('Reels','//android.widget.ImageView[@content-desc="Reels"]')
-            breakpoint()
-            self.click_element('First reel','(//android.widget.ImageView[@content-desc="Reel by xanametaverse. Double tap to play or pause."])[1]')
+            self.click_element('First reel',f'(//android.widget.ImageView[@content-desc="Reel by {self.engagement_user}. Double tap to play or pause."])[1]')
             for _ in range(int(reels_watch_time)):
                 self.ChangeReels()
             self.driver().back()
@@ -2388,12 +2387,12 @@ class InstaBot:
             self.comment = False
         if not self.bot_follow:
             self.Follow_4_Follow()
-        # self.follow_rio()
-        # if self.search_user(Username):
-        #     self.engagement_user = Username
-        #     self.Follow()
-        #     self.EngagementOnUser()
-        #     self.ReelsView()
+        self.follow_rio()
+        if self.search_user(Username):
+            self.engagement_user = Username
+            self.Follow()
+            self.EngagementOnUser()
+            self.ReelsView()
         self.comment = False
         
         multiple_users = ["niamwangi63","imanijohnson132","deandrewashington652","haraoutp","HaileyMitchell161","rayaanhakim","haileymitchell161","4nanyaShah",'minjipark11','MalikRobinson726','TylerEvans2913']
@@ -2401,8 +2400,8 @@ class InstaBot:
             try :
                 self.engagement_user = Username_multiple
                 self.search_user(Username_multiple)
-                # self.Follow()
-                # self.EngagementOnUser()
+                self.Follow()
+                self.EngagementOnUser()
                 self.ReelsView()
                 
             except : ...
