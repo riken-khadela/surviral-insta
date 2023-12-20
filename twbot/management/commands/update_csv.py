@@ -20,6 +20,7 @@ class Command(BaseCommand):
         all_users = list(User_details.objects.filter(status='ACTIVE').order_by('?'))
         avd_list = subprocess.check_output(['emulator', '-list-avds'])
         avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
+        print(avd_list,'------------')
         csv_path = os.path.join(os.getcwd(),'csv','this_pc_avd.csv')
         # if not os.path.exists(csv_path) :
         headers = ['avd_id','user_id','Avdsname','username','created_at','eng_at']  # Add your column names here
