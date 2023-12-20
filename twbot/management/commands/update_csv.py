@@ -1,3 +1,4 @@
+from math import e
 from django.core.management.base import BaseCommand
 import pandas as pd, os, subprocess
 from twbot.models import User_details,UserAvd
@@ -16,6 +17,13 @@ class Command(BaseCommand):
     #         )
             
     def handle(self, *args, **options):
+        while True :
+            try :
+                all_users = list(User_details.objects.filter(status='ACTIVE').order_by('?'))
+                if all_users : break
+            except Exception as e : print(e)
+            
+            ...
         print(f'\n\n\n--- PC number : {os.getenv("SYSTEM_NO")}\n\n\n')
         all_users = list(User_details.objects.filter(status='ACTIVE').order_by('?'))
         avd_list = subprocess.check_output(['emulator', '-list-avds'])
