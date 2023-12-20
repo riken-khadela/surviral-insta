@@ -174,9 +174,10 @@ class Command(BaseCommand):
                         userr_avd = UserAvd.objects.filter(id=userr['avd_id']).first()
                         userr = User_details.objects.filter(username=userr['username']).first()
                         
-                    
+                    print(111)
                     avd_list = subprocess.check_output(['emulator', '-list-avds'])
                     avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
+                    print(111)
                     if userr.avdsname not in avd_list: continue
                     
                     try:
