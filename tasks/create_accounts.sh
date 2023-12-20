@@ -14,11 +14,6 @@ killall -9 python qemu-system-x86_64
 . env/bin/activate
 
 # update code
-git checkout old-insta-rk
-git stash
-git pull 
+git pull origin $(git rev-parse --abbrev-ref HEAD)
 
-# setup database
-python manage.py update_csv 
-python manage.py delete_avd 
-python manage.py on_pc --account_creation=True
+python manage.py create_accounts 
