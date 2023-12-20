@@ -1,1 +1,0 @@
-tasks/auto_create.sh
