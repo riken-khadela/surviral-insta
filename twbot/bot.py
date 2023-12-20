@@ -1837,7 +1837,6 @@ class InstaBot:
         self.swip_display(9)
         
     def ReelsView(self,reels_watch_time=9):
-        self.click_element('Reels','//android.widget.ImageView[@content-desc="Reels"]')
         for i in range(3):
             if not self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]'):
                 if not self.get_user_on_screen() :
@@ -1848,6 +1847,7 @@ class InstaBot:
                     self.make_grid_view_on_display()
                     if not self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]'):
                         continue
+            self.click_element('Reels','//android.widget.ImageView[@content-desc="Reels"]')
             self.click_element('First reel','(//android.widget.ImageView[@content-desc="Reel by xanametaverse. Double tap to play or pause."])[1]')
             for _ in range(int(reels_watch_time)):
                 self.ChangeReels()
@@ -2374,7 +2374,6 @@ class InstaBot:
             self.scroll_home_page()
         
         if self.find_element('insta keeps stoping','//android.widget.TextView[@resource-id="android:id/alertTitle"]',timeout=5):
-            
             self.click_element('close insta','//android.widget.Button[@resource-id="android:id/aerr_close"]')
         
         self.update_user_follow_info()
