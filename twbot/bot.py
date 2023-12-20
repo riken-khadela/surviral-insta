@@ -1839,6 +1839,15 @@ class InstaBot:
     def ReelsView(self,reels_watch_time=9):
         self.click_element('Reels','//android.widget.ImageView[@content-desc="Reels"]')
         for i in range(3):
+            if not self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]'):
+                if not self.get_user_on_screen() :
+                    self.driver().terminate_app('com.instagram.android')
+                    self.driver().start_activity('com.instagram.android','com.instagram.mainactivity.MainActivity')
+                    random_sleep(reason='Wait till the app is opened properly')
+                    self.get_user_on_screen()
+                    self.make_grid_view_on_display()
+                    if not self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]'):
+                        continue
             self.click_element('First reel','(//android.widget.ImageView[@content-desc="Reel by xanametaverse. Double tap to play or pause."])[1]')
             for _ in range(int(reels_watch_time)):
                 self.ChangeReels()
