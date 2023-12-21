@@ -1920,8 +1920,10 @@ class InstaBot:
         if Share:
             if self.click_element('Share btn','//android.widget.ImageView[@content-desc="Send post"]'):
                 self.click_element('Add reel to your story','//android.widget.Button[@content-desc="Add reel to your story"]',timesleep=2)
-                while not self.driver().current_activity == 'com.instagram.modal.TransparentModalActivity':
-                    random_sleep(1,1,reason='Wait untill story opens')
+                for _ in range(20):
+                    if self.driver().current_activity == 'com.instagram.modal.TransparentModalActivity':
+                        random_sleep(1,1,reason='Wait untill story opens')
+                        break
                 random_sleep(2,3,reason='share to story')
                 self.stories_avds_permissions()
                 self.click_element('introducing longer stories','/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.Button',timeout=3)
