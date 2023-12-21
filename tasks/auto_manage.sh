@@ -4,7 +4,7 @@ export PRJ_DIR=`dirname $CURRENT_DIR`
 # go to project root directory
 cd $PRJ_DIR
 #. ./tasks/environment.sh
-. tasks/environment.sh
+# . tasks/environment.sh
 
 # Kill python and AVD process
 killall -9 python qemu-system-x86_64
