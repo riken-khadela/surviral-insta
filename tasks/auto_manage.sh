@@ -8,7 +8,10 @@ cd $PRJ_DIR
 
 # Kill python and AVD process
 killall -9 python qemu-system-x86_64
-
+export SENDER_PASSWORD='hfac mvld ecjx clru'
+export RECEIVER_MAIL="rikenkhadela22@gmail.com"
+export SENDER_MAIL='rikenkhadela777@gmail.com'
+export SYSTEM_NO='RK'
 # activate the virtual environment for python
 #. env/bin/activate
 . env/bin/activate

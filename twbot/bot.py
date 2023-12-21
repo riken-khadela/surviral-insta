@@ -1847,11 +1847,16 @@ class InstaBot:
                     self.make_grid_view_on_display()
                     if not self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]'):
                         continue
-            self.click_element('Reels','//android.widget.ImageView[@content-desc="Reels"]')
-            self.click_element('First reel',f'(//android.widget.ImageView[@content-desc="Reel by {self.engagement_user}. Double tap to play or pause."])[1]')
-            for _ in range(int(reels_watch_time)):
-                self.ChangeReels()
+            parent_element = self.find_element('list','android:id/list',By.ID)
+            buttons = parent_element.find_elements_by_class_name('android.widget.Button')
+            if len(buttons) == 0 : continue
+            buttons[0].click()
+            for _ in range(3):
+                if self.click_element('click post inside of post','(//android.view.View[@resource-id="com.instagram.android:id/feed_preview_keep_watching_backdrop"])[1]'): 
+                    break
+            for _ in range(int(reels_watch_time)): self.ChangeReels()
             self.driver().back()
+            self.click_element('back','//android.widget.ImageView[@content-desc="Back"]')
     
     def check_story_permission(self):
         self.click_element('Allow camera','com.android.packageinstaller:id/permission_message',timeout=3)
@@ -1926,10 +1931,10 @@ class InstaBot:
                         break
                 random_sleep(2,3,reason='share to story')
                 self.stories_avds_permissions()
-                self.click_element('introducing longer stories','/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.Button',timeout=3)
-                self.click_element('Ok btn2','//android.widget.Button[@content-desc="Continue watching stories"]',By.XPATH,timeout=2)
-                self.click_element('Ok btn','com.instagram.android:id/primary_button',By.ID,timeout=2)
-                self.click_element('Share to','//android.widget.FrameLayout[@content-desc="Share to"]',timeout=2)
+                self.click_element('introducing longer stories','/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.Button',timeout=1)
+                self.click_element('Ok btn2','//android.widget.Button[@content-desc="Continue watching stories"]',By.XPATH,timeout=1)
+                self.click_element('Ok btn','com.instagram.android:id/primary_button',By.ID,timeout=1)
+                self.click_element('Share to','//android.widget.FrameLayout[@content-desc="Share to"]',timeout=3)
                 self.click_element('Share btn','com.instagram.android:id/share_story_button',By.ID,timeout=2)
                 self.click_element('share done btn','//android.widget.Button[@content-desc="Done"]')
                 random_sleep(5,10,reason='Let story uploads')
@@ -2387,13 +2392,13 @@ class InstaBot:
             self.comment = True
         else:
             self.comment = False
-        if not self.bot_follow:
-            self.Follow_4_Follow()
-        self.follow_rio()
+        # if not self.bot_follow:
+        #     self.Follow_4_Follow()
+        # self.follow_rio()
         if self.search_user(Username):
             self.engagement_user = Username
-            self.Follow()
-            self.EngagementOnUser()
+            # self.Follow()
+            # self.EngagementOnUser()
             self.ReelsView()
         self.comment = False
         
