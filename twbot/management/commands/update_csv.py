@@ -52,6 +52,6 @@ class Command(BaseCommand):
                 df.to_csv(csv_path,index=False)
                 if  dub_avd_name :
                     print('there are dublicates avds name in user data')
-            
+                break
             except Exception as e : print(e)
         
