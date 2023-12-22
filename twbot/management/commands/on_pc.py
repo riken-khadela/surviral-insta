@@ -370,12 +370,6 @@ class Command(BaseCommand):
                 outs_all.remove(exist_job)
                 exist_job_parts = exist_job.strip().split()
                 m = random.randint(0, 59)
-
-                if exist_job_parts[1] != '*':
-                    original_hour = int(exist_job_parts[1])
-                else:
-                    original_hour = random.randint(0, 23)
-                next_hour = (original_hour + 8) % 24
                 h = random.randint(1, 5)
 
                 exist_job_parts[0] = f'{m}'
