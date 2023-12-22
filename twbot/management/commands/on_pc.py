@@ -394,11 +394,11 @@ class Command(BaseCommand):
                     original_hour = int(exist_job_parts[1])
                 else:
                     original_hour = random.randint(0, 8)
-                next_hour = (original_hour + 8) % 24
-                ho = (next_hour + random.randint(0, 4)) % 24
+                # next_hour = (original_hour + 8) % 24
+                # ho = next_hour + random.randint(5,8) 
 
-                if not ho < 8 :
-                    ho = random.randint(5,8)
+                # if not ho < 8 :
+                ho = random.randint(5,8)
                 exist_job_parts[0] = f'*/{m}'
                 exist_job_parts[1] = f'*/{ho}'
                 new_job = ' '.join(exist_job_parts) + '\n'
