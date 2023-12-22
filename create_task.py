@@ -86,19 +86,19 @@ if args.override_envfile or not env_file.exists() or True:
             if ee.split('=')[0] in only_need_few_env_sh :
                 new_outs.append('export ' + ee + '\n')
         new_outs = new_outs+[
-        'export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"',
-        'export MANPATH="/home/linuxbrew/.linuxbrew/share/man:$MANPATH"',
-        'export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"',
-        'export PATH="$HOME/task_bin/:$PATH"',
-        'export PATH="$HOME/.android/sdk/cmdline-tools/latest/bin:$HOME/.android/sdk/platform-tools:$HOME/.android/sdk/emulator:$HOME/.android/sdk/avd:$PATH"',
-        'export ANDROID_SDK_ROOT="$HOME/.android/sdk"',
-        'export ANDROID_HOME="$HOME/.android/sdk"',
-        'export ANDROID_AVD_HOME="$HOME/.android/sdk/avd"',
-        'export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"',
-        'export PATH=${PATH}:${JAVA_HOME}/bin',
-        'export PATH=$PATH:/path/to/appium-doctor',
-        'export PATH=$PATH:$ANDROID_HOME/tools',
-        'export PATH=$PATH:$ANDROID_HOME/platform-tools']
+        'export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"\n',
+        'export MANPATH="/home/linuxbrew/.linuxbrew/share/man:$MANPATH"\n',
+        'export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"\n',
+        'export PATH="$HOME/task_bin/:$PATH"\n',
+        'export PATH="$HOME/.android/sdk/cmdline-tools/latest/bin:$HOME/.android/sdk/platform-tools:$HOME/.android/sdk/emulator:$HOME/.android/sdk/avd:$PATH"\n',
+        'export ANDROID_SDK_ROOT="$HOME/.android/sdk"\n',
+        'export ANDROID_HOME="$HOME/.android/sdk"\n',
+        'export ANDROID_AVD_HOME="$HOME/.android/sdk/avd"\n',
+        'export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"\n',
+        'export PATH=${PATH}:${JAVA_HOME}/bin\n',
+        'export PATH=$PATH:/path/to/appium-doctor\n',
+        'export PATH=$PATH:$ANDROID_HOME/tools\n',
+        'export PATH=$PATH:$ANDROID_HOME/platform-tools\n']
         new_output = ''.join(new_outs)
         #  LOGGER.debug(new_output)
         # write the new output
