@@ -17,7 +17,7 @@ export SYSTEM_NO='RK'
 . env/bin/activate
 
 # update code
-# git checkout old-insta-rk
+git checkout old-insta-rk
 git stash
 git pull 
 
