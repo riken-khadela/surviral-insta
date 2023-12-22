@@ -1851,6 +1851,7 @@ class InstaBot:
             buttons = parent_element.find_elements_by_class_name('android.widget.Button')
             if len(buttons) == 0 : continue
             buttons[0].click()
+            breakpoint()
             for _ in range(3):
                 if self.click_element('click post inside of post','(//android.view.View[@resource-id="com.instagram.android:id/feed_preview_keep_watching_backdrop"])[1]'): 
                     break
