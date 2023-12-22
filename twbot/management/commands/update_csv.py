@@ -53,5 +53,5 @@ class Command(BaseCommand):
                 if  dub_avd_name :
                     print('there are dublicates avds name in user data')
                 break
-            except Exception as e : print('Connected not to the database !')
+            except Exception as e : print('not Connected to the database !')
         
