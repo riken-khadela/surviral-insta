@@ -71,8 +71,8 @@ args = parser.parse_args()
 # create environment variable file
 env_file_name = 'environment.sh'
 env_file = TASKS_DIR / env_file_name
-
-if args.override_envfile or not env_file.exists():
+only_need_few_env_sh = ['GJS_DEBUG_TOPICS','LESSOPEN','LANGUAGE','USER','XDG_SESSION_TYPE','GIT_ASKPASS','SHLVL','HOME','CHROME_DESKTOP','TERM_PROGRAM_VERSION','DESKTOP_SESSION','GIO_LAUNCHED_DESKTOP_FILE','GNOME_SHELL_SESSION_MODE','GTK_MODULES','VSCODE_GIT_ASKPASS_MAIN','VSCODE_GIT_ASKPASS_NODE','MANAGERPID','SYSTEMD_EXEC_PID','DBUS_SESSION_BUS_ADDRESS','COLORTERM','GIO_LAUNCHED_DESKTOP_FILE_PID','IM_CONFIG_PHASE','WAYLAND_DISPLAY','INFOPATH','LOGNAME','JOURNAL_STREAM','_','XDG_SESSION_CLASS','USERNAME','TERM','GNOME_DESKTOP_SESSION_ID','PATH','SESSION_MANAGER','INVOCATION_ID','XDG_MENU_PREFIX','GNOME_SETUP_DISPLAY','XDG_RUNTIME_DIR','GDK_BACKEND','DISPLAY','LANG','XDG_CURRENT_DESKTOP','XMODIFIERS','XDG_SESSION_DESKTOP','XAUTHORITY','LS_COLORS','VSCODE_GIT_IPC_HANDLE','TERM_PROGRAM','SSH_AGENT_LAUNCHER','SSH_AUTH_SOCK','ORIGINAL_XDG_CURRENT_DESKTOP','SHELL','QT_ACCESSIBILITY','GDMSESSION','LESSCLOSE','GJS_DEBUG_OUTPUT','ANDROID_SDK_ROOT','VSCODE_GIT_ASKPASS_EXTRA_ARGS','QT_IM_MODULE','JAVA_HOME','PWD','XDG_CONFIG_DIRS','ANDROID_HOME','XDG_DATA_DIRS','ANDROID_AVD_HOME','MANPATH','EDITOR']
+if args.override_envfile or not env_file.exists() or True:
     LOGGER.info(f'Override the file "{env_file}"')
     cmd = 'env'
     verbose = False
@@ -81,7 +81,11 @@ if args.override_envfile or not env_file.exists():
         (returncode, output) = result
         #  LOGGER.debug(output)
         outs = output.strip().split('\n')
-        new_outs = ['export ' + e + '\n' for e in outs]+[
+        new_outs = []
+        for ee in outs :
+            if ee.split('=')[0] in only_need_few_env_sh :
+                new_outs.append('export ' + ee + '\n')
+        new_outs = new_outs+[
         'export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"',
         'export MANPATH="/home/linuxbrew/.linuxbrew/share/man:$MANPATH"',
         'export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"',
