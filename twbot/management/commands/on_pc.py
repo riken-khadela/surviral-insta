@@ -376,10 +376,10 @@ class Command(BaseCommand):
                 else:
                     original_hour = random.randint(0, 23)
                 next_hour = (original_hour + 8) % 24
-                h = (next_hour + random.randint(0, 4)) % 24
+                h = random.randint(1, 5)
 
                 exist_job_parts[0] = f'{m}'
-                exist_job_parts[1] = f'{h}'
+                exist_job_parts[1] = f'*/{h}'
                 new_job = ' '.join(exist_job_parts) + '\n'
                 LOGGER.info(f'New crontab job: {new_job}')
 
