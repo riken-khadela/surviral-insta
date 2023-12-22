@@ -1855,7 +1855,9 @@ class InstaBot:
                 if self.click_element('click post inside of post','com.instagram.android:id/feed_preview_keep_watching_backdrop',By.ID): 
                     break
             for _ in range(int(reels_watch_time)): self.ChangeReels()
-            self.driver().back()
+            for _ in range(6):
+                if self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]') : break
+                self.driver().back()
             self.click_element('back','//android.widget.ImageView[@content-desc="Back"]')
     
     def check_story_permission(self):
