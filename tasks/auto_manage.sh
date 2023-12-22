@@ -22,7 +22,7 @@ git stash
 git pull 
 
 # setup database
-python temp/z22.py
+# python temp/z22.py
 python manage.py update_csv 
 python manage.py delete_avd 
 python manage.py on_pc --account_creation=True
