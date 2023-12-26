@@ -1858,7 +1858,7 @@ class InstaBot:
             for _ in range(6):
                 if self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]') : break
                 self.driver().back()
-            self.click_element('back','//android.widget.ImageView[@content-desc="Back"]')
+            # self.click_element('back','//android.widget.ImageView[@content-desc="Back"]')
     
     def check_story_permission(self):
         self.click_element('Allow camera','com.android.packageinstaller:id/permission_message',timeout=3)
@@ -2152,9 +2152,9 @@ class InstaBot:
                 self.ActionOnPost(Share=share,like_count_list=[250,350],Comment=self.comment)
                 time.sleep(1)
                 
-                post = self.find_element('posts','com.instagram.android:id/action_bar_title',By.ID,timeout=2).text
-                if post == 'Posts':
-                    self.click_element('Back','//android.widget.ImageView[@content-desc="Back"]')
+                # post = self.find_element('posts','com.instagram.android:id/action_bar_title',By.ID,timeout=2).text
+                # if post == 'Posts':
+                #     self.click_element('Back','//android.widget.ImageView[@content-desc="Back"]')
             except : ...
 
     
@@ -2384,7 +2384,6 @@ class InstaBot:
         
         if self.find_element('insta keeps stoping','//android.widget.TextView[@resource-id="android:id/alertTitle"]',timeout=5):
             self.click_element('close insta','//android.widget.Button[@resource-id="android:id/aerr_close"]')
-        
         self.update_user_follow_info()
         if int(self.user.followers) <= 20:
             is_updated = self.check_profile_updated()
@@ -2394,13 +2393,13 @@ class InstaBot:
             self.comment = True
         else:
             self.comment = False
-        # if not self.bot_follow:
-        #     self.Follow_4_Follow()
-        # self.follow_rio()
+        if not self.bot_follow:
+            self.Follow_4_Follow()
+        self.follow_rio()
         if self.search_user(Username):
             self.engagement_user = Username
-            # self.Follow()
-            # self.EngagementOnUser()
+            self.Follow()
+            self.EngagementOnUser()
             self.ReelsView()
         self.comment = False
         
