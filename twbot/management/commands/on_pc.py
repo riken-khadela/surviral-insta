@@ -370,7 +370,7 @@ class Command(BaseCommand):
                 outs_all.remove(exist_job)
                 exist_job_parts = exist_job.strip().split()
                 m = random.randint(0, 59)
-                h = random.randint(1, 5)
+                h = random.randint(12,24)
 
                 exist_job_parts[0] = f'{m}'
                 exist_job_parts[1] = f'*/{h}'
