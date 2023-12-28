@@ -199,7 +199,7 @@ class Command(BaseCommand):
                     for i in range(self.parallel_number):
                         executor.submit(self.run_tasks, requied_account_list[i])
             except Exception as e : print(e)
-        print(f" All created UserAvd and TwitterAccount ****\n")
+            LOGGER.debug(f" All created UserAvd and TwitterAccount ****\n")
         
         random_sleep(10, 30)
 

@@ -800,36 +800,34 @@ class InstaBot:
                 else :
                     ban_number(self.phone_number)
                     continue
-                if not self.find_element('Confirmation code','//android.view.View[@content-desc="Enter the confirmation code"]') :
-                    if self.find_element('Incorrect number','//android.view.View[@content-desc="Looks like your mobile number may be incorrect. Try entering your full number, including the country code."]'):
-                        ban_number(self.phone_number)
-                        self.df.loc['avd']=self.emulator_name
-                        self.df.to_csv('delete_avd.csv', index=False)
-                        print(f'add this {self.emulator_name} avd in delete local avd list')
-                        return 'delete_avd'
+                
+                if self.find_element('Incorrect number','//android.view.View[@content-desc="Looks like your mobile number may be incorrect. Try entering your full number, including the country code."]'):
+                    ban_number(self.phone_number)
+                    continue
+                
+                elif self.click_element('Create account','//android.widget.Button[@content-desc="Create new account"]'):
+                    ...
                     
-                    elif self.click_element('Create account','//android.widget.Button[@content-desc="Create new account"]'):
-                        ...
-                        
-                    elif self.find_element('otp page', '//android.view.View[@text="Enter the confirmation code"]',timeout=5):
-                        ...
-                        
-                    elif self.find_element('something went wrong','//android.view.View[@content-desc="Something went wrong. Please try again later."]',timeout=2):
-                        ban_number(self.phone_number)
-                        self.df.loc['avd']=self.emulator_name
-                        self.df.to_csv('delete_avd.csv', index=False)
-                        print(f'add this {self.emulator_name} avd in delete local avd list')
-                        return 'delete_avd'  
+                elif self.find_element('otp page', '//android.view.View[@text="Enter the confirmation code"]',timeout=5):
+                    ...
+                    
+                elif self.find_element('something went wrong','//android.view.View[@content-desc="Something went wrong. Please try again later."]',timeout=2):
+                    ban_number(self.phone_number)
+                    self.df.loc['avd']=self.emulator_name
+                    self.df.to_csv('delete_avd.csv', index=False)
+                    print(f'add this {self.emulator_name} avd in delete local avd list')
+                    self.user_avd.delete()
+                    return 'delete_avd'  
 
-                    elif self.find_element('phone number page', '''//android.view.View[@text="What's your mobile number?"]''',timeout=2):
-                        ban_number(self.phone_number)
-                        self.df.loc['avd']=self.emulator_name
-                        self.df.to_csv('delete_avd.csv', index=False)
-                        print(f'add this {self.emulator_name} avd in delete local avd list')
-                        return 'delete_avd'      
-                    
-                    elif self.find_element('name page', '''//android.view.View[@text="What's your name?"]''',timeout=2):
-                        return True
+                elif self.find_element('phone number page', '''//android.view.View[@text="What's your mobile number?"]''',timeout=2):
+                    self.df.loc['avd']=self.emulator_name
+                    self.df.to_csv('delete_avd.csv', index=False)
+                    print(f'add this {self.emulator_name} avd in delete local avd list')
+                    self.user_avd.delete()
+                    return 'delete_avd'      
+                
+                elif self.find_element('name page', '''//android.view.View[@text="What's your name?"]''',timeout=2):
+                    return True
                 
                 for I_otp in range(10) :
                     
@@ -845,7 +843,7 @@ class InstaBot:
                         self.driver().back()
                     time.sleep(10)
                         
-                if phone_try == 0:
+                if phone_try == 1:
                         self.df.loc['avd']=self.emulator_name
                         self.df.to_csv('delete_avd.csv', index=False)
                         print(f'add this {self.emulator_name} avd in delete local avd list')
