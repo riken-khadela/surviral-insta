@@ -789,6 +789,7 @@ class InstaBot:
             self.logger.info(f'Got an error in Go back to the number : {e}')
 
     def phone_number_proccess(self):
+        breakpoint()
         for phone_try in range(3):
             self.phone_number = get_number()
             phone_number_digit = str(self.phone_number).isdigit()
@@ -1835,6 +1836,7 @@ class InstaBot:
         self.swip_display(9)
         
     def ReelsView(self,reels_watch_time=9):
+        breakpoint()
         for i in range(3):
             if not self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]'):
                 if not self.get_user_on_screen() :
@@ -2391,15 +2393,15 @@ class InstaBot:
             self.comment = True
         else:
             self.comment = False
-        if not self.bot_follow:
-            self.Follow_4_Follow()
-        self.follow_rio()
-        if self.search_user(Username):
-            self.engagement_user = Username
-            self.Follow()
-            self.EngagementOnUser()
-            self.ReelsView()
-        self.comment = False
+        # if not self.bot_follow:
+        #     self.Follow_4_Follow()
+        # self.follow_rio()
+        # if self.search_user(Username):
+        #     self.engagement_user = Username
+        #     self.Follow()
+        #     self.EngagementOnUser()
+        #     self.ReelsView()
+        # self.comment = False
         
         multiple_users = ["niamwangi63","imanijohnson132","deandrewashington652","haraoutp","HaileyMitchell161","rayaanhakim","haileymitchell161","4nanyaShah",'minjipark11','MalikRobinson726','TylerEvans2913']
         for Username_multiple in multiple_users :

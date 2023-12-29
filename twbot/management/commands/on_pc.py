@@ -165,8 +165,8 @@ class Command(BaseCommand):
                     
                 if not all_users :
                     all_users = list(User_details.objects.filter(status='ACTIVE').order_by('?'))
-                    
-                ...
+                
+                random.shuffle(all_users)
                 for userr in all_users:
                     if df.empty :
                         userr_avd = UserAvd.objects.filter(name=userr.avdsname).first()
