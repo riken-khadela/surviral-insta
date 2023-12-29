@@ -789,7 +789,6 @@ class InstaBot:
             self.logger.info(f'Got an error in Go back to the number : {e}')
 
     def phone_number_proccess(self):
-        breakpoint()
         for phone_try in range(3):
             self.phone_number = get_number()
             phone_number_digit = str(self.phone_number).isdigit()
@@ -1836,7 +1835,6 @@ class InstaBot:
         self.swip_display(9)
         
     def ReelsView(self,reels_watch_time=9):
-        breakpoint()
         for i in range(3):
             if not self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]'):
                 if not self.get_user_on_screen() :
@@ -1852,7 +1850,7 @@ class InstaBot:
             if len(buttons) == 0 : continue
             buttons[0].click()
             for _ in range(3):
-                if self.click_element('click post inside of post','com.instagram.android:id/feed_preview_keep_watching_backdrop',By.ID): 
+                if self.click_element('click post inside of post','//android.view.View[@resource-id="com.instagram.android:id/feed_preview_keep_watching_backdrop"]'): 
                     break
             for _ in range(int(reels_watch_time)): self.ChangeReels()
             for _ in range(6):
