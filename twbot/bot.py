@@ -1835,6 +1835,7 @@ class InstaBot:
         self.swip_display(9)
         
     def ReelsView(self,reels_watch_time=9):
+        aa = ''
         for i in range(3):
             if not self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]'):
                 if not self.get_user_on_screen() :
@@ -1845,16 +1846,15 @@ class InstaBot:
                     self.make_grid_view_on_display()
                     if not self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]'):
                         continue
-            parent_element = self.find_element('list','android:id/list',By.ID)
-            buttons = parent_element.find_elements_by_class_name('android.widget.Button')
+            if not aa : 
+                aa = self.find_element('first three reels','(//android.widget.RelativeLayout[@class="android.widget.RelativeLayout"])[1]')
+            else : continue
+            buttons = aa.find_elements_by_class_name('android.widget.ImageView')
             if len(buttons) == 0 : continue
-            buttons[0].click()
-            for _ in range(3):
-                if self.click_element('click post inside of post','//android.view.View[@resource-id="com.instagram.android:id/feed_preview_keep_watching_backdrop"]'): 
-                    break
+            else : buttons[0].click()
             for _ in range(int(reels_watch_time)): self.ChangeReels()
             for _ in range(6):
-                if self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]') : break
+                if  not self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]') : break
                 self.driver().back()
             # self.click_element('back','//android.widget.ImageView[@content-desc="Back"]')
     
@@ -2183,6 +2183,8 @@ class InstaBot:
         return data["personalNames"][0]["likelyGender"]
 
     def check_profile_updated(self):
+        if self.user.updated == True : return
+        
         self.is_bio_text = False
         self.is_profile_photo = False
         self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
@@ -2305,6 +2307,7 @@ class InstaBot:
         
         
     def update_profile(self):
+        if self.user.updated == True : return
         self.click_element('Profile btn','com.instagram.android:id/tab_avatar',By.ID)
         self.click_element('Edit profile btn','//android.widget.Button[@text="Edit profile"]')
         containers = self.find_element('dialoag','com.instagram.android:id/dialog_container',By.ID)
@@ -2391,15 +2394,15 @@ class InstaBot:
             self.comment = True
         else:
             self.comment = False
-        # if not self.bot_follow:
-        #     self.Follow_4_Follow()
-        # self.follow_rio()
-        # if self.search_user(Username):
-        #     self.engagement_user = Username
-        #     self.Follow()
-        #     self.EngagementOnUser()
-        #     self.ReelsView()
-        # self.comment = False
+        if not self.bot_follow:
+            self.Follow_4_Follow()
+        self.follow_rio()
+        if self.search_user(Username):
+            self.engagement_user = Username
+            self.Follow()
+            self.EngagementOnUser()
+            self.ReelsView()
+        self.comment = False
         
         multiple_users = ["niamwangi63","imanijohnson132","deandrewashington652","haraoutp","HaileyMitchell161","rayaanhakim","haileymitchell161","4nanyaShah",'minjipark11','MalikRobinson726','TylerEvans2913']
         for Username_multiple in multiple_users :
