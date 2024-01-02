@@ -1846,9 +1846,12 @@ class InstaBot:
                     self.make_grid_view_on_display()
                     if not self.find_element('User account',f'//android.widget.TextView[@content-desc="{self.engagement_user}"]'):
                         continue
-            if not aa : 
+            for _ in range(3) :
                 aa = self.find_element('first three reels','(//android.widget.RelativeLayout[@class="android.widget.RelativeLayout"])[1]')
-            else : continue
+                if aa : break
+                self.click_element('reels page','//android.widget.ImageView[@content-desc="Reels"]')
+            else: 
+                continue
             buttons = aa.find_elements_by_class_name('android.widget.ImageView')
             if len(buttons) == 0 : continue
             else : buttons[0].click()
@@ -2402,7 +2405,6 @@ class InstaBot:
             self.Follow()
             self.EngagementOnUser()
             self.ReelsView()
-        self.comment = False
         
         multiple_users = ["niamwangi63","imanijohnson132","deandrewashington652","haraoutp","HaileyMitchell161","rayaanhakim","haileymitchell161","4nanyaShah",'minjipark11','MalikRobinson726','TylerEvans2913']
         for Username_multiple in multiple_users :
