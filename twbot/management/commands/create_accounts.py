@@ -46,7 +46,7 @@ class Command(BaseCommand):
         LOGGER.info(f"**** AVD created with name1111: {avdname} ****")
         return avdname
 
-    def run_tasks(self, required_accounts):
+    def run_tasks(self, required_accounts,country):
         count = 0
         accounts_created = 0
         used_ports = set(UserAvd.objects.values_list('port', flat=True))
@@ -88,8 +88,8 @@ class Command(BaseCommand):
             if avd_name  in avd_list:
                 continue
             # create all accounts in USA
-            country = 'Hong Kong'
-            country = 'China'
+            if type(country) == list :
+                country = random.choice(country)
             LOGGER.debug(f'country: {country}')
             try:
                 # if UserAvd.objects.filter(name=avd_name).exists(): continue
@@ -185,10 +185,12 @@ class Command(BaseCommand):
         #     return "Cannot create more than 500 AVDs please delete existing to create a new one."
 
         required_accounts = int(options.get('n'))
-
         self.no_vpn = options.get('no_vpn')
         self.parallel_number = options.get('parallel_number')
-
+        self.parallel_number = 2
+        
+        
+        country = ['China','Hong Kong','Indonesia','Philippines','Kenya']
         self.run_times = options.get('run_times')
         LOGGER.debug(f'Run times: {self.run_times}')
         requied_account_list = [n.size for n in
@@ -197,7 +199,12 @@ class Command(BaseCommand):
             try:
                 with futures.ThreadPoolExecutor(max_workers=self.parallel_number) as executor:
                     for i in range(self.parallel_number):
-                        executor.submit(self.run_tasks, requied_account_list[i])
+                        if 'China' in country :
+                            executor.submit(self.run_tasks, requied_account_list[i],'China')
+                            country.remove('China')
+                        else :
+                            executor.submit(self.run_tasks, requied_account_list[i],country)
+                            
             except Exception as e : print(e)
             LOGGER.debug(f" All created UserAvd and TwitterAccount ****\n")
         

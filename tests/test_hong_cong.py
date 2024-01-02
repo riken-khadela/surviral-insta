@@ -19,10 +19,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 timeout = 10
+
 username = "pay@noborders.net"
 GETSMSCODE_API_KEY = "cfca2f0dd0be35a82de94e038ad2a7e8"
 GETSMSCODE_PID = "8"
-GETSMSCODE_COUNTRY = "8"
+GETSMSCODE_COUNTRY = "kn"
+GETSMSCODE_COUNTRY = "ph"
+GETSMSCODE_COUNTRY = "id"
+
 removevr = "0" 
 endpoints = {
     "login": {"action": "login", "username": username, "token": GETSMSCODE_API_KEY},
@@ -325,6 +329,7 @@ class TestAvd(unittest.TestCase):
                         return 'delete_avd'
                     
     def run_task(self):
+        breakpoint()
         self.phone_number_proccess()
         print('The driver is connect :',self.app_driver)
         ...
