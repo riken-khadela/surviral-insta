@@ -2407,6 +2407,7 @@ class InstaBot:
             self.ReelsView()
         
         multiple_users = ["niamwangi63","imanijohnson132","deandrewashington652","haraoutp","HaileyMitchell161","rayaanhakim","haileymitchell161","4nanyaShah",'minjipark11','MalikRobinson726','TylerEvans2913']
+        random.shuffle(multiple_users)
         for Username_multiple in multiple_users :
             try :
                 self.engagement_user = Username_multiple
