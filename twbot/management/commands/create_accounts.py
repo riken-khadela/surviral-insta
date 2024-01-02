@@ -88,8 +88,17 @@ class Command(BaseCommand):
             if avd_name  in avd_list:
                 continue
             # create all accounts in USA
+            counrty_code_dict = {
+                    'China' : ""
+                    # ,'Hong Kong' : "hk"
+                    ,'Indonesia' : "id"
+                    ,'Philippines' : "ph"
+                    ,'Kenya' : "kn"
+
+                }
             if type(country) == list :
                 country = random.choice(country)
+            country_code = counrty_code_dict[country]
             LOGGER.debug(f'country: {country}')
             try:
                 # if UserAvd.objects.filter(name=avd_name).exists(): continue
@@ -130,7 +139,7 @@ class Command(BaseCommand):
                     if not tb.connect_to_vpn(country=country):
                         raise Exception("Couldn't able to connect Cyberghost VPN")
             
-                created_user_obj, user_obj_bool= tb.create_account()
+                created_user_obj, user_obj_bool= tb.create_account(country_code=country_code)
                 if user_obj_bool == False or created_user_obj == "delete_avd" :
                     self.clean_bot(tb, False)
                     user_avd.delete()
@@ -191,6 +200,7 @@ class Command(BaseCommand):
         
         
         country = ['China','Hong Kong','Indonesia','Philippines','Kenya']
+        country = ['Indonesia','Philippines','Kenya']
         self.run_times = options.get('run_times')
         LOGGER.debug(f'Run times: {self.run_times}')
         requied_account_list = [n.size for n in

@@ -40,6 +40,10 @@ def GetInstaComments(PostDetails):
 username = "pay@noborders.net"
 GETSMSCODE_API_KEY = "cfca2f0dd0be35a82de94e038ad2a7e8"
 GETSMSCODE_PID = "8"
+GETSMSCODE_COUNTRY = "kn"
+GETSMSCODE_COUNTRY = "ph"
+GETSMSCODE_COUNTRY = "id"
+
 removevr = "0" 
 endpoints = {
     "login": {"action": "login", "username": username, "token": GETSMSCODE_API_KEY},
@@ -49,32 +53,25 @@ endpoints = {
 
 
 }
-base_url = "http://api.getsmscode.com/do.php"
-def make_request(endpoint, params=None):
-    url = base_url
-    data = endpoints[endpoint]
-    if params:
-        data.update(params)
-
-    response = requests.post(url, data=data)
-    return response
-
-def get_number():
+def get_number(country_code):
     while True:
-        get_mobile_response = make_request("get_mobile")
-        mobile_number = get_mobile_response.text.strip()
-        if str(mobile_number) == 'Message|Capture Max mobile numbers,you max is 5':
+        # url = f"http://api.getsmscode.com/do.php?action=getmobile&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}"
+        url = f"http://api.getsmscode.com/vndo.php?action=getmobile&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&cocode={country_code}"
+        payload={}
+        headers = {}
+        response = requests.request("POST", url, headers=headers, data=payload)
+        if str(response) == 'Message|Capture Max mobile numbers,you max is 5':
             continue
         else:break
-    return mobile_number
+    return response.text
 
-def get_sms(phone_number):
-    response = make_request("get_sms", {"mobile": phone_number})
+def get_sms(phone_number,country_code):
+    # url = f"http://api.getsmscode.com/do.php?action=getsms&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net"
+    url = f"http://api.getsmscode.com/vndo.php?action=getsms&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net&cocode={country_code}"
+    response = requests.post(url=url)
     if response.status_code == 200:
         response_text = response.text
-        print(response_text)
-        if str(response_text).isdigit() :
-            return (response_text)
+        print(response_text,"response_text----------------------------")
         if 'insta' in (response_text).lower():
             if '|' in (response_text).lower():
                 match = response_text.split('|')
@@ -88,10 +85,12 @@ def get_sms(phone_number):
                 return otp
 
 
-def ban_number(phone_number):
-    add_blacklist_response = make_request("add_blacklist", {"mobile": phone_number})
-    print(add_blacklist_response.text)
-    return add_blacklist_response
+def ban_number(phone_number,country_code):
+    # url = f"http://api.getsmscode.com/do.php?action=addblack&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net"
+    url = f"http://api.getsmscode.com/vndo.php?action=addblack&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net&cocode={country_code}"
+    response = requests.post(url=url)
+    print(response.text)
+    return response
 
 
 def random_sleep(min_sleep_time=1, max_sleep_time=5):

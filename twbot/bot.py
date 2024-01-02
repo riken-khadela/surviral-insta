@@ -788,9 +788,9 @@ class InstaBot:
         except Exception as e :
             self.logger.info(f'Got an error in Go back to the number : {e}')
 
-    def phone_number_proccess(self):
+    def phone_number_proccess(self,country_code):
         for phone_try in range(3):
-            self.phone_number = get_number()
+            self.phone_number = get_number(country_code)
             phone_number_digit = str(self.phone_number).isdigit()
             if phone_number_digit:
                 print(self.phone_number)
@@ -798,11 +798,11 @@ class InstaBot:
                 if self.click_element('Next btn','//android.widget.Button[@content-desc="Next"]') :
                     random_sleep(5,7,reason='next page')
                 else :
-                    ban_number(self.phone_number)
+                    ban_number(self.phone_number,country_code)
                     continue
                 
                 if self.find_element('Incorrect number','//android.view.View[@content-desc="Looks like your mobile number may be incorrect. Try entering your full number, including the country code."]'):
-                    ban_number(self.phone_number)
+                    ban_number(self.phone_number,country_code)
                     continue
                 
                 elif self.click_element('Create account','//android.widget.Button[@content-desc="Create new account"]'):
@@ -812,7 +812,7 @@ class InstaBot:
                     ...
                     
                 elif self.find_element('something went wrong','//android.view.View[@content-desc="Something went wrong. Please try again later."]',timeout=2):
-                    ban_number(self.phone_number)
+                    ban_number(self.phone_number,country_code)
                     self.df.loc['avd']=self.emulator_name
                     self.df.to_csv('delete_avd.csv', index=False)
                     print(f'add this {self.emulator_name} avd in delete local avd list')
@@ -831,7 +831,7 @@ class InstaBot:
                 
                 for I_otp in range(10) :
                     
-                    otp = get_sms(self.phone_number)
+                    otp = get_sms(self.phone_number,country_code)
                     if otp:
                         print(otp)
                         self.input_text(str(otp),'input otp','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
@@ -839,7 +839,7 @@ class InstaBot:
                         next_btn.click()
                         return True
                     if I_otp == 9:
-                        ban_number(self.phone_number)
+                        ban_number(self.phone_number,country_code)
                         self.driver().back()
                     time.sleep(10)
                         
@@ -1207,7 +1207,7 @@ class InstaBot:
             return True
         return False
     
-    def create_account(self):
+    def create_account(self,country_code):
         self.gender =np.random.choice(["male", "female"], p=[0.5, 0.5])
         fake = Faker()
         seed=None
@@ -1270,7 +1270,7 @@ class InstaBot:
                     if self.create_set_username():
                         self.process_acc_creation.remove("create_set_username")
                 if "phone_number_proccess" in self.process_acc_creation :
-                    numberr = self.phone_number_proccess()
+                    numberr = self.phone_number_proccess(country_code)
                     if numberr:
                         if numberr == "delete_avd" or  numberr == False :
                             return False, False
