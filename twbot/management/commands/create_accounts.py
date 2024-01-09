@@ -93,7 +93,7 @@ class Command(BaseCommand):
                     # ,'Hong Kong' : "hk"
                     ,'Indonesia' : "id"
                     ,'Philippines' : "ph"
-                    # ,'Kenya' : "kn"
+                    ,'Kenya' : "kn"
 
                 }
             if type(country) == list :
