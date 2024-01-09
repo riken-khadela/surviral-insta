@@ -330,7 +330,6 @@ class TestAvd(unittest.TestCase):
                         return 'delete_avd'
                     
     def run_task(self):
-        breakpoint()
         self.phone_number_proccess()
         print('The driver is connect :',self.app_driver)
         ...
