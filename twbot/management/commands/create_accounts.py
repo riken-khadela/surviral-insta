@@ -139,7 +139,9 @@ class Command(BaseCommand):
                     if not tb.connect_to_vpn(country=country):
                         raise Exception("Couldn't able to connect Cyberghost VPN")
             
-                created_user_obj, user_obj_bool= tb.create_account(country_code=country_code)
+                created_user_obj, user_obj_bool, number_not_found = tb.create_account(country_code=country_code)
+                if number_not_found != '' and number_not_found == "number_not_found":
+                    self.country.remove(country)
                 if user_obj_bool == False or created_user_obj == "delete_avd" :
                     self.clean_bot(tb, False)
                     user_avd.delete()
@@ -196,12 +198,12 @@ class Command(BaseCommand):
         required_accounts = int(options.get('n'))
         self.no_vpn = options.get('no_vpn')
         self.parallel_number = options.get('parallel_number')
-        self.parallel_number = 1
+        # self.parallel_number = 1
         
         
         country = ['China','Hong Kong','Indonesia','Philippines','Kenya']
-        country = ['Indonesia','Philippines','Kenya']
-        country = ['Indonesia','Philippines']
+        self.country = ['Indonesia','Philippines']
+        self.country = ['Indonesia','Philippines','Kenya']
         self.run_times = options.get('run_times')
         LOGGER.debug(f'Run times: {self.run_times}')
         requied_account_list = [n.size for n in
