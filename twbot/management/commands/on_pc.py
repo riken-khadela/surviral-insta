@@ -1,5 +1,5 @@
 import sys
-import time, os,shutil, tempfile
+import time, os,shutil, tempfile, threading
 from concurrent import futures
 from xml.dom import UserDataHandler
 from maill import SendErrorMail
@@ -143,8 +143,10 @@ class Command(BaseCommand):
                 # with futures.ThreadPoolExecutor(max_workers=self.parallel_number) as executor:
                     # for i in range(1):
                     #     executor.submit(self.create_accounts_if_not_enough)
-                with futures.ThreadPoolExecutor(max_workers=self.parallel_number) as executor:
-                    executor.submit(self.create_accounts_if_not_enough)
+                # with futures.ThreadPoolExecutor(max_workers=self.parallel_number) as executor:
+                #     executor.submit(self.create_accounts_if_not_enough)
+                account_thread = threading.Thread(target=self.create_accounts_if_not_enough)
+                account_thread.start()
             if os.environ.get("SYSTEM_NO") in old_pc :
                 self.no_vpn = True
             country = 'Hong Kong'
