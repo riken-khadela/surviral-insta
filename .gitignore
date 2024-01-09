@@ -2,10 +2,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+etc/*
 # C extensions
 *.so
-
+profile_pic/female/*
+profile_pic/male/*
 # Distribution / packaging
 .Python
 build/

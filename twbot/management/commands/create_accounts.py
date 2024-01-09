@@ -89,11 +89,11 @@ class Command(BaseCommand):
                 continue
             # create all accounts in USA
             counrty_code_dict = {
-                    'China' : ""
+                    'China' : "china"
                     # ,'Hong Kong' : "hk"
                     ,'Indonesia' : "id"
                     ,'Philippines' : "ph"
-                    ,'Kenya' : "kn"
+                    # ,'Kenya' : "kn"
 
                 }
             if type(country) == list :
@@ -196,11 +196,12 @@ class Command(BaseCommand):
         required_accounts = int(options.get('n'))
         self.no_vpn = options.get('no_vpn')
         self.parallel_number = options.get('parallel_number')
-        self.parallel_number = 2
+        self.parallel_number = 1
         
         
         country = ['China','Hong Kong','Indonesia','Philippines','Kenya']
         country = ['Indonesia','Philippines','Kenya']
+        country = ['Indonesia','Philippines']
         self.run_times = options.get('run_times')
         LOGGER.debug(f'Run times: {self.run_times}')
         requied_account_list = [n.size for n in
