@@ -138,11 +138,13 @@ class Command(BaseCommand):
     def run_tasks(self,i):
         try:
             old_pc = ['PC3','PC8','PC11','PC20','PKPC16','PKPC17','RK']
-                
+            breakpoint()
             if self.account_creation and not os.environ.get("SYSTEM_NO") in old_pc :
+                # with futures.ThreadPoolExecutor(max_workers=self.parallel_number) as executor:
+                    # for i in range(1):
+                    #     executor.submit(self.create_accounts_if_not_enough)
                 with futures.ThreadPoolExecutor(max_workers=self.parallel_number) as executor:
-                    for i in range(1):
-                        executor.submit(self.create_accounts_if_not_enough)
+                    executor.submit(self.create_accounts_if_not_enough)
             if os.environ.get("SYSTEM_NO") in old_pc :
                 self.no_vpn = True
             country = 'Hong Kong'
