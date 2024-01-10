@@ -791,7 +791,7 @@ class InstaBot:
     def phone_number_proccess(self,country_code):
         for phone_try in range(3):
             china = True if "china" == str(country_code).lower() else False
-            number_class = phone_numbers(china=china)
+            number_class = phone_numbers(china=china,country_code=country_code)
             self.phone_number = number_class.get_number(country_code)
             phone_number_digit = str(self.phone_number).isdigit()
             if phone_number_digit:

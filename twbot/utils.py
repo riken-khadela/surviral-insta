@@ -60,8 +60,9 @@ class phone_numbers():
     """
     
 
-    def __init__(self,china = False,username = "pay@noborders.net",GETSMSCODE_API_KEY = "cfca2f0dd0be35a82de94e038ad2a7e8",GETSMSCODE_PID = "8" ):
+    def __init__(self,china = False,username = "pay@noborders.net",GETSMSCODE_API_KEY = "cfca2f0dd0be35a82de94e038ad2a7e8",GETSMSCODE_PID = "8", country_code ='' ):
         self.phone_number_ = 0
+        self.country_code = country_code
         if not china :
             self.get_number_url = f"http://api.getsmscode.com/vndo.php?action=getmobile&username={username}&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&cocode={self.country_code}"
             self.get_sms_url = f"http://api.getsmscode.com/vndo.php?action=getsms&username={username}&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={self.phone_number_}&author={username}&cocode={self.country_code}"
