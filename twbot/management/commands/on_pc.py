@@ -13,6 +13,7 @@ from exceptions import PhoneRegisteredException, CannotRegisterThisPhoneNumberEx
 from twbot.bot import *
 from twbot.utils import delete_avd_by_name
 from django.db import connections
+from django.core.management import call_command
 
 load_dotenv()
 AGENT='xanametaverse'
@@ -103,6 +104,8 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
+        call_command('update_csv')
+        call_command('delete_avd')
         self.no_vpn = options.get('no_vpn')
         self.parallel_number = options.get('parallel_number')
         self.venv_activate_path = options.get("venv_activate_path")
