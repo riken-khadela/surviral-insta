@@ -50,17 +50,17 @@ class phone_numbers():
     username = "pay@noborders.net"
     GETSMSCODE_API_KEY = "cfca2f0dd0be35a82de94e038ad2a7e8"
     
-    # project id :
+    ## project id :
     GETSMSCODE_PID = "8"
     
-    #  kenya, philipines and indonesia country code :
+    ##  kenya, philipines and indonesia country code :
     GETSMSCODE_COUNTRY = "kn"
     GETSMSCODE_COUNTRY = "ph"
     GETSMSCODE_COUNTRY = "id"
     """
     
 
-    def __init__(self,china = False,username = "pay@noborders.net",GETSMSCODE_API_KEY = "cfca2f0dd0be35a82de94e038ad2a7e8",GETSMSCODE_PID = "8", country_code ='' ):
+    def define_urls(self,china = False,username = "pay@noborders.net",GETSMSCODE_API_KEY = "cfca2f0dd0be35a82de94e038ad2a7e8",GETSMSCODE_PID = "8", country_code ='' ):
         self.phone_number_ = 0
         self.country_code = country_code
         if not china :
@@ -72,7 +72,7 @@ class phone_numbers():
             self.get_sms_url = f"http://api.getsmscode.com/do.php?action=getsms&username={username}&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={self.phone_number_}&author={username}"
             self.banned_url = f"http://api.getsmscode.com/do.php?action=addblack&username={username}&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={self.phone_number_}&author={username}"
             
-    def get_number(self,country_code=''):
+    def get_number(self,china = False,country_code=''):
         """
         # for china
         # url = f"http://api.getsmscode.com/do.php?action=getmobile&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}"
@@ -80,6 +80,7 @@ class phone_numbers():
         # for other country
         url = f"http://api.getsmscode.com/vndo.php?action=getmobile&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&cocode={self.country_code}"
         """
+        self.define_urls(china=china,country_code=country_code)
         if country_code : self.country_code = country_code
         while True:
             payload={}
@@ -92,7 +93,7 @@ class phone_numbers():
                 break
         return response.text
 
-    def get_sms(self,phone_number,country_code=''):
+    def get_sms(self,phone_number,country_code='',china = False):
         """
         # for china
         # url = f"http://api.getsmscode.com/do.php?action=getsms&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net"
@@ -101,6 +102,7 @@ class phone_numbers():
         # url = f"http://api.getsmscode.com/vndo.php?action=getsms&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net&cocode={country_code}"
         """
         
+        self.define_urls(china=china,country_code=country_code)
         self.phone_number = phone_number
         if country_code : self.country_code = country_code
         
@@ -121,7 +123,7 @@ class phone_numbers():
                     return otp
 
 
-    def ban_number(self,phone_number,country_code):
+    def ban_number(self,phone_number,country_code,china = False):
         """
         # for china
         # url = f"http://api.getsmscode.com/do.php?action=addblack&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net"
@@ -129,6 +131,8 @@ class phone_numbers():
         # for other counrty
         # url = f"http://api.getsmscode.com/vndo.php?action=addblack&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net&cocode={country_code}"
         """
+        
+        self.define_urls(china=china,country_code=country_code)
         self.phone_number = phone_number
         response = requests.post(url=self.banned_url)
         print(response.text)

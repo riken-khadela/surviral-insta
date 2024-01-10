@@ -791,8 +791,9 @@ class InstaBot:
     def phone_number_proccess(self,country_code):
         for phone_try in range(3):
             china = True if "china" == str(country_code).lower() else False
-            number_class = phone_numbers(china=china,country_code=country_code)
-            self.phone_number = number_class.get_number(country_code)
+            number_class = phone_numbers()
+            self.phone_number = number_class.define_urls(china=china,country_code=country_code)
+            self.phone_number = number_class.get_number(country_code,china=china)
             phone_number_digit = str(self.phone_number).isdigit()
             if phone_number_digit:
                 print(self.phone_number)
@@ -800,11 +801,11 @@ class InstaBot:
                 if self.click_element('Next btn','//android.widget.Button[@content-desc="Next"]') :
                     random_sleep(5,7,reason='next page')
                 else :
-                    number_class.ban_number(self.phone_number,country_code)
+                    number_class.ban_number(self.phone_number,country_code,china=china)
                     continue
                 
                 if self.find_element('Incorrect number','//android.view.View[@content-desc="Looks like your mobile number may be incorrect. Try entering your full number, including the country code."]'):
-                    number_class.ban_number(self.phone_number,country_code)
+                    number_class.ban_number(self.phone_number,country_code,china=china)
                     continue
                 
                 elif self.click_element('Create account','//android.widget.Button[@content-desc="Create new account"]'):
@@ -814,7 +815,7 @@ class InstaBot:
                     ...
                     
                 elif self.find_element('something went wrong','//android.view.View[@content-desc="Something went wrong. Please try again later."]',timeout=2):
-                    number_class.ban_number(self.phone_number,country_code)
+                    number_class.ban_number(self.phone_number,country_code,china=china)
                     self.df.loc['avd']=self.emulator_name
                     self.df.to_csv('delete_avd.csv', index=False)
                     print(f'add this {self.emulator_name} avd in delete local avd list')
@@ -833,7 +834,7 @@ class InstaBot:
                 
                 for I_otp in range(10) :
                     
-                    otp = number_class.get_sms(self.phone_number,country_code)
+                    otp = number_class.get_sms(self.phone_number,country_code,china=china)
                     if otp:
                         print(otp)
                         self.input_text(str(otp),'input otp','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
@@ -841,7 +842,7 @@ class InstaBot:
                         next_btn.click()
                         return True ,''
                     if I_otp == 9:
-                        number_class.ban_number(self.phone_number,country_code)
+                        number_class.ban_number(self.phone_number,country_code,china=china)
                         self.driver().back()
                     time.sleep(10)
                         
