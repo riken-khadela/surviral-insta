@@ -212,11 +212,11 @@ class Command(BaseCommand):
             try:
                 with futures.ThreadPoolExecutor(max_workers=self.parallel_number) as executor:
                     for i in range(self.parallel_number):
-                        if 'China' in country :
+                        if 'China' in self.country :
                             executor.submit(self.run_tasks, requied_account_list[i],'China')
-                            country.remove('China')
+                            self.country.remove('China')
                         else :
-                            executor.submit(self.run_tasks, requied_account_list[i],country)
+                            executor.submit(self.run_tasks, requied_account_list[i],self.country)
                             
             except Exception as e : print(e)
             LOGGER.debug(f" All created UserAvd and TwitterAccount ****\n")

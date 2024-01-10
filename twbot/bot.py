@@ -790,10 +790,11 @@ class InstaBot:
 
     def phone_number_proccess(self,country_code):
         for phone_try in range(3):
+            breakpoint()
             china = True if "china" == str(country_code).lower() else False
             number_class = phone_numbers()
             self.phone_number = number_class.define_urls(china=china,country_code=country_code)
-            self.phone_number = number_class.get_number(country_code,china=china)
+            self.phone_number = number_class.get_number(china=china,country_code=country_code)
             phone_number_digit = str(self.phone_number).isdigit()
             if phone_number_digit:
                 print(self.phone_number)
