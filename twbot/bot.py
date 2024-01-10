@@ -382,9 +382,7 @@ class InstaBot:
             LOGGER.warning(e)
             self.start_driver()
             
-        if not connection.is_connected():
-            connection.connect()
-            # print("Database is connected.")
+        connection.connect()
             
         return self.app_driver
 
