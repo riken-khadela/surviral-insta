@@ -795,7 +795,6 @@ class InstaBot:
 
     def phone_number_proccess(self,country_code):
         for phone_try in range(3):
-            breakpoint()
             china = True if "china" == str(country_code).lower() else False
             number_class = phone_numbers()
             self.phone_number = number_class.define_urls(china=china,country_code=country_code)
@@ -803,6 +802,8 @@ class InstaBot:
             phone_number_digit = str(self.phone_number).isdigit()
             if phone_number_digit:
                 print(self.phone_number)
+                otp_page = self.find_element('Confirmation code input','//android.view.View[@content-desc="Enter the confirmation code"]',page='OTP page')
+                if otp_page : self.driver().back()
                 self.input_text(self.phone_number,'phone number input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[1]/android.widget.EditText')
                 if self.click_element('Next btn','//android.widget.Button[@content-desc="Next"]') :
                     random_sleep(5,7,reason='next page')
@@ -839,6 +840,7 @@ class InstaBot:
                     return True ,''
                 
                 for I_otp in range(10) :
+                    breakpoint()
                     
                     otp = number_class.get_sms(self.phone_number,country_code,china=china)
                     if otp:

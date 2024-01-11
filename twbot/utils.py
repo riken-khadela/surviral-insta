@@ -101,10 +101,10 @@ class phone_numbers():
         # other country url
         # url = f"http://api.getsmscode.com/vndo.php?action=getsms&username=pay@noborders.net&token={GETSMSCODE_API_KEY}&pid={GETSMSCODE_PID}&mobile={phone_number}&author=pay@noborders.net&cocode={country_code}"
         """
-        
+        breakpoint()
         self.define_urls(china=china,country_code=country_code)
         self.phone_number = phone_number
-        if country_code : self.country_code = country_code
+        # if country_code : self.country_code = country_code
         
         response = requests.post(url=self.get_sms_url+country_code)
         if response.status_code == 200:
