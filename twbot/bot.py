@@ -840,7 +840,6 @@ class InstaBot:
                     return True ,''
                 
                 for I_otp in range(10) :
-                    breakpoint()
                     
                     otp = number_class.get_sms(self.phone_number,country_code,china=china)
                     if otp:
