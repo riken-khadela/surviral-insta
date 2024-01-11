@@ -381,8 +381,11 @@ class InstaBot:
         except Exception as e:
             LOGGER.warning(e)
             self.start_driver()
-            
-        connection.connect()
+        
+        try :
+            postdetails.objects.first()
+        except Exception as e : 
+            connection.connect()
             
         return self.app_driver
 
