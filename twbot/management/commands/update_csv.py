@@ -2,6 +2,7 @@ from math import e
 from django.core.management.base import BaseCommand
 import pandas as pd, os, subprocess
 from twbot.models import User_details,UserAvd
+from django.core.management import call_command
 
 class Command(BaseCommand):
     # def add_arguments(self, parser):
@@ -17,6 +18,8 @@ class Command(BaseCommand):
     #         )
             
     def handle(self, *args, **options):
+        call_command('set_variables')
+        
         while True :
             try :
                 all_users = list(User_details.objects.filter(status='ACTIVE').order_by('?'))
@@ -25,31 +28,52 @@ class Command(BaseCommand):
                 all_users = list(User_details.objects.filter(status='ACTIVE').order_by('?'))
                 avd_list = subprocess.check_output(['emulator', '-list-avds'])
                 avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
-                print(avd_list,'------------')
                 csv_path = os.path.join(os.getcwd(),'csv','this_pc_avd.csv')
-                # if not os.path.exists(csv_path) :
-                headers = ['avd_id','user_id','Avdsname','username','created_at','eng_at']  # Add your column names here
-                df = pd.DataFrame(columns=headers)
                 
+                
+                if not os.path.exists(csv_path) :
+                    headers = ['avd_id','user_id','Avdsname','username','created_at','eng_at']  # Add your column names here
+                    df = pd.DataFrame(columns=headers)
+                else :
+                    df = pd.read_csv(csv_path)
                 ThisPcUsername = []
                 if not df.empty:
                     ThisPcUsername = df['username'].tolist()
+                
+                for user in all_users :
+                    if user.username in ThisPcUsername : continue
+                    if not user.avdsname in avd_list : continue
+                    
+                    user_avd = UserAvd.objects.filter(name=user.avdsname)
+                    if not user_avd :continue
+                    user_avd = user_avd.first()
+                    
+                    df.loc[len(df.index)] = [user_avd.id,user.id,user_avd.name,user.username,user.created_at,user.created_at]
+                    
+                    # if not user.avdsname in unique_avd_name : unique_avd_name.append(user.avdsname)
+                    # else: dub_avd_name.append(user.avdsname)          
+                    
+                df.to_csv(csv_path,index=False)
+                break
+                
+                    
+                
                 
                 unique_avd_name = []
                 dub_avd_name = []
                 for user in all_users : 
                     if user.avdsname in avd_list :
                         if not user.username in ThisPcUsername :
-                            user_avd = UserAvd.objects.filter(name=user.avdsname).first()
+                            user_avd = UserAvd.objects.filter(name=user.avdsname)
                             if not user_avd :continue
-                            
+                            user_avd = user_avd.first()
                             df.loc[len(df.index)] = [user_avd.id,user.id,user_avd.name,user.username,user.created_at,user.created_at]
                             if not user.avdsname in unique_avd_name :
                                 unique_avd_name.append(user.avdsname)
                             else:
                                 dub_avd_name.append(user.avdsname)
                             print(user.id)
-                df.to_csv(csv_path,index=False)
+                # df.to_csv(csv_path,index=False)
                 if  dub_avd_name :
                     print('there are dublicates avds name in user data')
                 break

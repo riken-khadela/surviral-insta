@@ -382,13 +382,22 @@ class InstaBot:
             LOGGER.warning(e)
             self.start_driver()
         
-        try :
-            postdetails.objects.first()
-        except Exception as e : 
-            connection.connect()
+        self.coneect_db()
             
         return self.app_driver
 
+    def coneect_db(self):
+        while True :
+            try :
+                postdetails.objects.first()
+                break
+            except Exception as e : 
+                try:
+                    connection.connect()
+                    break
+                except Exception as e:
+                    print(f'Error: {e}')
+    
     @staticmethod
     def create_avd(avd_name, package=None, device=None):
         default_package = "system-images;android-28;default;x86"
@@ -797,7 +806,6 @@ class InstaBot:
         for phone_try in range(3):
             china = True if "china" == str(country_code).lower() else False
             number_class = phone_numbers()
-            self.phone_number = number_class.define_urls(china=china,country_code=country_code)
             self.phone_number = number_class.get_number(china=china,country_code=country_code)
             phone_number_digit = str(self.phone_number).isdigit()
             if phone_number_digit:
@@ -1307,7 +1315,7 @@ class InstaBot:
                 
             # add_profile = self.click_element('profile button','//android.widget.FrameLayout[@content-desc="Profile"]/android.view.ViewGroup',timeout=15)
             # if add_profile:
-                connection.connect()
+                self.coneect_db()
                 self.user_gender = random.choice(['MALE','FEMALE'])
                 self.user = User_details.objects.create(avdsname=self.emulator_name,username=self.user_username,number=self.phone_number,password=self.password,birth_date=self.birth_date,birth_month=self.birth_month,birth_year=self.birth_year,status='ACTIVE',avd_pc = os.getenv('SYSTEM_NO'))
                 self.add_profile_pic()
@@ -1319,7 +1327,7 @@ class InstaBot:
                 except AttributeError  as a:print(a)
                 except Exception as ee:print(ee)
                 self.user.updated=True
-                connection.connect()
+                self.coneect_db()
                 self.user.save()
                 return self.user, True, ''
             

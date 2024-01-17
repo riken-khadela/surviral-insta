@@ -104,6 +104,7 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
+        call_command('set_variables')
         call_command('update_csv')
         call_command('delete_avd')
         self.no_vpn = options.get('no_vpn')
