@@ -1319,7 +1319,7 @@ class InstaBot:
             # if add_profile:
                 self.coneect_db()
                 self.user_gender = random.choice(['MALE','FEMALE'])
-                self.user = User_details.objects.create(avdsname=self.emulator_name,username=self.user_username,number=self.phone_number,password=self.password,birth_date=self.birth_date,birth_month=self.birth_month,birth_year=self.birth_year,status='ACTIVE',avd_pc = os.getenv('SYSTEM_NO'))
+                self.user = User_details.objects.create(avdsname=self.emulator_name,username=self.user_username,number=self.phone_number,password=self.password,birth_date=self.birth_date,birth_month=self.birth_month,birth_year=self.birth_year,status='ACTIVE',avd_pc = os.environ.get("SYSTEM_NO"))
                 self.add_profile_pic()
                 check_add_bio = self.add_bio()
                 self.upload_post()

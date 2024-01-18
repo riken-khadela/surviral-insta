@@ -7,7 +7,7 @@ import pytz  # For handling timezones
 from dotenv import load_dotenv
 load_dotenv()
 class SendErrorMail():
-    def __init__(self,system_no=os.getenv('SYSTEM_NO'),subject='This is an email sent from Instagram bot',body=''):
+    def __init__(self,system_no=os.environ.get("SYSTEM_NO"),subject='This is an email sent from Instagram bot',body=''):
         self.send_email(subject,system_no,body)
 
     def send_email(self,subject,system_no,body):

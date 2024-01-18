@@ -141,18 +141,15 @@ class Command(BaseCommand):
     def run_tasks(self,i):
         try:
             old_pc = ['PC3','PC8','PC11','PC20','PKPC16','PKPC17','RK']
+            breakpoint()
             if self.account_creation and not os.environ.get("SYSTEM_NO") in old_pc :
-                ...
                 account_thread = threading.Thread(target=self.create_accounts_if_not_enough)
                 account_thread.start()
             if os.environ.get("SYSTEM_NO") in old_pc :
                 self.no_vpn = True
-            country = 'Hong Kong'
             
             while True:
                 connection.connect()
-                # all_users = list(user_detail.objects.using('monitor').filter(status='ACTIVE').order_by('-created_at'))
-                # all_users = list(User_details.objects.filter(status='ACTIVE').order_by('-created_at'))
                 csv_path = os.path.join(os.getcwd(),'csv','this_pc_avd.csv')
                 from datetime import datetime
                 all_users = []
@@ -246,34 +243,35 @@ class Command(BaseCommand):
             
     def create_accounts_if_not_enough(self):
         """ """
-        # Create new accounts if existing accounts are not enough
-        try:
-            total, used, free = shutil.disk_usage("/")
-            free_in_gb = free // (2 ** 30)
-            total_in_gb = total // (2 ** 30)
-            used_in_gb = used // (2 ** 30)
-            if free_in_gb < MIN_HARD_DISK_FREE_SPACE:
-                LOGGER.info(
-                    f"Your hard disk free space less than {MIN_HARD_DISK_FREE_SPACE} so skipping account creation")
-                return
-            
-            # active_accounts = User_details.objects.filter(status='ACTIVE',avd_pc = os.getenv("SYSTEM_NO"))
-            active_accounts = User_details.objects.filter(status='ACTIVE')
-            LOGGER.info(f"Total Active accounts: {active_accounts.count()}")
-            if active_accounts.count() < MIN_ACTIVE_ACCOUNTS :
-                LOGGER.debug(
-                    f"Active accounts are less than {MIN_ACTIVE_ACCOUNTS} of required accounts so running "
-                    f"account creation")
-                accounts_to_create = int(min((free_in_gb - MIN_HARD_DISK_FREE_SPACE )/10, MAX_ACTIVE_ACCOUNTS))
-                shell_cmd = f". {self.venv_activate_path} && {BASE_DIR}/manage.py create_accounts " \
-                            f"-n {accounts_to_create} --parallel_number {self.parallel_number}"
-                subprocess.run(shell_cmd, check=True, shell=True)
-            else:
-                LOGGER.debug("Active accounts more than maximum number of required accounts so skipping account creation")
-        except KeyboardInterrupt as e:
-            raise e
-        except Exception as e:
-            LOGGER.debug(e)
+        while True :
+            # Create new accounts if existing accounts are not enough
+            try:
+                total, used, free = shutil.disk_usage("/")
+                free_in_gb = free // (2 ** 30)
+                total_in_gb = total // (2 ** 30)
+                used_in_gb = used // (2 ** 30)
+                if free_in_gb < MIN_HARD_DISK_FREE_SPACE:
+                    LOGGER.info(
+                        f"Your hard disk free space less than {MIN_HARD_DISK_FREE_SPACE} so skipping account creation")
+                    return
+                
+                # active_accounts = User_details.objects.filter(status='ACTIVE',avd_pc = os.getenv("SYSTEM_NO"))
+                active_accounts = User_details.objects.filter(status='ACTIVE')
+                LOGGER.info(f"Total Active accounts: {active_accounts.count()}")
+                if active_accounts.count() < MIN_ACTIVE_ACCOUNTS :
+                    LOGGER.debug(
+                        f"Active accounts are less than {MIN_ACTIVE_ACCOUNTS} of required accounts so running "
+                        f"account creation")
+                    accounts_to_create = int(min((free_in_gb - MIN_HARD_DISK_FREE_SPACE )/10, MAX_ACTIVE_ACCOUNTS))
+                    shell_cmd = f". {self.venv_activate_path} && {BASE_DIR}/manage.py create_accounts " \
+                                f"-n {accounts_to_create} --parallel_number {self.parallel_number}"
+                    subprocess.run(shell_cmd, check=True, shell=True)
+                else:
+                    LOGGER.debug("Active accounts more than maximum number of required accounts so skipping account creation")
+            except KeyboardInterrupt as e:
+                raise e
+            except Exception as e:
+                LOGGER.debug(e)
     
     @staticmethod
     def random_cron_time_for_reboot():
