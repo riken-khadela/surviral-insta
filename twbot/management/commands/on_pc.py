@@ -104,7 +104,6 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
-        call_command('set_variables')
         call_command('update_csv')
         call_command('delete_avd')
         self.no_vpn = options.get('no_vpn')
@@ -144,8 +143,8 @@ class Command(BaseCommand):
             old_pc = ['PC3','PC8','PC11','PC20','PKPC16','PKPC17','RK']
             if self.account_creation and not os.environ.get("SYSTEM_NO") in old_pc :
                 ...
-                # account_thread = threading.Thread(target=self.create_accounts_if_not_enough)
-                # account_thread.start()
+                account_thread = threading.Thread(target=self.create_accounts_if_not_enough)
+                account_thread.start()
             if os.environ.get("SYSTEM_NO") in old_pc :
                 self.no_vpn = True
             country = 'Hong Kong'

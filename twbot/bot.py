@@ -806,6 +806,8 @@ class InstaBot:
         for phone_try in range(3):
             china = True if "china" == str(country_code).lower() else False
             number_class = phone_numbers()
+            print(f'\n\n\n----The china china is : {china}----\n\n\n')
+            
             self.phone_number = number_class.get_number(china=china,country_code=country_code)
             phone_number_digit = str(self.phone_number).isdigit()
             if phone_number_digit:

@@ -203,6 +203,7 @@ class Command(BaseCommand):
         
         country = ['China','Hong Kong','Indonesia','Philippines','Kenya']
         self.country = ['Indonesia','Philippines']
+        self.country = ['China']
         self.country = ['Indonesia','Philippines','Kenya']
         self.run_times = options.get('run_times')
         LOGGER.debug(f'Run times: {self.run_times}')
