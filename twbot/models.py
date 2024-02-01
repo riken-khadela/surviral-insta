@@ -1,3 +1,4 @@
+from email.policy import default
 import os.path
 from pyexpat import model
 import random
@@ -27,7 +28,11 @@ class TimeStampModel(models.Model):
 
     class Meta:
         abstract = True
-        
+
+class run_command(TimeStampModel):
+    command = models.TextField(default='')
+    pcs_name = models.TextField(default='')
+
 class TodayOpenAVDManager(models.Manager):
     def get_queryset(self):
         now = timezone.now()
