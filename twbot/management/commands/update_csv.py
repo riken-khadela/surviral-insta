@@ -28,6 +28,7 @@ class Command(BaseCommand):
                 all_users = list(User_details.objects.filter(status='ACTIVE').order_by('?'))
                 avd_list = subprocess.check_output(['emulator', '-list-avds'])
                 avd_list = [avd for avd in avd_list.decode().split("\n") if avd]
+                os.makedirs('csv',exist_ok=True)
                 csv_path = os.path.join(os.getcwd(),'csv','this_pc_avd.csv')
                 
                 
