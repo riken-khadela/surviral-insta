@@ -44,7 +44,6 @@ INSTALLED_APPS = INSTALLED_APPS + [
     "rangefilter",
     'core',
     'twbot',
-    'background_task',
 ]
 
 MIDDLEWARE = [
