@@ -24,7 +24,7 @@ git pull
 
 
 chmod +x tasks/install_missing_modules.sh
-bash tasks/install_missing_modules.sh
+. tasks/install_missing_modules.sh
 # setup database
 # python temp/z22.py
 # python manage.py update_csv 
