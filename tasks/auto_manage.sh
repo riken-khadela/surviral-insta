@@ -42,11 +42,19 @@ python manage.py update_csv 2>&1 | grep "No module named" > /tmp/module_errors.t
 if [ -s /tmp/module_errors.txt ]; then
     # Process the temporary file
     while IFS= read -r line; do
-        module=$(echo $line | cut -d ' ' -f 5)
+        module=$(echo $line | cut -d ' ' -f 5 | tr -d "'")  # Remove single quotes
+
+        # Map module names to correct package names
+        case $module in
+            "rest_framework") package_name="djangorestframework" ;;
+            # Add more mappings as needed
+            *) package_name="$module" ;;
+        esac
+
         echo "Checking if $module is installed..."
         if ! python -c "import $module" 2>/dev/null; then
-            echo "$module is missing. Installing..."
-            pip install $module
+            echo "$module is missing. Installing $package_name..."
+            pip install "$package_name"
         else
             echo "$module is already installed."
         fi
