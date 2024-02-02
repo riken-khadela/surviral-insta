@@ -37,16 +37,11 @@ git pull
 # chmod +x tasks/install_missing_modules.sh
 # . tasks/install_missing_modules.sh
 # Add the missing module
-echo "Checking if djangorestframework is installed..."
-if ! python -c "import djangorestframework" 2>/dev/null; then
-    echo "djangorestframework is missing. Installing..."
-    pip install djangorestframework
-else
-    echo "djangorestframework is already installed."
-fi
+python manage.py test 2>&1 | grep "No module named" > /tmp/module_errors.txt
 
+# Process the temporary file
 while IFS= read -r line; do
-    module=$(echo $line | cut -d ' ' -f 2)
+    module=$(echo $line | cut -d ' ' -f 5)
     echo "Checking if $module is installed..."
     if ! python -c "import $module" 2>/dev/null; then
         echo "$module is missing. Installing..."
@@ -54,7 +49,10 @@ while IFS= read -r line; do
     else
         echo "$module is already installed."
     fi
-done < <(python manage.py test 2>&1 | grep "No module named")
+done < /tmp/module_errors.txt
+
+# Cleanup the temporary file
+rm /tmp/module_errors.txt
 # setup database
 # python temp/z22.py
 python manage.py update_csv 
