@@ -3,6 +3,17 @@ export CURRENT_DIR=`dirname $(readlink -f $0)`
 export PRJ_DIR=`dirname $CURRENT_DIR`
 # go to project root directory
 cd $PRJ_DIR
+
+# Check if variable.sh file exists
+if [ ! -f "tasks/variable.sh" ]; then
+    echo "Variable file not found. Running python3 create_task.py..."
+    python3 create_task.py
+fi
+
+# Replace the line in environment.sh
+sed -i 's/export LESSCLOSE=\/usr\/bin\/lesspipe %s %s/export LESSCLOSE=\/usr\/bin\/lesspipe/' tasks/environment.sh
+
+
 #. ./tasks/environment.sh
 . tasks/environment.sh
 . tasks/variable.sh
