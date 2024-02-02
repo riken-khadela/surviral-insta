@@ -37,32 +37,31 @@ git pull
 # chmod +x tasks/install_missing_modules.sh
 # . tasks/install_missing_modules.sh
 # Add the missing module
-# python manage.py test 2>&1 | grep "No module named" > /tmp/module_errors.txt
-# echo "test run..."
-# # Check if there are any errors
-# if [ -s /tmp/module_errors.txt ]; then
-#     # Process the temporary file
-#     while IFS= read -r line; do
-#         module=$(echo $line | cut -d ' ' -f 5)
-#         echo "Checking if $module is installed..."
-#         if ! python -c "import $module" 2>/dev/null; then
-#             echo "$module is missing. Installing..."
-#             pip install $module
-#         else
-#             echo "$module is already installed."
-#         fi
-#     done < /tmp/module_errors.txt
+python manage.py update_csv 2>&1 | grep "No module named" > /tmp/module_errors.txt
+# Check if there are any errors
+if [ -s /tmp/module_errors.txt ]; then
+    # Process the temporary file
+    while IFS= read -r line; do
+        module=$(echo $line | cut -d ' ' -f 5)
+        echo "Checking if $module is installed..."
+        if ! python -c "import $module" 2>/dev/null; then
+            echo "$module is missing. Installing..."
+            pip install $module
+        else
+            echo "$module is already installed."
+        fi
+    done < /tmp/module_errors.txt
 
-#     # Cleanup the temporary file
-#     rm /tmp/module_errors.txt
-# else
-#     echo "No module errors found. Tests run successfully."
-#     # Add additional commands or actions here if needed
-# fi
+    # Cleanup the temporary file
+    rm /tmp/module_errors.txt
+else
+    echo "No module errors found. Tests run successfully."
+    # Add additional commands or actions here if needed
+fi
 
 
 # setup database
 # python temp/z22.py
-python manage.py update_csv 
+# python manage.py update_csv 
 python manage.py delete_avd 
 python manage.py on_pc --account_creation=True
