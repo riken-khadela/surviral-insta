@@ -27,6 +27,6 @@ chmod +x tasks/install_missing_modules.sh
 . tasks/install_missing_modules.sh
 # setup database
 # python temp/z22.py
-# python manage.py update_csv 
-# python manage.py delete_avd 
+python manage.py update_csv 
+python manage.py delete_avd 
 python manage.py on_pc --account_creation=True
