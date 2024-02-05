@@ -239,7 +239,7 @@ class Command(BaseCommand):
         finally : 
             LOGGER.info('The script is closed !')
             connections['default'].close()
-            
+            time.sleep(random.randint(80,100))
     def create_accounts_if_not_enough(self):
         """ """
         while True :
