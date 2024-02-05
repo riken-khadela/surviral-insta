@@ -11,7 +11,7 @@ if [ ! -f "tasks/variable.sh" ]; then
 fi
 
 # Replace the line in environment.sh
-sed -i 's/export LESSCLOSE=\/usr\/bin\/lesspipe %s %s/export LESSCLOSE=\/usr\/bin\/lesspipe/' tasks/environment.sh
+sed -i '/export LESSCLOSE=\/usr\/bin\/lesspipe %s %s/d' tasks/environment.sh
 
 
 #. ./tasks/environment.sh
