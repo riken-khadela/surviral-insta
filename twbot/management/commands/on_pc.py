@@ -233,13 +233,13 @@ class Command(BaseCommand):
                             port = ''
                             parallel.stop_avd(name=name, port=port)
         
+                time.sleep(random.randint(80,100))
         except Exception as e :
             LOGGER.info(e) 
 
         finally : 
             LOGGER.info('The script is closed !')
             connections['default'].close()
-            time.sleep(random.randint(80,100))
     def create_accounts_if_not_enough(self):
         """ """
         while True :
