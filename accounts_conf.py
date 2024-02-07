@@ -347,8 +347,10 @@ NORDVPN_ACCOUNTS = [
 ]
 
 # cyberghostvpn account
-CYBERGHOSTVPN_USERNAME = 'tool@noborderz.com'
-CYBERGHOSTVPN_PASSWORD = 'ngqJ7&Tx*wED!V8'
+# CYBERGHOSTVPN_USERNAME = 'tool@noborderz.com'
+# CYBERGHOSTVPN_PASSWORD = 'ngqJ7&Tx*wED!V8'
+CYBERGHOSTVPN_USERNAME = 'gourav@noborderz.com'
+CYBERGHOSTVPN_PASSWORD = 'Lenovo@123'
 
 
 # GETSMSCODE API Key

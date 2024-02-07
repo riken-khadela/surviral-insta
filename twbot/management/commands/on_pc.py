@@ -146,7 +146,7 @@ class Command(BaseCommand):
                 account_thread.start()
             if os.environ.get("SYSTEM_NO") in old_pc :
                 self.no_vpn = True
-            
+            time.sleep(100000000)
             while True:
                 connection.connect()
                 csv_path = os.path.join(os.getcwd(),'csv','this_pc_avd.csv')
@@ -233,13 +233,13 @@ class Command(BaseCommand):
                             port = ''
                             parallel.stop_avd(name=name, port=port)
         
+                    time.sleep(random.randint(80,100))
         except Exception as e :
             LOGGER.info(e) 
 
         finally : 
             LOGGER.info('The script is closed !')
             connections['default'].close()
-            
     def create_accounts_if_not_enough(self):
         """ """
         while True :
