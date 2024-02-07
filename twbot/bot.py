@@ -20,7 +20,7 @@ from core.models import user_detail
 from twbot.models import User_details, postdetails
 import parallel
 from django.db import connection
-
+import weakref
 from gender_guesser import detector
 import random, names
 from conf import APPIUM_SERVER_HOST, APPIUM_SERVER_PORT, US_TIMEZONE
@@ -114,7 +114,16 @@ class InstaBot:
             int(self.adb_console_port)))
         self.emulator_port = self.adb_console_port
         self.parallel_opts = self.get_parallel_opts()
+        weakref.finalize(self, self.__del__)
 
+
+
+    def __del__(self):
+        '''
+        Close the driver and activity
+        '''
+        if hasattr(self, 'app_driver'):
+            self.driver().quit()
 
     @property
     def wait_obj(self):

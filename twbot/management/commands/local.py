@@ -6,5 +6,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         bot = InstaBot(emulator_name='bhavin')
-        breakpoint()
         bot.check_apk_installation()
+        breakpoint()
+        bot.connect_urban()
