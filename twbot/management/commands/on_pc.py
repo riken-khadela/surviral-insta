@@ -146,7 +146,6 @@ class Command(BaseCommand):
                 account_thread.start()
             if os.environ.get("SYSTEM_NO") in old_pc :
                 self.no_vpn = True
-            time.sleep(100000000)
             while True:
                 connection.connect()
                 csv_path = os.path.join(os.getcwd(),'csv','this_pc_avd.csv')
