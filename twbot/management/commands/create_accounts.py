@@ -54,6 +54,8 @@ class Command(BaseCommand):
         used_name = set(User_details.objects.values_list('avdsname', flat=True))
         self.devices = [f"instagram_50{x}" for x in range(1,90000) if f"instagram_{x}" not in used_name]
         # for avd_name  in self.devices:
+        random.shuffle(country)
+        list_ = self.create_list(1,country,required_accounts)
         while accounts_created < required_accounts :
             
             total, used, free = shutil.disk_usage("/")
@@ -90,10 +92,10 @@ class Command(BaseCommand):
             # create all accounts in USA
             counrty_code_dict = {
                     'China' : "china"
-                    # ,'Hong Kong' : "hk"
+                    ,'Hong Kong' : "hk"
                     ,'Indonesia' : "id"
                     ,'Philippines' : "ph"
-                    ,'Kenya' : "kn"
+                    # ,'Kenya' : "kn"
 
                 }
             if type(country) == list :
@@ -136,7 +138,7 @@ class Command(BaseCommand):
                 # Connect vpn
                 if not self.no_vpn:
                     time.sleep(10)
-                    if not tb.connect_to_vpn(country=country):
+                    if not tb.connect_urban(country=country):
                         raise Exception("Couldn't able to connect Cyberghost VPN")
             
                 created_user_obj, user_obj_bool, number_not_found = tb.create_account(country_code=country_code)
@@ -201,23 +203,24 @@ class Command(BaseCommand):
         # self.parallel_number = 1
         
         
-        country = ['China','Hong Kong','Indonesia','Philippines','Kenya']
-        self.country = ['Indonesia','Philippines']
-        self.country = ['China']
-        self.country = ['Indonesia','Philippines','Kenya']
+        self.country = ['China','Hong Kong','Indonesia','Philippines']
+        # self.country = ['Indonesia','Philippines']
+        # self.country = ['China']
+        # self.country = ['Indonesia','Philippines']
         self.run_times = options.get('run_times')
         LOGGER.debug(f'Run times: {self.run_times}')
         requied_account_list = [n.size for n in
                                 np.array_split(np.array(range(required_accounts)), self.parallel_number)]
+        
         while True:
             try:
                 with futures.ThreadPoolExecutor(max_workers=self.parallel_number) as executor:
                     for i in range(self.parallel_number):
-                        if 'China' in self.country :
-                            executor.submit(self.run_tasks, requied_account_list[i],'China')
-                            self.country.remove('China')
-                        else :
-                            executor.submit(self.run_tasks, requied_account_list[i],self.country)
+                        # if 'China' in self.country :
+                        #     executor.submit(self.run_tasks, requied_account_list[i],'China')
+                        #     self.country.remove('China')
+                        # else :
+                        executor.submit(self.run_tasks, requied_account_list[i],self.country)
                             
             except Exception as e : print(e)
             LOGGER.debug(f" All created UserAvd and TwitterAccount ****\n")
@@ -230,3 +233,17 @@ class Command(BaseCommand):
         tb.kill_bot_process(appium=False, emulators=True)
         if is_sleep:
             random_sleep(60, 80)
+            
+    def create_list(self, num_threads,links,loop):
+        main_list = []
+        duplicate_list = links[:]
+        for i in range(loop):
+            nested_list= []
+            for i in range(num_threads):
+                if not duplicate_list:
+                    duplicate_list = links[:]
+                    nested_list.append(duplicate_list.pop(0))
+                else:
+                    nested_list.append(duplicate_list.pop(0))
+            main_list.append(nested_list)
+        return main_list

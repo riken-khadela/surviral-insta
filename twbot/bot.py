@@ -2568,5 +2568,60 @@ class InstaBot:
         if ProfileName:
             if ProfileName.text == self.user.username:
                 print('yesss')
-                
+
+    def connect_urban(self, country):
+        LOGGER.debug('Check if urbanvpn is installed')
+        if not self.driver().is_app_installed('com.urbanvpn.android'):
+            cmd = f"adb -s emulator-{self.adb_console_port} install -t -r -d -g {os.path.join(BASE_DIR, 'apk/urban-vpn-1-0-80.apk')}"
+            p = subprocess.Popen([cmd], stdin=subprocess.PIPE, shell=True, stdout=subprocess.DEVNULL)
+            p.wait()
+            self.driver().activate_app('com.urbanvpn.android')
+            self.click_element('skip', 'com.urbanvpn.android:id/choose_free_text_view', By.ID)
+            self.click_element('agree', 'com.urbanvpn.android:id/acceptEULAButton', By.ID)
+            self.click_element('accept', 'com.urbanvpn.android:id/agreeEnableButton', By.ID)
+            self.click_element('accept', 'com.urbanvpn.android:id/agreeEnableButton', By.ID)
+            list_ = self.find_element('list','com.android.settings:id/list', By.ID)
+            if list_ : 
+                list_.find_element_by_xpath('//android.widget.TextView[@resource-id="android:id/title" and @text="UrbanVPN - Safe Browsing"]').click()
+                self.click_element('enable btn', 'com.android.settings:id/switch_widget', By.ID)
+                self.click_element('OK','android:id/button1', By.ID)
+                self.driver().back()
+                self.driver().back()
+                self.click_element('agree2', 'com.urbanvpn.android:id/agreeButton', By.ID)
+            # self.click_element('skip', 'com.urbanvpn.android:id/skipButton', By.ID)
+            self.click_element('search', 'com.urbanvpn.android:id/searchView', By.ID)
+            self.input_text(country, 'search','com.urbanvpn.android:id/searchView', By.ID)
+            country_btn = self.find_element('Country Btn', 'com.urbanvpn.android:id/suggestion_name', By.ID)
+            if country_btn and country_btn.text == country:
+                self.click_element('Country Btn', 'com.urbanvpn.android:id/suggestion_name', By.ID)
+            self.click_element('OK','android:id/button1', By.ID)
+            for i in range(10):
+                timer =  self.find_element('timer','com.urbanvpn.android:id/timerView', By.ID)
+                if timer and  timer.text is not None and timer.text != '00 : 00 : 00':
+                    return True
+                else:
+                    random_sleep(3,3)
+            return False
+        else:
+            self.driver().activate_app('com.urbanvpn.android')
+            message = self.find_element('message', 'android:id/parentPanel', By.ID)
+            if message:
+                self.driver().back()
+                location = self.find_element('location', 'com.urbanvpn.android:id/currentLocationView', By.ID)
+                if location and location.text == country:
+                    self.click_element('start', 'com.urbanvpn.android:id/controlButton', By.ID)
+                    pause_btn = self.find_element('pause', 'com.urbanvpn.android:id/controlButton', By.ID)
+                    timer =  self.find_element('timer','com.urbanvpn.android:id/timerView', By.ID)
+                    if pause_btn:
+                        if timer and  timer.text is not None and timer.text != '00 : 00 : 00':
+                            return True
+            location = self.find_element('location', 'com.urbanvpn.android:id/currentLocationView', By.ID)
+            if location and location.text == country:
+                self.click_element('start', 'com.urbanvpn.android:id/controlButton', By.ID)
+                pause_btn = self.find_element('pause', 'com.urbanvpn.android:id/controlButton', By.ID)
+                timer =  self.find_element('timer','com.urbanvpn.android:id/timerView', By.ID)
+                if pause_btn:
+                    if timer and  timer.text is not None and timer.text != '00 : 00 : 00':
+                        return True
+        breakpoint()
                 
