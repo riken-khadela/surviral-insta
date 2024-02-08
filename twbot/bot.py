@@ -2587,6 +2587,7 @@ class InstaBot:
                 self.click_element('OK','android:id/button1', By.ID)
                 self.driver().back()
                 self.driver().back()
+                self.driver().activate_app('com.urbanvpn.android')
                 self.click_element('agree2', 'com.urbanvpn.android:id/agreeButton', By.ID)
             # self.click_element('skip', 'com.urbanvpn.android:id/skipButton', By.ID)
             self.click_element('search', 'com.urbanvpn.android:id/searchView', By.ID)
@@ -2606,7 +2607,6 @@ class InstaBot:
             self.driver().activate_app('com.urbanvpn.android')
             message = self.find_element('message', 'android:id/parentPanel', By.ID)
             if message:
-                self.driver().back()
                 self.driver().back()
                 location = self.find_element('location', 'com.urbanvpn.android:id/currentLocationView', By.ID)
                 if location and location.text == country:
