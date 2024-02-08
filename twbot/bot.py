@@ -2620,6 +2620,8 @@ class InstaBot:
             if country_btn and country_btn.text == country:
                 self.click_element('Country Btn', 'com.urbanvpn.android:id/suggestion_name', By.ID)
             self.click_element('OK','android:id/button1', By.ID)
+            random_sleep(5,5)
+            self.click_element('start', 'com.urbanvpn.android:id/controlButton', By.ID, timeout=3)
             for i in range(10):
                 timer =  self.find_element('timer','com.urbanvpn.android:id/timerView', By.ID)
                 if timer and  timer.text is not None and timer.text != '00 : 00 : 00':
