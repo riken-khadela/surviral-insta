@@ -98,8 +98,9 @@ class Command(BaseCommand):
                     # ,'Kenya' : "kn"
 
                 }
-            if type(country) == list :
-                country = random.choice(country)
+            countrys = list_.pop(0)
+            if type(countrys) == list :
+                country = random.choice(countrys)
             country_code = counrty_code_dict[country]
             LOGGER.debug(f'country: {country}')
             try:
