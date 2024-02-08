@@ -2598,6 +2598,7 @@ class InstaBot:
             self.click_element('skip', 'com.urbanvpn.android:id/choose_free_text_view', By.ID)
             self.click_element('agree', 'com.urbanvpn.android:id/acceptEULAButton', By.ID)
             self.click_element('accept', 'com.urbanvpn.android:id/agreeEnableButton', By.ID)
+            self.click_element('accept', '//android.widget.Button[@text="Agree"]', By.ID)
             self.click_element('accept', 'com.urbanvpn.android:id/agreeEnableButton', By.ID)
             list_ = self.find_element('list','com.android.settings:id/list', By.ID)
             if list_ : 
@@ -2609,6 +2610,7 @@ class InstaBot:
                 self.driver().terminate_app('com.urbanvpn.android')
                 self.driver().activate_app('com.urbanvpn.android')
                 self.click_element('agree2', 'com.urbanvpn.android:id/agreeButton', By.ID)
+                self.click_element('accept', 'com.urbanvpn.android:id/agreeEnableButton', By.ID)
             # self.click_element('skip', 'com.urbanvpn.android:id/skipButton', By.ID)
             self.click_element('search', 'com.urbanvpn.android:id/searchView', By.ID)
             self.input_text(country, 'search','com.urbanvpn.android:id/searchView', By.ID)
