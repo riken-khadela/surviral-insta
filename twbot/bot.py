@@ -1304,7 +1304,6 @@ class InstaBot:
                                     ,"add_name_in_new_user"
                                         ]
             for i in range(13):
-                breakpoint()
                 if "add_name_in_new_user" in self.process_acc_creation :
                     if self.add_name_in_new_user():
                         self.process_acc_creation.remove("add_name_in_new_user")
