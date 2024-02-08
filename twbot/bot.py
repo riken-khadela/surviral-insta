@@ -2606,6 +2606,7 @@ class InstaBot:
                 self.click_element('OK','android:id/button1', By.ID)
                 self.driver().back()
                 self.driver().back()
+                self.driver().terminate_app('com.urbanvpn.android')
                 self.driver().activate_app('com.urbanvpn.android')
                 self.click_element('agree2', 'com.urbanvpn.android:id/agreeButton', By.ID)
             # self.click_element('skip', 'com.urbanvpn.android:id/skipButton', By.ID)
