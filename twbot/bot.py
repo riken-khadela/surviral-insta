@@ -2607,6 +2607,7 @@ class InstaBot:
             message = self.find_element('message', 'android:id/parentPanel', By.ID)
             if message:
                 self.driver().back()
+                self.driver().back()
                 location = self.find_element('location', 'com.urbanvpn.android:id/currentLocationView', By.ID)
                 if location and location.text == country:
                     self.click_element('start', 'com.urbanvpn.android:id/controlButton', By.ID)
