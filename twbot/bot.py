@@ -810,6 +810,13 @@ class InstaBot:
                 self.driver().back()
         except Exception as e :
             self.logger.info(f'Got an error in Go back to the number : {e}')
+            
+    def find_accessibility_id(self, id):
+        try:
+            ele = self.driver().find_element_by_accessibility_id(id)
+            if ele: return ele
+        except:
+            return None
 
     def phone_number_proccess(self,country_code):
         for phone_try in range(3):
@@ -825,12 +832,10 @@ class InstaBot:
                 if otp_page : self.driver().back()
                 self.input_text(self.phone_number,'phone number input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[1]/android.widget.EditText')
                 if self.click_element('Next btn','//android.widget.Button[@content-desc="Next"]') :
-                    try:
-                        if self.driver().find_element_by_accessibility_id('Please wait a few minutes before you try again.'):
-                            return 'delete_avd'  ,'' 
-                        if self.driver().find_element_by_accessibility_id('Looks like your mobile number may be incorrect. Try entering your full number, including the country code.'):
-                            return 'delete_avd'  ,''
-                    except:pass
+                    if self.find_accessibility_id('Please wait a few minutes before you try again.'):
+                       return 'delete_avd'  ,'' 
+                    if self.find_accessibility_id('Looks like your mobile number may be incorrect. Try entering your full number, including the country code.'):
+                        return 'delete_avd'  ,''
                     random_sleep(5,7,reason='next page')
                 else :
                     number_class.ban_number(self.phone_number,country_code,china=china)
