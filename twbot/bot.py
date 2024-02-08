@@ -1181,23 +1181,21 @@ class InstaBot:
             if name_title :
                 if name_title.text != "What's your name?":
                     return
+                LOGGER.info(f'Full name {self.full_name}')
+                self.input_text(self.full_name,'first name input','''//*[@class="android.widget.EditText"]''')
+                self.next_btn()
+                return True
+            # print(self.password)
+            # time.sleep(5)
+            # if self.input_text(self.password,'password input','//*[@class="android.widget.EditText"]') :
+            #     self.process_acc_creation.remove("enter_password")
+            # if self.next_btn() :
+            #     random_sleep(5,10)
+            # if self.click_element('save info','//android.widget.Button[@content-desc="Save"]') :
+            #     self.process_acc_creation.remove("save_info")
+            #     random_sleep(5,10)
 
-
-            LOGGER.info(f'Full name {self.full_name}')
-            self.input_text(self.full_name,'first name input','''//*[@class="android.widget.EditText"]''')
-            self.next_btn()
-            return True
-            print(self.password)
-            time.sleep(5)
-            if self.input_text(self.password,'password input','//*[@class="android.widget.EditText"]') :
-                self.process_acc_creation.remove("enter_password")
-            if self.next_btn() :
-                random_sleep(5,10)
-            if self.click_element('save info','//android.widget.Button[@content-desc="Save"]') :
-                self.process_acc_creation.remove("save_info")
-                random_sleep(5,10)
-
-            return True
+            # return True
 
         except Exception as e:
             print(e)
