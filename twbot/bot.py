@@ -115,7 +115,11 @@ class InstaBot:
         self.emulator_port = self.adb_console_port
         self.parallel_opts = self.get_parallel_opts()
         weakref.finalize(self, self.__del__)
-
+        for root, dirs, files in os.walk(os.getcwd()):
+            for file in files:
+                if file.endswith('.pyc'):
+                    pyc_file_path = os.path.join(root, file)
+                    os.remove(pyc_file_path)
 
 
     def __del__(self):
@@ -832,6 +836,7 @@ class InstaBot:
                 if otp_page : self.driver().back()
                 self.input_text(self.phone_number,'phone number input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[1]/android.widget.EditText')
                 if self.click_element('Next btn','//android.widget.Button[@content-desc="Next"]') :
+                    random_sleep(3,3)
                     if self.find_accessibility_id('Please wait a few minutes before you try again.'):
                        return 'delete_avd'  ,'' 
                     if self.find_accessibility_id('Looks like your mobile number may be incorrect. Try entering your full number, including the country code.'):
