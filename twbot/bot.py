@@ -825,6 +825,12 @@ class InstaBot:
                 if otp_page : self.driver().back()
                 self.input_text(self.phone_number,'phone number input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[1]/android.widget.EditText')
                 if self.click_element('Next btn','//android.widget.Button[@content-desc="Next"]') :
+                    try:
+                        if self.driver().find_element_by_accessibility_id('Please wait a few minutes before you try again.'):
+                            return 'delete_avd'  ,'' 
+                        if self.driver().find_element_by_accessibility_id('Looks like your mobile number may be incorrect. Try entering your full number, including the country code.'):
+                            return 'delete_avd'  ,''
+                    except:pass
                     random_sleep(5,7,reason='next page')
                 else :
                     number_class.ban_number(self.phone_number,country_code,china=china)
@@ -1175,12 +1181,12 @@ class InstaBot:
             if name_title :
                 if name_title.text != "What's your name?":
                     return
-            else : return
 
 
-            print(self.full_name)
+            LOGGER.info(f'Full name {self.full_name}')
             self.input_text(self.full_name,'first name input','''//*[@class="android.widget.EditText"]''')
             self.next_btn()
+            return True
             print(self.password)
             time.sleep(5)
             if self.input_text(self.password,'password input','//*[@class="android.widget.EditText"]') :
@@ -1204,7 +1210,7 @@ class InstaBot:
                 username_input = self.find_element('username input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
                 self.user_username = str(self.full_name)+"_"+str(random.randint(1000000,9999999))
                 self.input_text(self.user_username,'username input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
-                ...
+                breakpoint()
                 random_sleep(10,15)
                 self.next_btn()
                 return self.user_username
@@ -1292,6 +1298,7 @@ class InstaBot:
                                     ,"add_name_in_new_user"
                                         ]
             for i in range(13):
+                breakpoint()
                 if "add_name_in_new_user" in self.process_acc_creation :
                     if self.add_name_in_new_user():
                         self.process_acc_creation.remove("add_name_in_new_user")
@@ -1315,7 +1322,7 @@ class InstaBot:
                         self.process_acc_creation.remove("phone_number_proccess")
                 self.agree_btn() 
                     
-                if self.find_element('profile button','//android.widget.FrameLayout[@content-desc="Profile"]/android.view.ViewGroup'):
+                if self.find_element('Add a profile pic title','//android.view.View[@content-desc="Add a profile picture"]',timeout=2):
                     break
                 
             else :return False, False, ''
