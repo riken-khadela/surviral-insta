@@ -1291,7 +1291,7 @@ class InstaBot:
                                     ,"create_set_username"
                                     ,"add_name_in_new_user"
                                         ]
-            for i in range(9):
+            for i in range(13):
                 if "add_name_in_new_user" in self.process_acc_creation :
                     if self.add_name_in_new_user():
                         self.process_acc_creation.remove("add_name_in_new_user")
@@ -1313,12 +1313,11 @@ class InstaBot:
                         if numberr == "delete_avd" or  numberr == False :
                             return False, False, number_not_found
                         self.process_acc_creation.remove("phone_number_proccess")
+                self.agree_btn() 
                     
-                    
-
-                if self.agree_btn() : 
-                    ...
+                if self.find_element('profile button','//android.widget.FrameLayout[@content-desc="Profile"]/android.view.ViewGroup'):
                     break
+                
             else :return False, False, ''
             
             if self.other_stuff_create_account() == False : return False, False, ''
