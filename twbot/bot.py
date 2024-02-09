@@ -1216,18 +1216,23 @@ class InstaBot:
         if create_username_title :
             if create_username_title.text == "Create a username" :
                 username_input = self.find_element('username input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
+                random_sleep(5,7)
                 while True:
-                    self.user_username = str(self.full_name)+"_"+str(random.randint(1000000,9999999))
-                    self.input_text(self.user_username,'username input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
-                    try :
-                        if self.driver().find_element_by_accessibility_id('Usernames can only include numbers, letters, underscores and periods. Try again.'):
-                            continue
-                        if self.driver().find_element_by_accessibility_id(f'The username {self.user_username} is not available.'):
-                            continue
-                    except: pass
-                    random_sleep(10,15)
-                    self.next_btn()
-                    return self.user_username
+                    if username_input and username_input.text is not None:
+                        self.user_username = username_input.text
+                        self.next_btn()
+                        return self.user_username
+                    else: 
+                        breakpoint()
+                    # else:
+                    #     self.user_username = str(self.full_name)+"_"+str(random.randint(1000000,9999999))
+                    #     self.input_text(self.user_username,'username input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
+                    #     try :
+                    #         if self.driver().find_element_by_accessibility_id('Usernames can only include numbers, letters, underscores and periods. Try again.'):
+                    #             continue
+                    #         if self.driver().find_element_by_accessibility_id(f'The username {self.user_username} is not available.'):
+                    #             continue
+                    #     except: pass
 
         ...
     def agree_btn(self) :
