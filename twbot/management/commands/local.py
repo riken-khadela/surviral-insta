@@ -11,7 +11,9 @@ class Command(BaseCommand):
             bot = InstaBot(emulator_name=avdsname)
             bot.check_apk_installation()
             vpn = bot.connect_urban('Hong Kong')
+            bot.driver().activate_app('com.instagram.android')
             print(f'\n\nVpn is connnected : {vpn}\n\n')
+            bot.clear_app_tray()
             breakpoint()
         finally:
             if 'bot' in locals() or 'bot' in globals():

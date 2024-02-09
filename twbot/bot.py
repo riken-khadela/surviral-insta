@@ -280,8 +280,8 @@ class InstaBot:
             lines = output.split('\n')
             stack_ids = []
             stack_ids = [int(line.split("StackId=")[1].split(" ")[0]) for line in lines if "StackId=" in line]
-            LOGGER.info("Found StackIds:", stack_ids)
             stack_ids = [id for id in stack_ids if int(id)!= 0 and int(id) !=-1]
+            LOGGER.info("Found StackIds:", stack_ids)
             if stack_ids:
                 for stack_id in stack_ids:
                     LOGGER.info(f"Removing StackId: {stack_id}")
@@ -2631,25 +2631,24 @@ class InstaBot:
                     random_sleep(3,3)
             return False
         else:
-            self.driver().activate_app('com.urbanvpn.android')
-            message = self.find_element('message', 'android:id/parentPanel', By.ID)
-            if message:
-                self.driver().back()
-                location = self.find_element('location', 'com.urbanvpn.android:id/currentLocationView', By.ID)
-                if location and location.text == country:
-                    self.click_element('start', 'com.urbanvpn.android:id/controlButton', By.ID)
-                    pause_btn = self.find_element('pause', 'com.urbanvpn.android:id/controlButton', By.ID)
-                    timer =  self.find_element('timer','com.urbanvpn.android:id/timerView', By.ID)
-                    if pause_btn:
+            for i in range(5):
+                self.driver().activate_app('com.urbanvpn.android')
+                random_sleep(5,5)
+                if self.click_element('search', 'com.urbanvpn.android:id/searchView', By.ID, timeout=5):
+                    self.input_text(country, 'search','com.urbanvpn.android:id/searchView', By.ID, timeout=5)
+                    country_btn = self.find_element('Country Btn', 'com.urbanvpn.android:id/suggestion_name', By.ID)
+                    if country_btn and country_btn.text == country:
+                        self.click_element('Country Btn', 'com.urbanvpn.android:id/suggestion_name', By.ID)
+                        random_sleep(10,10)
+                        timer =  self.find_element('timer','com.urbanvpn.android:id/timerView', By.ID)
+                        if timer and  timer.text is not None and timer.text == '00 : 00 : 00' and self.find_element('...', '//android.widget.TextView[@resource-id="com.urbanvpn.android:id/indicatorValueView" and @text="..."]'):
+                            self.click_element('play', 'com.urbanvpn.android:id/controlButton', By.ID)
+                            random_sleep(7,9)
+                        timer =  self.find_element('timer','com.urbanvpn.android:id/timerView', By.ID)
                         if timer and  timer.text is not None and timer.text != '00 : 00 : 00':
                             return True
-            location = self.find_element('location', 'com.urbanvpn.android:id/currentLocationView', By.ID)
-            if location and location.text == country:
-                self.click_element('start', 'com.urbanvpn.android:id/controlButton', By.ID)
-                pause_btn = self.find_element('pause', 'com.urbanvpn.android:id/controlButton', By.ID)
-                timer =  self.find_element('timer','com.urbanvpn.android:id/timerView', By.ID)
-                if pause_btn:
-                    if timer and  timer.text is not None and timer.text != '00 : 00 : 00':
-                        return True
-        breakpoint()
-                
+                if self.find_element('alert' , 'android:id/alertTitle', By.ID):
+                    self.click_element('later', '//android.widget.Button[@text="LATER"]')
+                if self.find_element('message', 'android:id/parentPanel', By.ID):
+                    self.driver().back()
+            else: return False
