@@ -115,11 +115,7 @@ class InstaBot:
         self.emulator_port = self.adb_console_port
         self.parallel_opts = self.get_parallel_opts()
         weakref.finalize(self, self.__del__)
-        for root, dirs, files in os.walk(os.getcwd()):
-            for file in files:
-                if file.endswith('.pyc'):
-                    pyc_file_path = os.path.join(root, file)
-                    os.remove(pyc_file_path)
+        
 
 
     def __del__(self):
@@ -2632,7 +2628,7 @@ class InstaBot:
                 if timer and  timer.text is not None and timer.text != '00 : 00 : 00':
                     return True
                 else:
-                    self.click_element('start', 'com.urbanvpn.android:id/controlButton', By.ID, timeout=3)
+                    random_sleep(3,3)
             return False
         else:
             self.driver().activate_app('com.urbanvpn.android')

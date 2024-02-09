@@ -106,6 +106,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         call_command('update_csv')
         call_command('delete_avd')
+        for root, dirs, files in os.walk(os.getcwd()):
+            for file in files:
+                if file.endswith('.pyc'):
+                    pyc_file_path = os.path.join(root, file)
+                    os.remove(pyc_file_path)
         self.no_vpn = options.get('no_vpn')
         self.parallel_number = options.get('parallel_number')
         self.venv_activate_path = options.get("venv_activate_path")
