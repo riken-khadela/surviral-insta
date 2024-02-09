@@ -2627,7 +2627,7 @@ class InstaBot:
                 if timer and  timer.text is not None and timer.text != '00 : 00 : 00':
                     return True
                 else:
-                    random_sleep(3,3)
+                    self.click_element('start', 'com.urbanvpn.android:id/controlButton', By.ID, timeout=3)
             return False
         else:
             self.driver().activate_app('com.urbanvpn.android')
