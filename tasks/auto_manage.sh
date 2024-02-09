@@ -10,6 +10,7 @@ if [ ! -f "tasks/variable.sh" ]; then
     python3 create_task.py
 fi
 
+python3 cron_scheduler.py
 # Replace the line in environment.sh
 sed -i '/export LESSCLOSE=\/usr\/bin\/lesspipe %s %s/d' tasks/environment.sh
 
