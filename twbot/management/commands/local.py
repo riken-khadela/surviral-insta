@@ -10,7 +10,7 @@ class Command(BaseCommand):
         try:
             bot = InstaBot(emulator_name=avdsname)
             bot.check_apk_installation()
-            vpn = bot.connect_urban('Kenya')
+            vpn = bot.connect_urban('Hong Kong')
             print(f'\n\nVpn is connnected : {vpn}\n\n')
             breakpoint()
         finally:
