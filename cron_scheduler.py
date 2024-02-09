@@ -52,7 +52,7 @@ class CronjobScheduler:
         # Set the cronjob using the adjusted time
         cronjob_time = f"{cronjob_minute} {cronjob_hour} * * *"
         # Replace this with your code to set the cronjob
-        cmd = 'cron_scheduler.py'
+        cmd = 'cron_job.sh'
         cmds = 'crontab -l'
         verbose = True
         result = run_cmd(cmds, verbose=verbose)
