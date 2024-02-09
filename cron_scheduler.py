@@ -57,7 +57,6 @@ class CronjobScheduler:
         verbose = True
         result = run_cmd(cmds, verbose=verbose)
         current_file_path = os.path.dirname(os.path.abspath(__file__))
-        breakpoint()
         current_file_path = current_file_path.replace('/twbot/management/commands','')
         
         if result:
