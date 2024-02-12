@@ -115,9 +115,9 @@ class Command(BaseCommand):
         self.parallel_number = options.get('parallel_number')
         self.venv_activate_path = options.get("venv_activate_path")
         self.account_creation = options.get("account_creation")
-        if not os.getenv("SYSTEM_NO") :
-            SendErrorMail(subject='The SYSTEM number could not found')
-            return
+        # if not os.getenv("SYSTEM_NO") :
+        #     SendErrorMail(subject='The SYSTEM number could not found')
+        #     return
         self.random_cron_time_for_reboot()
         self.change_cron_time_for_auto_manage()
         LOGGER.info(f'\n\n\n--- PC number : {os.getenv("SYSTEM_NO")}\n\n\n')
@@ -145,6 +145,7 @@ class Command(BaseCommand):
 
     def run_tasks(self,i):
         try:
+            breakpoint()
             old_pc = ['PC3','PC8','PC11','PC20','PKPC16','PKPC17','RK']
             if self.account_creation and not os.environ.get("SYSTEM_NO") in old_pc :
                 account_thread = threading.Thread(target=self.create_accounts_if_not_enough)
@@ -201,9 +202,13 @@ class Command(BaseCommand):
                         tb = InstaBot(userr.avdsname,user_avd_obj=userr_avd)
                         tb.check_apk_installation()
                         # Connect vpn
+                                
                         if not self.no_vpn:
                             time.sleep(10)
-                            if not tb.connect_to_vpn(country=userr_avd.country):
+                            if tb.driver().is_app_installed('com.urbanvpn.android'):
+                                if not tb.connect_urban(country=userr_avd.country):
+                                    raise Exception("Couldn't able to connect Urban VPN")
+                            elif not tb.connect_to_vpn(country=userr_avd.country):
                                 raise Exception("Couldn't able to connect Cyberghost VPN")
                             
                         
