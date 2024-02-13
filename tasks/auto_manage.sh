@@ -29,6 +29,8 @@ killall -9 python qemu-system-x86_64
 #. env/bin/activate
 . env/bin/activate
 
+sudo systemctl restart systemd-resolved
+
 # update code
 git checkout old-insta-rk
 git stash
