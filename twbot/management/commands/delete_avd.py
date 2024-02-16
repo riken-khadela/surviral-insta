@@ -39,15 +39,17 @@ class Command(BaseCommand):
         if os.path.exists(os.path.join(os.getcwd(),'csv','this_pc_avd.csv')) :
             this_pc_avds_list = pd.read_csv(csv_path)['Avdsname'].tolist()
             for pcavd in avd_list :
-                if pcavd.startswith('instagram_') :
+                detailes = User_details.objects.filter(avdsname=pcavd).first()
+                if not detailes:
                     if not pcavd in this_pc_avds_list :
                         self.delete_avd(pcavd)
+
             
-            inactive_user = User_details.objects.exclude(status="ACTIVE")
-            for user in inactive_user :
+            # inactive_user = User_details.objects.exclude(status="ACTIVE")
+            # for user in inactive_user :
                 
-                if not user.avdsname in this_pc_avds_list and user.avdsname in avd_list :
-                    self.delete_avd(user.avdsname)
+            #     if not user.avdsname in this_pc_avds_list and user.avdsname in avd_list :
+            #         self.delete_avd(user.avdsname)
         
 
         
