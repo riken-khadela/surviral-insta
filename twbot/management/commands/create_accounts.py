@@ -64,11 +64,11 @@ class Command(BaseCommand):
                     i.delete()
                     try:
                         subprocess.check_output(['avdmanager', 'delete', 'avd', '-n', avdname])
-                        print("Successfully deleted AVD:", avdname)
+                        LOGGER.info("Successfully deleted AVD:", avdname)
                     except subprocess.CalledProcessError as e:
-                        print(f"Error deleting AVD {avdname}: {e}")
+                        LOGGER.info(f"Error deleting AVD {avdname}: {e}")
                     except Exception as e:
-                        print(f"Unexpected error: {e}")
+                        LOGGER.info(f"Unexpected error: {e}")
 
                 delete_avd.clear()
             total, used, free = shutil.disk_usage("/")
