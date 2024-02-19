@@ -1356,9 +1356,7 @@ class InstaBot:
             self.user.updated=True
             self.coneect_db()
             self.user.save()
-        
-            if self.other_stuff_create_account() == False : return False, False, ''
-            # else :
+            self.other_stuff_create_account()
             return self.user, True, ''
                 
             # add_profile = self.click_element('profile button','//android.widget.FrameLayout[@content-desc="Profile"]/android.view.ViewGroup',timeout=15)

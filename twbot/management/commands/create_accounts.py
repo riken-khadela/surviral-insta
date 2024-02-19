@@ -161,6 +161,7 @@ class Command(BaseCommand):
                     self.country.remove(country)
                 if user_obj_bool == False or created_user_obj == "delete_avd" :
                     self.clean_bot(tb, False)
+                    delete_avd.append(user_avd)
                     user_avd.delete()
                     
                 elif created_user_obj or user_obj_bool == True :
@@ -218,7 +219,7 @@ class Command(BaseCommand):
         # self.parallel_number = 1
         
         
-        self.country = ['China','Hong Kong','Indonesia','Philippines']
+        self.country = ['China','Hong Kong','Indonesia']
         # self.country = ['Indonesia','Philippines']
         # self.country = ['China']
         # self.country = ['Indonesia','Philippines']
