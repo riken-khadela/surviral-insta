@@ -1341,26 +1341,28 @@ class InstaBot:
                 
             else :return False, False, ''
             
+            self.coneect_db()
+            self.user_gender = random.choice(['MALE','FEMALE'])
+            self.user = User_details.objects.create(avdsname=self.emulator_name,username=self.user_username,number=self.phone_number,password=self.password,birth_date=self.birth_date,birth_month=self.birth_month,birth_year=self.birth_year,status='ACTIVE',avd_pc = os.environ.get("SYSTEM_NO"))
+            self.user.save()
+            self.add_profile_pic()
+            check_add_bio = self.add_bio()
+            self.upload_post()
+            try:
+                self.user.bio = self.bio
+                self.user.is_bio_updated=check_add_bio
+            except AttributeError  as a:print(a)
+            except Exception as ee:print(ee)
+            self.user.updated=True
+            self.coneect_db()
+            self.user.save()
+        
             if self.other_stuff_create_account() == False : return False, False, ''
-            else :
+            # else :
+            return self.user, True, ''
                 
             # add_profile = self.click_element('profile button','//android.widget.FrameLayout[@content-desc="Profile"]/android.view.ViewGroup',timeout=15)
             # if add_profile:
-                self.coneect_db()
-                self.user_gender = random.choice(['MALE','FEMALE'])
-                self.user = User_details.objects.create(avdsname=self.emulator_name,username=self.user_username,number=self.phone_number,password=self.password,birth_date=self.birth_date,birth_month=self.birth_month,birth_year=self.birth_year,status='ACTIVE',avd_pc = os.environ.get("SYSTEM_NO"))
-                self.add_profile_pic()
-                check_add_bio = self.add_bio()
-                self.upload_post()
-                try:
-                    self.user.bio = self.bio
-                    self.user.is_bio_updated=check_add_bio
-                except AttributeError  as a:print(a)
-                except Exception as ee:print(ee)
-                self.user.updated=True
-                self.coneect_db()
-                self.user.save()
-                return self.user, True, ''
             
         return False, False, ''
     
