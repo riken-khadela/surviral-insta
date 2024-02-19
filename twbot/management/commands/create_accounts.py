@@ -60,7 +60,16 @@ class Command(BaseCommand):
         while accounts_created < required_accounts :
             if delete_avd:
                 for i in delete_avd:
+                    avdname = i.name
                     i.delete()
+                    try:
+                        subprocess.check_output(['avdmanager', 'delete', 'avd', '-n', avdname])
+                        print("Successfully deleted AVD:", avdname)
+                    except subprocess.CalledProcessError as e:
+                        print(f"Error deleting AVD {avdname}: {e}")
+                    except Exception as e:
+                        print(f"Unexpected error: {e}")
+
                 delete_avd.clear()
             total, used, free = shutil.disk_usage("/")
             free_in_gb = free // (2 ** 30)
