@@ -56,8 +56,12 @@ class Command(BaseCommand):
         # for avd_name  in self.devices:
         random.shuffle(country)
         list_ = self.create_list(1,country,required_accounts)
+        delete_avd = []
         while accounts_created < required_accounts :
-            
+            if delete_avd:
+                for i in delete_avd:
+                    i.delete()
+                delete_avd.clear()
             total, used, free = shutil.disk_usage("/")
             free_in_gb = free // (2 ** 30)
             if free_in_gb < MIN_HARD_DISK_FREE_SPACE:
@@ -94,7 +98,7 @@ class Command(BaseCommand):
                     'China' : "china"
                     ,'Hong Kong' : "hk"
                     ,'Indonesia' : "id"
-                    ,'Philippines' : "ph"
+                    # ,'Philippines' : "ph"
                     # ,'Kenya' : "kn"
 
                 }
@@ -140,6 +144,7 @@ class Command(BaseCommand):
                 if not self.no_vpn:
                     time.sleep(10)
                     if not tb.connect_urban(country=country):
+                        delete_avd.append(user_avd)
                         raise Exception("Couldn't able to connect Cyberghost VPN")
             
                 created_user_obj, user_obj_bool, number_not_found = tb.create_account(country_code=country_code)
