@@ -64,7 +64,7 @@ class Command(BaseCommand):
                     i.delete()
                     try:
                         subprocess.check_output(['avdmanager', 'delete', 'avd', '-n', avdname])
-                        LOGGER.info("Successfully deleted AVD:", avdname)
+                        LOGGER.info(f"Successfully deleted AVD: {avdname}")
                     except subprocess.CalledProcessError as e:
                         LOGGER.info(f"Error deleting AVD {avdname}: {e}")
                     except Exception as e:
