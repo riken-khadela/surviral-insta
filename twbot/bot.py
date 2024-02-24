@@ -1,5 +1,6 @@
 import difflib
 import random
+import psycopg2
 from dotenv import load_dotenv
 from faker import Faker
 from pathlib import Path
@@ -2656,3 +2657,46 @@ class InstaBot:
                 if self.find_element('message', 'android:id/parentPanel', By.ID):
                     self.driver().back()
             else: return False
+
+
+
+def terminat_idel_connection():
+        db_params = {
+            'database': 'surviral',
+            'user': 'surviraluser',
+            'password': 'Surviral#786',
+            'host': 'surviral-project.c4jxfxmbuuss.ap-southeast-1.rds.amazonaws.com',
+            'port': '5432'
+        }
+
+        # SQL query to identify and terminate idle connections
+        terminate_idle_connections_query = """
+        SELECT pg_terminate_backend(pg_stat_activity.pid)
+        FROM pg_stat_activity
+        WHERE pg_stat_activity.datname = current_database() -- Optional: specify your database name here
+        AND pid <> pg_backend_pid() -- Don't terminate the current connection
+        AND state = 'idle' -- Look for idle connections
+        AND state_change < current_timestamp - INTERVAL '5 minutes'; -- Idle for more than 5 minutes
+        """
+
+        # Connect to the database
+        conn = psycopg2.connect(**db_params)
+
+        # Create a cursor object
+        cur = conn.cursor()
+
+        try:
+            # Execute the query to terminate idle connections
+            cur.execute(terminate_idle_connections_query)
+            # Commit the changes
+            conn.commit()
+            print("Idle connections have been terminated.")
+        except Exception as e:
+            # Rollback in case of any error
+            conn.rollback()
+            print(f"An error occurred: {e}")
+        finally:
+            # Close communication with the database
+            cur.close()
+            conn.close()
+            
