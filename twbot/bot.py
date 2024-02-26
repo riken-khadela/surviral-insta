@@ -818,36 +818,51 @@ class InstaBot:
             if ele: return ele
         except:
             return None
-
-    def phone_number_proccess(self,country_code):
-        for phone_try in range(3):
-            china = True if "china" == str(country_code).lower() else False
-            number_class = phone_numbers()
-            print(f'\n\n\n----The china china is : {china}----\n\n\n')
-            
-            self.phone_number = number_class.get_number(china=china,country_code=country_code)
-            phone_number_digit = str(self.phone_number).isdigit()
-            if phone_number_digit:
-                print(self.phone_number)
-                otp_page = self.find_element('Confirmation code input','//android.view.View[@content-desc="Enter the confirmation code"]',page='OTP page')
-                if otp_page : self.driver().back()
-                self.input_text(self.phone_number,'phone number input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup[1]/android.widget.EditText')
-                if self.click_element('Next btn','//android.widget.Button[@content-desc="Next"]') :
-                    random_sleep(3,3)
-                    if self.find_accessibility_id('Please wait a few minutes before you try again.'):
-                       return 'delete_avd'  ,'' 
-                    if self.find_accessibility_id('Looks like your mobile number may be incorrect. Try entering your full number, including the country code.'):
-                        return 'delete_avd'  ,''
-                    random_sleep(5,7,reason='next page')
-                else :
-                    number_class.ban_number(self.phone_number,country_code,china=china)
-                    continue
+        
+    def otp_process(self,):
+        number_class = phone_numbers()
+        china = True if "china" == str(self.country_code).lower() else False
+        for I_otp in range(10) :
+            otp = number_class.get_sms(self.phone_number,self.country_code,china=china)
+            if otp:
+                print(otp)
+                self.input_text(str(otp),'input otp','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
+                next_btn = self.app_driver.find_element(By.XPATH,'//android.widget.Button[@content-desc="Next"]')
+                next_btn.click()
+                return True ,''
+            if I_otp == 9:
+                number_class.ban_number(self.phone_number,self.country_code,china=china)
+        return False, 'delete_avd'
                 
+                
+    def phone_number_proccess(self):
+        if self.find_element('phone number page', '''//android.view.View[@text="What's your mobile number?"]''',timeout=2):
+            for phone_try in range(3):
+                china = True if "china" == str(self.country_code).lower() else False
+                number_class = phone_numbers()
+                print(f'\n\n\n----The china china is : {china}----\n\n\n')
+                self.phone_number = number_class.get_number(china=china,country_code=self.country_code)
+                phone_number_digit = str(self.phone_number).isdigit()
+                if phone_number_digit:
+                    if self.input_text(self.phone_number,'phone number input','//android.widget.EditText[@class="android.widget.EditText"]'):
+                        LOGGER.info(f"The phone number is {self.phone_number}")
+                        if self.click_element('Next btn','//android.widget.Button[@content-desc="Next"]') :
+                            random_sleep(3,3)
+                            if self.find_accessibility_id('Please wait a few minutes before you try again.'):
+                                return 'delete_avd'  ,'' 
+                            if self.find_accessibility_id('Looks like your mobile number may be incorrect. Try entering your full number, including the country code.'):
+                                number_class.ban_number(self.phone_number,self.country_code,china=china)
+                                continue
+                            random_sleep(10,10,reason='next page')
+                else:
+                    LOGGER.info(self.phone_number)
+                    continue
+
                 otp_page = self.find_element('Confirmation code input','//android.view.View[@content-desc="Enter the confirmation code"]',page='OTP page')
                 if not otp_page :
                 
-                    if self.find_element('Incorrect number','//android.view.View[@content-desc="Looks like your mobile number may be incorrect. Try entering your full number, including the country code."]'):
-                        number_class.ban_number(self.phone_number,country_code,china=china)
+                    if self.find_accessibility_id('Looks like your mobile number may be incorrect. Try entering your full number, including the country code.'):
+                        number_class.ban_number(self.phone_number,self.country_code,china=china)
                         continue
                     
                     elif self.click_element('Create account','//android.widget.Button[@content-desc="Create new account"]'):
@@ -857,7 +872,7 @@ class InstaBot:
                         ...
                         
                     elif self.find_element('something went wrong','//android.view.View[@content-desc="Something went wrong. Please try again later."]',timeout=2):
-                        number_class.ban_number(self.phone_number,country_code,china=china)
+                        number_class.ban_number(self.phone_number,self.country_code,china=china)
                         self.df.loc['avd']=self.emulator_name
                         self.df.to_csv('delete_avd.csv', index=False)
                         print(f'add this {self.emulator_name} avd in delete local avd list')
@@ -872,11 +887,11 @@ class InstaBot:
                         return 'delete_avd'  ,''    
                     
                     elif self.find_element('name page', '''//android.view.View[@text="What's your name?"]''',timeout=2):
-                        return True ,''
+                        return True ,'otp_page'
                     
                 for I_otp in range(10) :
                     
-                    otp = number_class.get_sms(self.phone_number,country_code,china=china)
+                    otp = number_class.get_sms(self.phone_number,self.country_code,china=china)
                     if otp:
                         print(otp)
                         self.input_text(str(otp),'input otp','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
@@ -884,21 +899,20 @@ class InstaBot:
                         next_btn.click()
                         return True ,''
                     if I_otp == 9:
-                        number_class.ban_number(self.phone_number,country_code,china=china)
+                        number_class.ban_number(self.phone_number,self.country_code,china=china)
                         self.driver().back()
                     time.sleep(10)
                         
-                if phone_try == 1:
-                        self.df.loc['avd']=self.emulator_name
-                        self.df.to_csv('delete_avd.csv', index=False)
-                        print(f'add this {self.emulator_name} avd in delete local avd list')
-                        return 'delete_avd' ,''
-            else :
-                self.df.loc['avd']=self.emulator_name
-                self.df.to_csv('delete_avd.csv', index=False)
+            else:
                 print(f'add this {self.emulator_name} avd in delete local avd list')
-                self.user_avd.delete()
-                return 'delete_avd', 'number_not_found'
+                return 'delete_avd', 'number_not_found'                    
+            
+        # else :
+        #     self.df.loc['avd']=self.emulator_name
+        #     self.df.to_csv('delete_avd.csv', index=False)
+        #     print(f'add this {self.emulator_name} avd in delete local avd list')
+        #     self.user_avd.delete()
+        #     return 'delete_avd', 'number_not_found'
 
     def send_request(self):
         import requests
@@ -1268,6 +1282,7 @@ class InstaBot:
         return False
     
     def create_account(self,country_code):
+        self.country_code =country_code
         self.gender =np.random.choice(["male", "female"], p=[0.5, 0.5])
         fake = Faker()
         seed=None
@@ -1330,12 +1345,18 @@ class InstaBot:
                     if self.create_set_username():
                         self.process_acc_creation.remove("create_set_username")
                 if "phone_number_proccess" in self.process_acc_creation :
-                    numberr,number_not_found = self.phone_number_proccess(country_code)
-                    if numberr:
-                        if numberr == "delete_avd" or  numberr == False :
-                            return False, False, number_not_found
-                        self.process_acc_creation.remove("phone_number_proccess")
-                self.agree_btn() 
+                    numberr,number_not_found = self.phone_number_proccess()
+                    if numberr == "delete_avd" or  numberr == False :
+                        return False, False, number_not_found
+                    elif number_not_found == 'otp_page' :
+                        self.process_acc_creation.append('otp_process')
+                    self.process_acc_creation.remove("phone_number_proccess")
+                if 'otp_process' in self.process_acc_creation:
+                    otp, otp_found =  self.otp_process()
+                    if otp == "delete_avd" or  otp == False :
+                        return False, False, otp_found
+                    self.process_acc_creation.remove("otp_process")
+                self.agree_btn()
                     
                 if self.find_element('Add a profile pic title','//android.view.View[@content-desc="Add a profile picture"]',timeout=2):
                     break

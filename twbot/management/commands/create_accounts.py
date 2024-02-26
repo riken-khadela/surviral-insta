@@ -162,7 +162,6 @@ class Command(BaseCommand):
                 if user_obj_bool == False or created_user_obj == "delete_avd" :
                     self.clean_bot(tb, False)
                     delete_avd.append(user_avd)
-                    user_avd.delete()
                     
                 elif created_user_obj or user_obj_bool == True :
                     csv_path = os.path.join(os.getcwd(),'csv','this_pc_avd.csv')
