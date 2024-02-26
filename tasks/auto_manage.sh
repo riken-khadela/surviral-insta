@@ -17,6 +17,7 @@ sed -i '/export LESSCLOSE=\/usr\/bin\/lesspipe %s %s/d' tasks/environment.sh
 
 #. ./tasks/environment.sh
 . tasks/environment.sh
+chmod +x ./tasks/variable.sh
 . tasks/variable.sh
 
 killall -9 python qemu-system-x86_64
