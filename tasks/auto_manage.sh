@@ -17,7 +17,6 @@ sed -i '/export LESSCLOSE=\/usr\/bin\/lesspipe %s %s/d' tasks/environment.sh
 
 #. ./tasks/environment.sh
 . tasks/environment.sh
-chmod +x ./tasks/variable.sh
 . tasks/variable.sh
 
 killall -9 python qemu-system-x86_64
@@ -76,4 +75,5 @@ fi
 # python temp/z22.py
 # python manage.py update_csv
 # python manage.py delete_avd 
+python manage.py set_variables
 python manage.py on_pc --account_creation=True
