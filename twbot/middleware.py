@@ -1,6 +1,6 @@
 from django.utils.deprecation import MiddlewareMixin
 from twbot.bot import terminat_idel_connection
-
+import os, subprocess
 
 class IdleConnectionMiddleware(MiddlewareMixin):
     def process_request(self, request):
