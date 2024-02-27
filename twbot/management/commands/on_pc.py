@@ -120,6 +120,12 @@ class Command(BaseCommand):
         #     return
         self.random_cron_time_for_reboot()
         self.change_cron_time_for_auto_manage()
+        if os.getenv("SYSTEM_NO") is None:
+            try:
+                call_command('set_variables')
+            except Exception as e:
+                print(e)
+                return
         LOGGER.info(f'\n\n\n--- PC number : {os.getenv("SYSTEM_NO")}\n\n\n')
         current_file_path = os.path.dirname(os.path.abspath(__file__))
         
