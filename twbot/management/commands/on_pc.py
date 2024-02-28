@@ -118,8 +118,8 @@ class Command(BaseCommand):
         # if not os.getenv("SYSTEM_NO") :
         #     SendErrorMail(subject='The SYSTEM number could not found')
         #     return
-        self.random_cron_time_for_reboot()
-        self.change_cron_time_for_auto_manage()
+        # self.random_cron_time_for_reboot()
+        # self.change_cron_time_for_auto_manage()
         if os.getenv("SYSTEM_NO") is None:
             try:
                 call_command('set_variables')
