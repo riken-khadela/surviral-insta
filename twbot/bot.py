@@ -392,21 +392,20 @@ class InstaBot:
             LOGGER.warning(e)
             self.start_driver()
         
-        self.coneect_db()
-            
+        # self.coneect_db()
         return self.app_driver
 
-    def coneect_db(self):
-        while True :
-            try :
-                postdetails.objects.first()
-                break
-            except Exception as e : 
-                try:
-                    connection.connect()
-                    break
-                except Exception as e:
-                    print(f'Error: {e}')
+    # def coneect_db(self):
+    #     while True :
+    #         try :
+    #             postdetails.objects.first()
+    #             break
+    #         except Exception as e : 
+    #             try:
+    #                 connection.connect()
+    #                 break
+    #             except Exception as e:
+    #                 print(f'Error: {e}')
     
     @staticmethod
     def create_avd(avd_name, package=None, device=None):
@@ -1363,7 +1362,7 @@ class InstaBot:
                 
             else :return False, False, ''
             
-            self.coneect_db()
+            # self.coneect_db()
             self.user_gender = random.choice(['MALE','FEMALE'])
             self.user = User_details.objects.create(avdsname=self.emulator_name,username=self.user_username,number=self.phone_number,password=self.password,birth_date=self.birth_date,birth_month=self.birth_month,birth_year=self.birth_year,status='ACTIVE',avd_pc = os.environ.get("SYSTEM_NO"))
             self.user.save()
@@ -1376,7 +1375,7 @@ class InstaBot:
             except AttributeError  as a:print(a)
             except Exception as ee:print(ee)
             self.user.updated=True
-            self.coneect_db()
+            # self.coneect_db()
             self.user.save()
             self.other_stuff_create_account()
             return self.user, True, ''
