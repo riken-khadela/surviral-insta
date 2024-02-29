@@ -3,14 +3,13 @@ import os.path
 from pyexpat import model
 import random
 import subprocess
-
+from django.core.management import call_command
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
-# Create your models here.
 from django.db import models
 from django.db.models import JSONField as JSONFieldPostgres
 from django.db.models.signals import post_save, pre_delete
-
+from django.dispatch import receiver
 from conf import AVD_PACKAGES, AVD_DEVICES
 from constants import ACC_BATCH
 from core.models import User
@@ -32,6 +31,8 @@ class TimeStampModel(models.Model):
 class run_command(TimeStampModel):
     command = models.TextField(default='')
     pcs_name = models.TextField(default='')
+    execute = models.BooleanField(default=False)
+    
 
 class TodayOpenAVDManager(models.Manager):
     def get_queryset(self):
@@ -173,3 +174,6 @@ def delete_avd(sender, instance, **kwargs):
 #  post_save.connect(create_avd, sender=UserAvd)
 # post_save.connect(create_better_avd, sender=UserAvd)
 # pre_delete.connect(delete_avd, sender=UserAvd)
+@receiver(post_save, sender=run_command)
+def execute_command_on_save(sender, instance, created, **kwargs):
+    call_command('run_cmds')

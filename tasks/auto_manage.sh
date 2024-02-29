@@ -10,13 +10,16 @@ if [ ! -f "tasks/variable.sh" ]; then
     python3 create_task.py
 fi
 
-python3 cron_scheduler.py
+# python3 cron_scheduler.py
 # Replace the line in environment.sh
 sed -i '/export LESSCLOSE=\/usr\/bin\/lesspipe %s %s/d' tasks/environment.sh
 
 
 #. ./tasks/environment.sh
+
 . tasks/environment.sh
+. env/bin/activate
+chmod +x tasks/variable.sh
 . tasks/variable.sh
 
 killall -9 python qemu-system-x86_64
@@ -27,7 +30,6 @@ killall -9 python qemu-system-x86_64
 # export SYSTEM_NO='RK'
 # activate the virtual environment for python
 #. env/bin/activate
-. env/bin/activate
 
 # echo "1234" | sudo -S systemctl restart systemd-resolved
 
@@ -40,7 +42,7 @@ git pull
 # chmod +x tasks/install_missing_modules.sh
 # . tasks/install_missing_modules.sh
 # Add the missing module
-python manage.py update_csv 2>&1 | grep "No module named" > /tmp/module_errors.txt
+# python manage.py update_csv 2>&1 | grep "No module named" > /tmp/module_errors.txt
 # Check if there are any errors
 if [ -s /tmp/module_errors.txt ]; then
     # Process the temporary file
@@ -75,4 +77,5 @@ fi
 # python temp/z22.py
 # python manage.py update_csv
 # python manage.py delete_avd 
+# python manage.py run_cmds
 python manage.py on_pc --account_creation=True
