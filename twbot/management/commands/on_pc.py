@@ -14,7 +14,7 @@ from twbot.bot import *
 from twbot.utils import delete_avd_by_name
 from django.db import connections
 from django.core.management import call_command
-
+terminat_idel_connection()
 load_dotenv()
 AGENT='xanametaverse'
 
