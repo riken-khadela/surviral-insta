@@ -131,7 +131,7 @@ DATABASES = {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'Instagram',
             'USER': 'surviraluser',
-            'PASSWORD': 'Surviral#786',
+            'PASSWORD': 'Surviral#806',
             'HOST': 'surviral-project.c4jxfxmbuuss.ap-southeast-1.rds.amazonaws.com',
             'PORT': '5432',
             # 'CONN_MAX_AGE' : 20,
