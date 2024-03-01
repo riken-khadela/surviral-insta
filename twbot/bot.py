@@ -893,7 +893,7 @@ class InstaBot:
                     otp = number_class.get_sms(self.phone_number,self.country_code,china=china)
                     if otp:
                         print(otp)
-                        self.input_text(str(otp),'input otp','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
+                        self.input_text(str(otp),'input otp','//android.widget.EditText[@class="android.widget.EditText"]')
                         next_btn = self.app_driver.find_element(By.XPATH,'//android.widget.Button[@content-desc="Next"]')
                         next_btn.click()
                         return True ,''
@@ -1222,7 +1222,7 @@ class InstaBot:
             return False
     
     def create_set_username(self):
-        create_username_title = self.find_element('username title','//android.view.View[@content-desc="Create a username"]')
+        create_username_title = self.find_element('username title','//android.view.View[@content-desc="Create a username"]') or self.find_element('username title','//android.view.View[@content-desc="Create your username"]')
         if create_username_title :
             if create_username_title.text == "Create a username" :
                 username_input = self.find_element('username input','/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout[1]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/androidx.recyclerview.widget.RecyclerView/android.view.ViewGroup[2]/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.view.ViewGroup/android.widget.EditText')
