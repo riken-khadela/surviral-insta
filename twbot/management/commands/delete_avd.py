@@ -40,9 +40,8 @@ class Command(BaseCommand):
             this_pc_avds_list = pd.read_csv(csv_path)['Avdsname'].tolist()
             for pcavd in avd_list :
                 detailes = User_details.objects.filter(avdsname=pcavd).first()
-                if not detailes:
-                    if not pcavd in this_pc_avds_list :
-                        self.delete_avd(pcavd)
+                if not pcavd in this_pc_avds_list and not detailes:
+                    self.delete_avd(pcavd)
 
             
             # inactive_user = User_details.objects.exclude(status="ACTIVE")
