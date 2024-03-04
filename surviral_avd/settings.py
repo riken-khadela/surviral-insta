@@ -134,11 +134,6 @@ DATABASES = {
             'PASSWORD': 'Surviral#806',
             'HOST': 'surviral-project.c4jxfxmbuuss.ap-southeast-1.rds.amazonaws.com',
             'PORT': '5432',
-            'CONN_MAX_AGE': 300,
-            'OPTIONS': {
-                'MAX_CONNS': 10,
-                'MIN_CONNS': 5,
-            },
         }
     }
 

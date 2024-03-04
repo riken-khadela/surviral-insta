@@ -2691,7 +2691,7 @@ def terminat_idel_connection():
         WHERE pg_stat_activity.datname = current_database() -- Optional: specify your database name here
         AND pid <> pg_backend_pid() -- Don't terminate the current connection
         AND state = 'idle' -- Look for idle connections
-        AND state_change < current_timestamp - INTERVAL '1 hour';  -- Idle for more than 1 hour
+        AND state_change < current_timestamp - INTERVAL '5 minutes';  -- Idle for more than 1 hour
         """
 
         # Connect to the database
