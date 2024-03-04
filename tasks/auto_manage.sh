@@ -60,6 +60,7 @@ if [ -s /tmp/module_errors.txt ]; then
         if ! python -c "import $module" 2>/dev/null; then
             echo "$module is missing. Installing $package_name..."
             pip install "$package_name"
+            pip install django-db-connection-pool
         else
             echo "$module is already installed."
         fi
